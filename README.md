@@ -135,10 +135,49 @@ Chamados_SECTI/
 
 ---
 
-## Próximos Passos Sugeridos
+## Fluxo de Trabalho com Git
 
-- [ ] Criar formulário para abrir novos chamados
-- [ ] Adicionar página de detalhes de um chamado
-- [ ] Implementar login/logout para identificar o solicitante
-- [ ] Associar cada chamado a um usuário (FK para `User`)
-- [ ] Adicionar campo de prioridade e categoria ao modelo
+### Antes de começar a trabalhar
+
+Sempre baixe as atualizações mais recentes do repositório quando for começar uma mudança, para evitar conflito no merge:
+
+```bash
+git pull origin main
+```
+
+### Salvando suas alterações (Commit)
+
+```bash
+# 1. Adicionar todos os arquivos modificados
+git add .
+
+# 2. Criar o commit com uma mensagem descritiva
+git commit -m "feat: descrição curta do que foi feito"
+```
+
+### Enviando para o GitHub (Push)
+
+```bash
+git push origin main
+```
+
+### Abrindo um Pull Request (PR)
+
+Um Pull Request é a forma de propor que o seu código seja incorporado ao projeto. O fluxo recomendado é:
+
+1. Crie um branch com o seu nome:
+```bash
+git checkout -b seu-nome
+```
+
+2. Faça seus commits normalmente na nova branch.
+
+3. Envie o branch para o GitHub:
+```bash
+git push origin seu-nome
+```
+
+4. Acesse o repositório no GitHub, clique em **"Compare & pull request"** e descreva as alterações feitas.
+
+5. Aguarde a revisão q o Erick/Kaique da o merge na `main`.
+
