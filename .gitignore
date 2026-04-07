@@ -1,0 +1,39 @@
+# Ambiente virtual
+venv/
+.venv/
+env/
+
+# Variáveis de ambiente (contém dados sensíveis)
+.env
+
+# Banco de dados local
+db.sqlite3
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Arquivos de distribuição / build
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# IDEs e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Arquivos estáticos coletados (gerados pelo collectstatic)
+staticfiles/
+static_root/
+
+# Logs
+*.log

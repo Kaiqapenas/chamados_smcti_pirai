@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %}Lista de Chamados{% endblock %}
+
+{% block conteudo %}
+    <h2>Chamados Abertos</h2>
+
+    {% if chamados %}
+        <ul>
+            {% for chamado in chamados %}
+                <li>
+                    <strong>{{ chamado.titulo }}</strong>
+                    — {{ chamado.get_status_display }}
+                    <small>({{ chamado.data_criacao|date:"d/m/Y H:i" }})</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhum chamado encontrado.</p>
+    {% endif %}
+{% endblock %}
