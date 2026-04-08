@@ -37,3 +37,10 @@ static_root/
 
 # Logs
 *.log
+
+
+media/*
+!media/.gitkeep
+
+logs/*
+!logs/.gitkeep
