@@ -16,6 +16,7 @@ class Chamado(models.Model):
         default=Status.ABERTO,
     )
     data_criacao = models.DateTimeField("Data de Criação", auto_now_add=True)
+    ultima_edicao = models.DateTimeField("Última edição", auto_now=True)
 
     class Meta:
         verbose_name = "Chamado"
