@@ -5,24 +5,45 @@ from django.db import models
 # Rascunho inicial, temporário
 #
 class ItemEstoque(models.Model):
-    class unidade_medida(models.TextChoices):
+    class UnidadeMedida(models.TextChoices):
         UNIDADE = "UN", "Unidade"
         METRO = "M", "Metro"
 
     nome = models.CharField("Nome", max_length=200)
-    quantidade = models.IntegerField("Quantidade", default=0)
-    quantidade_minima = models.IntegerField("Quantidade Mínima", default=0)
+    quantidade = models.PositiveIntegerField("Quantidade", default=0)
+    quantidade_minima = models.PositiveIntegerField("Quantidade Mínima", default=0)
     unidade_medida = models.CharField(
         "Unidade de Medida",
         max_length=2,
-        choices=unidade_medida.choices,
-        default=unidade_medida.UNIDADE,
+        choices=UnidadeMedida.choices,
+        default=UnidadeMedida.UNIDADE,
     )
     descricao = models.TextField("Descrição")
-    marca = models.CharField("Marca", max_length=200)
-    modelo = models.CharField("Modelo", max_length=200)
-    serie = models.CharField("Série", max_length=200)
-    patrimonio = models.IntegerField("Patrimônio", default=0)
+    marca = models.CharField(
+        "Marca", 
+        max_length=200,
+        null=True, 
+        blank=True
+    )
+    modelo = models.CharField(
+        "Modelo", 
+        max_length=200, 
+        null=True, 
+        blank=True
+    )
+    serie = models.CharField(
+        "Série", 
+        max_length=200,
+        null=True, 
+        blank=True
+    )
+    patrimonio = models.CharField(
+        "Patrimônio", 
+        max_length=200, 
+        default=0,
+        null=True, 
+        blank=True
+    )
     ativo = models.BooleanField("Ativo", default=True)
     categoria = models.ForeignKey(
         "CategoriaItem",
@@ -34,7 +55,7 @@ class ItemEstoque(models.Model):
         upload_to="estoque/", 
         null=True, 
         blank=True
-        )
+    )
 
     
     data_criacao = models.DateTimeField("Data de Criação", auto_now_add=True)
