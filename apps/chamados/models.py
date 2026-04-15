@@ -1,6 +1,8 @@
 from django.db import models
 
-
+#
+# Rascunho inicial, temporário
+#
 class Chamado(models.Model):
     class Status(models.TextChoices):
         ABERTO = "AB", "Aberto"

@@ -44,3 +44,7 @@ media/*
 
 logs/*
 !logs/.gitkeep
+
+local/*
+!local/.gitkeep
+!local/readme.txt

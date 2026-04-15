@@ -1,0 +1,1 @@
+Esta pasta não é versionada, coloque aqui os arquivos que você deseja manter em seu ambiente local mas que não deseja enviar para o repositório.
