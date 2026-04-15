@@ -40,7 +40,6 @@ class ItemEstoque(models.Model):
     patrimonio = models.CharField(
         "Patrimônio", 
         max_length=200, 
-        default=0,
         null=True, 
         blank=True
     )
@@ -50,13 +49,6 @@ class ItemEstoque(models.Model):
         on_delete=models.CASCADE, 
         related_name="itens_estoque"
     )
-    imagem = models.ImageField(
-        "Imagem", 
-        upload_to="estoque/", 
-        null=True, 
-        blank=True
-    )
-
     
     data_criacao = models.DateTimeField("Data de Criação", auto_now_add=True)
     ultima_edicao = models.DateTimeField("Última edição", auto_now=True)
@@ -74,3 +66,21 @@ class CategoriaItem(models.Model):
 
     def __str__(self):
         return self.nome
+    
+class ItemImagem(models.Model):
+    produto = models.ForeignKey(
+        ItemEstoque,
+        related_name='imagens',
+        on_delete=models.CASCADE
+    )
+    imagem = models.ImageField(upload_to='estoque/')
+    legenda = models.CharField(max_length=255, blank=True, null=True)
+    ordem = models.IntegerField(default=0, db_index=True)
+    is_principal = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['ordem', 'id']
+        unique_together = ('produto', 'ordem')
+
+    def __str__(self):
+        return f"Imagem de {self.produto.nome}"
