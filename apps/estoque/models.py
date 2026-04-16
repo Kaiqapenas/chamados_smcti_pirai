@@ -12,7 +12,7 @@ class ItemEstoque(models.Model):
 
     nome = models.CharField("Nome", max_length=200)
     quantidade = models.PositiveIntegerField("Quantidade", default=1)
-    quantidade_minima = models.PositiveIntegerField("Quantidade Mínima", default=1)
+    quantidade_minima = models.PositiveIntegerField("Quantidade Mínima", default=0)
     unidade_medida = models.CharField(
         "Unidade de Medida",
         max_length=2,
@@ -99,8 +99,10 @@ class MovimentacaoEstoque(models.Model):
     
     protocolo = models.ForeignKey(
         "chamados.Chamado", 
-        on_delete=models.CASCADE, 
-        related_name="movimentacoes_estoque"
+        on_delete=models.SET_NULL, 
+        related_name="movimentacoes_estoque",
+        null=True,
+        blank=True
     )
     
     tipo = models.CharField(
