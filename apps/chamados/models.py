@@ -57,11 +57,7 @@ class AlteracaoChamado(models.Model):
     )
     descricao = models.TextField("Descrição da Alteração")
     data_alteracao = models.DateTimeField("Data da Alteração", auto_now_add=True)
-    status_anterior = models.CharField(
-        "Status Anterior",
-        max_length=2,
-        choices=Chamado.Status.choices
-    )
+    
     status_novo = models.CharField(
         "Status Novo",
         max_length=2,
