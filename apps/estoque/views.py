@@ -1,3 +1,8 @@
-from django.shortcuts import render
+from django.views.generic import ListView
+from .models import Estoque
 
-# Create your views here.
+
+class EstoqueListView(ListView):
+    model = Estoque
+    template_name = "estoque/lista.html"
+    context_object_name = "estoques"
