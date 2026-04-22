@@ -5,7 +5,6 @@ from django.views import View
 from apps.chamados.forms import ChamadoForm
 from .models import Chamado
 
-
 class ChamadoListView(ListView):
     model = Chamado
     template_name = "chamados/lista.html"
