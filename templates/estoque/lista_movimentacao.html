@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block titulo %}Lista de movimentações de estoque{% endblock %}
+
+{% block conteudo %}
+    <h2>Movimentações de Estoque</h2>
+
+    {% if movimentacoes %}
+
+        <ul>
+            {% for movimentacao in movimentacoes %}
+                <li>
+                    <strong>{{ movimentacao.produto.nome }}</strong>
+                    — Quantidade: {{ movimentacao.quantidade }}
+                    <small>({{ movimentacao.data_criacao|date:"d/m/Y H:i" }})</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhuma movimentação encontrada.</p>
+    {% endif %}
+{% endblock %}

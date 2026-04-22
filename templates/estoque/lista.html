@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %}Lista de produtos{% endblock %}
+
+{% block conteudo %}
+    <h2>Produtos</h2>
+
+    {% if estoques %}
+        <ul>
+            {% for estoque in estoques %}
+                <li>
+                    <strong>{{ estoque.nome }}</strong>
+                    — Quantidade: {{ estoque.quantidade }}
+                    <small>({{ estoque.data_criacao|date:"d/m/Y H:i" }})</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhum produto encontrado.</p>
+    {% endif %}
+{% endblock %}
