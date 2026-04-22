@@ -1,5 +1,12 @@
 from django.urls import path
-from .views import *
+from .views import (
+    #Chamados
+    ChamadoListView, ChamadoCreateView, ChamadoDetailView, ChamadoUpdateView, ChamadoDeleteView,
+    #Itens do chamado
+    ItemChamadoCreateView, ItemChamadoUpdateView, ItemChamadoDeleteView,
+    #Alterações do chamado
+    AlteracaoChamadoListView, AlteracaoChamadoCreateView,
+)
 
 app_name = "chamados"
 
