@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block titulo %}Formulário de categorias{% endblock %}
+
+{% block conteudo %}
+    <h2>Categorias</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Salvar</button>
+    </form>
+
+{% endblock %}

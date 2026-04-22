@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block titulo %}Formulário de chamados{% endblock %}
+
+{% block conteudo %}
+    <h2>Chamados</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Salvar</button>
+    </form>
+
+{% endblock %}
