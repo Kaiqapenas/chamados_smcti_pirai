@@ -21,4 +21,5 @@ urlpatterns = [
     path("movimentacao/adicionar/", MovimentacaoEstoqueCreateView.as_view(), name="adicionar_movimentacao"),
     path("movimentacao/<int:pk>/editar/", MovimentacaoEstoqueUpdateView.as_view(), name="editar_movimentacao"),
     path("movimentacao/<int:pk>/remover/", MovimentacaoEstoqueDeleteView.as_view(), name="excluir_movimentacao"),
+    
 ]
