@@ -1,24 +1,24 @@
 from django.urls import path
-from .views import EstoqueListView
+from .views import CategoriaEstoqueListView, EstoqueListView, EstoqueCreateView, EstoqueUpdateView, EstoqueDeleteView, CategoriaEstoqueCreateView, CategoriaEstoqueUpdateView, CategoriaEstoqueDeleteView, MovimentacaoEstoqueCreateView, MovimentacaoEstoqueListView, MovimentacaoEstoqueUpdateView, MovimentacaoEstoqueDeleteView
 
 app_name = "estoque"
 
 urlpatterns = [
     path("", EstoqueListView.as_view(), name="lista"),
-    
-    # Placeholder para criação de views para criar, editar e excluir Estoque
-    path("estoque/adicionar/", EstoqueListView.as_view(), name="adicionar"),
-    path("estoque/editar/<int:id>/", EstoqueListView.as_view(), name="editar"),
-    path("estoque/excluir/<int:id>/", EstoqueListView.as_view(), name="excluir"),
-    
-    # Placeholder para criação de views para criar, editar e excluir categoria de estoque
-    path("categoria/adicionar/", EstoqueListView.as_view(), name="adicionar_categoria"),
-    path("categoria/editar/<int:id>/", EstoqueListView.as_view(), name="editar_categoria"),
-    path("categoria/excluir/<int:id>/", EstoqueListView.as_view(), name="excluir_categoria"),
-    
-    # Placeholder para criação de views para criar, editar e excluir MovimentaçãoEstoque
-    path("movimentacao/adicionar/", EstoqueListView.as_view(), name="adicionar_movimentacao"),
-    path("movimentacao/editar/<int:id>/", EstoqueListView.as_view(), name="editar_movimentacao"),
-    path("movimentacao/excluir/<int:id>/", EstoqueListView.as_view(), name="excluir_movimentacao"),
 
+    path("adicionar/", EstoqueCreateView.as_view(), name="adicionar"),
+    path("<int:pk>/editar/", EstoqueUpdateView.as_view(), name="editar"),
+    path("<int:pk>/remover/", EstoqueDeleteView.as_view(), name="excluir"),
+
+    # categoria
+    path("categoria/", CategoriaEstoqueListView.as_view(), name="categoria_lista"),
+    path("categoria/adicionar/", CategoriaEstoqueCreateView.as_view(), name="adicionar_categoria"),
+    path("categoria/<int:pk>/editar/", CategoriaEstoqueUpdateView.as_view(), name="editar_categoria"),
+    path("categoria/<int:pk>/remover/", CategoriaEstoqueDeleteView.as_view(), name="excluir_categoria"),
+
+    # movimentação
+    path("movimentacao/", MovimentacaoEstoqueListView.as_view(), name="movimentacao_lista"),
+    path("movimentacao/adicionar/", MovimentacaoEstoqueCreateView.as_view(), name="adicionar_movimentacao"),
+    path("movimentacao/<int:pk>/editar/", MovimentacaoEstoqueUpdateView.as_view(), name="editar_movimentacao"),
+    path("movimentacao/<int:pk>/remover/", MovimentacaoEstoqueDeleteView.as_view(), name="excluir_movimentacao"),
 ]

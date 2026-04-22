@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block titulo %}Lista de categorias{% endblock %}
+
+{% block conteudo %}
+    <h2>Categorias</h2>
+
+    {% if categorias %}
+        <ul>
+            {% for categoria in categorias %}
+                <li>
+                    <strong>{{ categoria.nome }}</strong>
+                    — Descrição: {{ categoria.descricao }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhuma categoria encontrada.</p>
+    {% endif %}
+{% endblock %}
