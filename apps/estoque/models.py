@@ -145,7 +145,7 @@ class MovimentacaoEstoque(models.Model):
         return f"{self.get_tipo_display()} - {self.item.nome} ({self.quantidade})"
     
     def get_tipo_movimentacao_display(self):
-        return dict(self.TipoMovimentacao.choices).get(self.tipo, "Desconecido")
+        return dict(self.TipoMovimentacao.choices).get(self.tipo, "Desconhecido")
 
     # 🔍 VALIDAÇÃO DE NEGÓCIO
     def clean(self):

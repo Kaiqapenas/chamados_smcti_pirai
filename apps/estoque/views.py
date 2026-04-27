@@ -39,6 +39,9 @@ class EstoqueUpdateView(View):
     def get(self, request, pk):
         item = get_object_or_404(ItemEstoque, pk=pk)
         form = ItemEstoqueForm(instance=item)
+        
+        form.fields['quantidade'].disabled = True
+        
         return render(request, "estoque/form.html", {"form": form, "item": item})
 
     def post(self, request, pk):
@@ -185,7 +188,7 @@ class MovimentacaoEstoqueUpdateView(View):
     def get(self, request, pk):
         movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
         form = MovimentacaoEstoqueForm(instance=movimentacao)
-
+        form.fields['tipo'].disabled = True
         return render(request, "estoque/form_movimentacao.html", {
             "form": form,
             "movimentacao": movimentacao
