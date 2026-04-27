@@ -5,6 +5,13 @@
 {% block conteudo %}
     <h2>Produtos</h2>
 
+    <!-- 🔹 BOTÃO ADICIONAR -->
+    <a href="{% url 'estoque:adicionar' %}">
+        <button>➕ Adicionar Produto</button>
+    </a>
+
+    <br><br>
+
     {% if estoques %}
         <ul>
             {% for estoque in estoques %}
@@ -12,6 +19,22 @@
                     <strong>{{ estoque.nome }}</strong>
                     — Quantidade: {{ estoque.quantidade }}
                     <small>({{ estoque.data_criacao|date:"d/m/Y H:i" }})</small>
+
+                    <br>
+
+                    <!-- ✏️ EDITAR -->
+                    <a href="{% url 'estoque:editar' estoque.id %}">
+                        <button>✏️ Editar</button>
+                    </a>
+
+                    <!-- 🗑️ EXCLUIR -->
+                    <form method="POST" action="{% url 'estoque:excluir' estoque.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Deseja excluir este item?')">
+                            🗑️ Excluir
+                        </button>
+                    </form>
+
                 </li>
             {% endfor %}
         </ul>

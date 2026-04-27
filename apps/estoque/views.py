@@ -212,6 +212,11 @@ class MovimentacaoEstoqueUpdateView(View):
 
 # 🔹 DELETE MOVIMENTACAO ESTOQUE
 class MovimentacaoEstoqueDeleteView(View):
+    def get(self, request, pk):  # ⚠️ não recomendado
+        movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
+        movimentacao.delete()  # 🔥 model já reverte estoque
+        return redirect("estoque:movimentacao_lista")   
+    
     def post(self, request, pk):
         movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
         movimentacao.delete()  # 🔥 model já reverte estoque
