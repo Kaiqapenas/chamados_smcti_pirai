@@ -5,12 +5,31 @@
 {% block conteudo %}
     <h2>Categorias</h2>
 
+    <!-- 🔹 BOTÃO ADICIONAR -->
+    <a href="{% url 'estoque:adicionar_categoria' %}">
+        <button>➕ Adicionar Categoria</button>
+    </a>
+
+    <br><br>
+
     {% if categorias %}
         <ul>
             {% for categoria in categorias %}
                 <li>
                     <strong>{{ categoria.nome }}</strong>
                     — Descrição: {{ categoria.descricao }}
+                    <br>
+                    <!-- ✏️ EDITAR -->
+                    <a href="{% url 'estoque:editar_categoria' categoria.id %}">
+                        <button>✏️ Editar</button>
+                    </a>
+                    <!-- 🗑️ EXCLUIR -->
+                    <form method="POST" action="{% url 'estoque:excluir_categoria' categoria.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Deseja excluir esta categoria?')">
+                            🗑️ Excluir
+                        </button>
+                    </form>
                 </li>
             {% endfor %}
         </ul>

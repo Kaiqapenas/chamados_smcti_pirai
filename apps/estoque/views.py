@@ -31,7 +31,7 @@ class EstoqueCreateView(View):
                     produto=item, imagem=img,
                     ordem=index, is_principal=(index == 0)
                 )
-            return redirect("estoque:editar", id=item.id)
+            return redirect("estoque:editar", pk=item.id)
         return render(request, "estoque/form.html", {"form": form})
 
 # 🔹 UPDATE ESTOQUE
@@ -212,6 +212,11 @@ class MovimentacaoEstoqueUpdateView(View):
 
 # 🔹 DELETE MOVIMENTACAO ESTOQUE
 class MovimentacaoEstoqueDeleteView(View):
+    def get(self, request, pk):  # ⚠️ não recomendado
+        movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
+        movimentacao.delete()  # 🔥 model já reverte estoque
+        return redirect("estoque:movimentacao_lista")   
+    
     def post(self, request, pk):
         movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
         movimentacao.delete()  # 🔥 model já reverte estoque

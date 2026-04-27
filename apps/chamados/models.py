@@ -39,6 +39,8 @@ class Chamado(models.Model):
 
     #informacoes do solicitante
     solicitante = models.CharField("Solicitante", max_length=200)
+    para_onde_solicitou = models.CharField("Para onde solicitou:", max_length=200, default = "Não informado")
+    
     #informacoes do chamado
     titulo = models.CharField("Título", max_length=200)
     descricao = models.TextField("Descrição")

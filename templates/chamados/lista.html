@@ -5,6 +5,12 @@
 {% block conteudo %}
     <h2>Chamados Abertos</h2>
 
+        <!-- 🔹 BOTÃO ADICIONAR -->
+    <a href="{% url 'chamados:adicionar' %}">
+        <button>➕ Adicionar Chamado</button>
+    </a>
+
+    <br><br>
     {% if chamados %}
         <ul>
             {% for chamado in chamados %}
@@ -12,6 +18,18 @@
                     <strong>{{ chamado.titulo }}</strong>
                     — {{ chamado.get_status_display }}
                     <small>({{ chamado.data_criacao|date:"d/m/Y H:i" }})</small>
+                    <br>
+                    <!-- ✏️ EDITAR -->
+                    <a href="{% url 'chamados:editar' chamado.id %}">
+                        <button>✏️ Editar</button>
+                    </a>
+                    <!-- 🗑️ EXCLUIR -->
+                    <form method="POST" action="{% url 'chamados:remover' chamado.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Deseja excluir este chamado?')">
+                            🗑️ Excluir
+                        </button>
+                    </form>
                 </li>
             {% endfor %}
         </ul>
