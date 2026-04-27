@@ -38,7 +38,10 @@ class Chamado(models.Model):
     )
 
     #informacoes do solicitante
+
     solicitante = models.CharField("Solicitante", max_length=200)
+    para_onde_solicitou = models.CharField("Para onde solicitou:", max_length=200, default = "Não informado")
+
     #informacoes do chamado
     titulo = models.CharField("Título", max_length=200)
     descricao = models.TextField("Descrição")
@@ -54,6 +57,14 @@ class Chamado(models.Model):
         choices=Status.choices,
         default=Status.ABERTO,
     )
+
+    # TODO: adicionar após implementar app de usuários
+    # tecnicos = models.ManyToManyField(
+    #     "usuarios.Usuario",
+    #     verbose_name="Técnicos",
+    #     related_name="chamados",
+    #     blank=True
+    # )
 
     #datas
     data_criacao = models.DateTimeField("Data de abertura", auto_now_add=True)
