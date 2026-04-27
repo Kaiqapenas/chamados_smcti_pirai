@@ -38,8 +38,10 @@ class Chamado(models.Model):
     )
 
     #informacoes do solicitante
-
-    solicitante = models.CharField("Solicitante", max_length=200)
+    solicitante = models.CharField(
+        max_length=200,
+        help_text="Nome do solicitante ou órgão"
+    )
     para_onde_solicitou = models.CharField("Para onde solicitou:", max_length=200, default = "Não informado")
 
     #informacoes do chamado
@@ -68,6 +70,8 @@ class Chamado(models.Model):
 
     #datas
     data_criacao = models.DateTimeField("Data de abertura", auto_now_add=True)
+    #prazo:
+    data_prevista = models.DateTimeField("Data prevista", null=True, blank=True)
 
     class Meta:
         verbose_name = "Chamado"
@@ -81,7 +85,7 @@ class ItemChamado(models.Model):
     #peças requisitadas pro chamado
     chamado = models.ForeignKey(
         Chamado, 
-        on_delete=models.CASCADE, 
+        on_delete=models.CASCADE,
         related_name="itens"
     )
    
@@ -92,12 +96,12 @@ class ItemChamado(models.Model):
     )
     quantidade = models.PositiveIntegerField("Quantidade", default=1)
 
+
     class Meta:
-        verbose_name = "Item do chamado"
-        verbose_name_plural = "Itens dos chamados"
+        unique_together = ("chamado", "item") #nao pode ter o msm item mais de uma vez no chamado, mas a qntd pode ser maior q 1
 
     def __str__(self):
-        return self.item.nome
+        return f"{self.item.nome} ({self.quantidade})"
 
 class AlteracaoChamado(models.Model):
     #historico de alterações do chamado
