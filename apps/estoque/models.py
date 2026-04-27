@@ -48,10 +48,10 @@ class ItemEstoque(models.Model):
     ativo = models.BooleanField("Ativo", default=True)
     categoria = models.ForeignKey(
         "CategoriaItem",
-        on_delete=models.CASCADE, 
+        on_delete=models.PROTECT, #nao pode deletar categoria se tiver itens associados
         related_name="itens_estoque"
     )
-    
+
     data_criacao = models.DateTimeField("Data de Criação", auto_now_add=True)
     ultima_edicao = models.DateTimeField("Última edição", auto_now=True)
 
@@ -64,7 +64,7 @@ class ItemEstoque(models.Model):
         return f"[{self.get_unidade_medida_display()}] {self.nome}"
     
 class CategoriaItem(models.Model):
-    nome = models.CharField("Nome", max_length=200)
+    nome = models.CharField("Nome", max_length=200,)
 
     def __str__(self):
         return self.nome
@@ -124,6 +124,13 @@ class MovimentacaoEstoque(models.Model):
         blank=True,
         null=True
     )
+    #QND CRIAR USUARIOS TIRA DO COMENTARIO
+    #responsavel = models.ForeignKey(
+    #"usuarios.Usuario",
+    #on_delete=models.SET_NULL,
+    #null=True
+    #)
+    
 
     class Meta:
         verbose_name = "Movimentação de Estoque"
