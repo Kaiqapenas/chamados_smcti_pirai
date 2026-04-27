@@ -5,14 +5,34 @@
 {% block conteudo %}
     <h2>Movimentações de Estoque</h2>
 
+    <!-- 🔹 BOTÃO ADICIONAR -->
+    <a href="{% url 'estoque:adicionar_movimentacao' %}">
+        <button>➕ Adicionar Movimentação</button>
+    </a>
+
+    <br><br>
+
     {% if movimentacoes %}
 
         <ul>
             {% for movimentacao in movimentacoes %}
                 <li>
-                    <strong>{{ movimentacao.produto.nome }}</strong>
+                    <strong>{{ movimentacao.item }}</strong>
+                    — Tipo: {{ movimentacao.get_tipo_movimentacao_display }}
                     — Quantidade: {{ movimentacao.quantidade }}
-                    <small>({{ movimentacao.data_criacao|date:"d/m/Y H:i" }})</small>
+                    <small>({{ movimentacao.data_movimentacao|date:"d/m/Y H:i" }})</small>
+                    <br>
+                    <!-- ✏️ EDITAR -->
+                    <a href="{% url 'estoque:editar_movimentacao' movimentacao.id %}">
+                        <button>✏️ Editar</button>
+                    </a>
+                    <!-- 🗑️ EXCLUIR -->
+                    <form method="POST" action="{% url 'estoque:excluir_movimentacao' movimentacao.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Deseja excluir esta movimentação?')">
+                            🗑️ Excluir
+                        </button>
+                    </form>
                 </li>
             {% endfor %}
         </ul>

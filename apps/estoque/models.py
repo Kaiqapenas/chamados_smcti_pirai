@@ -20,7 +20,7 @@ class ItemEstoque(models.Model):
         choices=UnidadeMedida.choices,
         default=UnidadeMedida.UNIDADE,
     )
-    descricao = models.TextField("Descrição")
+    descricao = models.TextField("Descrição", blank=True, null=True)
     marca = models.CharField(
         "Marca", 
         max_length=200,
@@ -64,7 +64,8 @@ class ItemEstoque(models.Model):
         return f"[{self.get_unidade_medida_display()}] {self.nome}"
     
 class CategoriaItem(models.Model):
-    nome = models.CharField("Nome", max_length=200,)
+    nome = models.CharField("Nome", max_length=200)
+    descricao = models.TextField("Descrição", blank=True, null=True)
 
     def __str__(self):
         return self.nome
@@ -142,6 +143,9 @@ class MovimentacaoEstoque(models.Model):
 
     def __str__(self):
         return f"{self.get_tipo_display()} - {self.item.nome} ({self.quantidade})"
+    
+    def get_tipo_movimentacao_display(self):
+        return dict(self.TipoMovimentacao.choices).get(self.tipo, "Desconhecido")
 
     # 🔍 VALIDAÇÃO DE NEGÓCIO
     def clean(self):
