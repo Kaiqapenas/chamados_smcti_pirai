@@ -31,7 +31,7 @@ class EstoqueCreateView(View):
                     produto=item, imagem=img,
                     ordem=index, is_principal=(index == 0)
                 )
-            return redirect("estoque:editar", id=item.id)
+            return redirect("estoque:editar", pk=item.id)
         return render(request, "estoque/form.html", {"form": form})
 
 # 🔹 UPDATE ESTOQUE
@@ -80,7 +80,7 @@ class EstoqueUpdateView(View):
                         is_principal=False
                     )
 
-            return redirect("estoque:editar", id=item.id)
+            return redirect("estoque:editar", pk=item.id)
 
         return render(request, "estoque/form.html", {"form": form, "item": item})
 
