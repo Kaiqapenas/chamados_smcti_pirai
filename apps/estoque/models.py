@@ -124,12 +124,12 @@ class MovimentacaoEstoque(models.Model):
         blank=True,
         null=True
     )
-
-    responsavel = models.ForeignKey(
-    "usuarios.Usuario",
-    on_delete=models.SET_NULL,
-    null=True
-    )
+    #QND CRIAR USUARIOS TIRA DO COMENTARIO
+    #responsavel = models.ForeignKey(
+    #"usuarios.Usuario",
+    #on_delete=models.SET_NULL,
+    #null=True
+    #)
     
 
     class Meta:

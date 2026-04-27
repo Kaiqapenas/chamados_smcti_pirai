@@ -73,6 +73,23 @@ class Chamado(models.Model):
     #prazo:
     data_prevista = models.DateTimeField("Data prevista", null=True, blank=True)
 
+    # metodo para mudar o status do chamado, criando tb um registro da alteração
+    def mudar_status(self, novo_status):
+        status_anterior = self.status
+
+        if status_anterior == novo_status:
+            return
+
+        self.status = novo_status
+        self.save()
+
+        AlteracaoChamado.objects.create(
+            chamado=self,
+            status_anterior=status_anterior,
+            status_novo=novo_status,
+            descricao=f"Status alterado para {self.get_status_display()}"
+        )
+
     class Meta:
         verbose_name = "Chamado"
         verbose_name_plural = "Chamados"
