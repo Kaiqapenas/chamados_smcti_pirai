@@ -19,7 +19,12 @@
                     <strong>{{ estoque.nome }}</strong>
                     — Quantidade: {{ estoque.quantidade }}
                     <small>({{ estoque.data_criacao|date:"d/m/Y H:i" }})</small>
-
+                    <!-- Se quantidade for menor que a mínima -->
+                    {% if estoque.quantidade < estoque.quantidade_minima %}
+                        <span style="color: red;">
+                            ⚠️ Quantidade abaixo do mínimo!
+                        </span>
+                    {% endif %}
                     <br>
 
                     <!-- ✏️ EDITAR -->
