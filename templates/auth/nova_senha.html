@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Senha - SIGEC</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>SIGEC</h1>
+            <p>Sistema Integrado de Gestão de Estoque e Chamados</p>
+        </div>
+        <div class="auth-body">
+            
+            <div class="icon-lock" id="iconContainer">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </div>
+            
+            <h2 id="pageTitle">Criar nova senha</h2>
+            <p class="subtitle" id="pageSubtitle">Digite sua nova senha abaixo e confirme-a para redefinir seu acesso.</p>
+            
+            <form id="newPasswordForm">
+                <div class="auth-input-group" id="pwdGroup1">
+                    <input type="password" id="newPwd" placeholder="Nova senha" required minlength="6">
+                </div>
+                <div class="auth-input-group" id="pwdGroup2">
+                    <input type="password" id="confirmPwd" placeholder="Confirmar nova senha" required minlength="6">
+                    <div class="error-msg" id="pwdErrorMsg">As senhas não coincidem.</div>
+                </div>
+                
+                <button type="submit" class="btn-green" id="actionBtn" style="width: 100%;">Aplicar nova senha</button>
+            </form>
+        </div>
+        <div class="auth-footer">
+            <img src="../img/prefeitura-pirai.png" alt="Prefeitura de Piraí">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('newPasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('actionBtn');
+            
+            // Se o botão já estiver no estado de "Voltar à página inicial", fazemos o redirecionamento
+            if(btn.dataset.state === 'success') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            const pwd1 = document.getElementById('newPwd').value;
+            const pwd2 = document.getElementById('confirmPwd').value;
+            
+            if(pwd1 !== pwd2) {
+                document.getElementById('pwdGroup2').classList.add('input-error');
+                document.getElementById('pwdErrorMsg').style.display = 'block';
+            } else {
+                document.getElementById('pwdGroup2').classList.remove('input-error');
+                document.getElementById('pwdErrorMsg').style.display = 'none';
+                
+                // Esconde os campos de senha
+                document.getElementById('pwdGroup1').style.display = 'none';
+                document.getElementById('pwdGroup2').style.display = 'none';
+                
+                // Atualiza o ícone para o check de sucesso
+                document.getElementById('iconContainer').className = 'icon-check';
+                document.getElementById('iconContainer').innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                
+                document.getElementById('pageTitle').innerText = 'Senha alterada!';
+                document.getElementById('pageSubtitle').innerText = 'Sua senha foi redefinida com sucesso. Você já pode acessar o sistema.';
+                
+                // Altera o botão para voltar ao login com a cor mais clara solicitada para os botões de voltar
+                btn.innerText = 'Voltar à página inicial';
+                btn.className = 'btn-light-blue';
+                btn.dataset.state = 'success';
+            }
+        });
+        
+        document.getElementById('confirmPwd').addEventListener('input', function() {
+            document.getElementById('pwdGroup2').classList.remove('input-error');
+            document.getElementById('pwdErrorMsg').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
