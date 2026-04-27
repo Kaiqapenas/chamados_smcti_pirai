@@ -1,0 +1,267 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: #f3f4f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 400px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #e5e7eb;
+}
+
+.auth-header {
+    text-align: center;
+    padding: 40px 20px 20px;
+    background-color: #ffffff;
+}
+
+.auth-header h1 {
+    color: #4a74b5;
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.auth-header p {
+    color: #6b8ec7;
+    font-size: 13px;
+}
+
+.auth-body {
+    background-color: #4a74b5;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    color: white;
+    text-align: center;
+}
+
+.auth-body form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.auth-input-group {
+    width: 100%;
+    position: relative;
+}
+
+.auth-input-group input {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #333;
+    background: white;
+}
+
+.auth-input-group input::placeholder {
+    color: #b0b0b0;
+}
+
+.auth-input-group.has-icon input {
+    padding-left: 45px;
+}
+
+.auth-input-group .icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-input-group .icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: #b0b0b0;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.btn-green {
+    background-color: #8db654;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 50%;
+    margin-top: 10px;
+}
+
+.btn-green:hover {
+    background-color: #7da545;
+}
+
+.btn-light-blue {
+    background-color: #7ba2e3; /* Tom azul mais claro para contraste, conforme solicitado */
+    color: #ffffff;
+    border: 1px solid #8cb0ea;
+    border-radius: 8px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.btn-light-blue:hover {
+    background-color: #6a95db;
+}
+
+.forgot-link {
+    color: white;
+    text-decoration: underline;
+    font-size: 12px;
+    margin-top: 20px;
+}
+
+.forgot-link:hover {
+    color: #e0e0e0;
+}
+
+.auth-footer {
+    padding: 20px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-footer img {
+    height: 40px;
+    object-fit: contain;
+}
+
+.back-link {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.back-link:hover {
+    color: white;
+}
+
+.icon-lock {
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.icon-lock svg {
+    width: 30px;
+    height: 30px;
+    fill: none;
+    stroke: white;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.icon-check {
+    width: 70px;
+    height: 70px;
+    background-color: #8db654;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.icon-check svg {
+    width: 40px;
+    height: 40px;
+    fill: none;
+    stroke: white;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.auth-body h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.auth-body p.subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.auth-body .email-display {
+    font-weight: 700;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.auth-body .spam-note {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 20px 0;
+}
+
+.error-msg {
+    color: #ffb3b3;
+    font-size: 13px;
+    margin-top: 5px;
+    display: none;
+    text-align: left;
+    width: 100%;
+    padding-left: 15px;
+}
+
+.input-error input {
+    border: 2px solid #ffb3b3;
+}

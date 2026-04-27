@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha - SIGEC</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>SIGEC</h1>
+            <p>Sistema Integrado de Gestão de Estoque e Chamados</p>
+        </div>
+        <div class="auth-body">
+            <a href="login.html" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                Voltar para o login
+            </a>
+            
+            <div class="icon-lock">
+                <svg viewBox="0 0 24 24">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </div>
+            
+            <h2>Esqueceu sua senha?</h2>
+            <p class="subtitle">Informe o e-mail cadastrado na sua matrícula.<br>Enviaremos um link para redefinir sua senha.</p>
+            
+            <form id="recoveryForm">
+                <div class="auth-input-group has-icon" id="emailGroup">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                    </div>
+                    <input type="email" id="emailInput" placeholder="Ex: usuario@pirai.rj.gov.br" required>
+                    <div class="error-msg" id="errorMsg">E-mail inválido ou não cadastrado (teste com erro@erro.com).</div>
+                </div>
+                <!-- Botão com cor mais clara para contraste conforme pedido -->
+                <button type="submit" class="btn-light-blue">Enviar link de recuperação</button>
+            </form>
+        </div>
+        <div class="auth-footer">
+            <img src="../img/prefeitura-pirai.png" alt="Prefeitura de Piraí">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('recoveryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+            
+            // Simulação de e-mail inválido para demonstração do erro
+            if(email === 'erro@erro.com' || email.indexOf('@') === -1) {
+                document.getElementById('emailGroup').classList.add('input-error');
+                document.getElementById('errorMsg').style.display = 'block';
+            } else {
+                document.getElementById('emailGroup').classList.remove('input-error');
+                document.getElementById('errorMsg').style.display = 'none';
+                
+                // Salvar o e-mail no sessionStorage para mostrar na próxima página
+                sessionStorage.setItem('recoveryEmail', email);
+                window.location.href = 'email_enviado.html';
+            }
+        });
+        
+        document.getElementById('emailInput').addEventListener('input', function() {
+            document.getElementById('emailGroup').classList.remove('input-error');
+            document.getElementById('errorMsg').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
