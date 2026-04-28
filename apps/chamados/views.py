@@ -15,7 +15,8 @@ class ChamadoListView(ListView):
     context_object_name = "chamados"
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        #para evitar N queries no template
+        queryset = super().get_queryset().select_related().prefetch_related("itens")
         #filtro por status
         status = self.request.GET.get("status")
         if status:
@@ -43,7 +44,7 @@ class ChamadoCreateView(View):
         return render(request, "chamados/form.html", {"form": form})
 
     def post(self, request):
-        form = ChamadoForm(request.POST)
+        form = ChamadoForm(request.POST, request.FILES)
 
         if form.is_valid():
             form.save()
@@ -73,11 +74,21 @@ class ChamadoUpdateView(View):
         return render(request, "chamados/form.html", {"form": form, "chamado": chamado})
 
 class ChamadoDeleteView(View):
-    model = Chamado
     def post(self, request, pk):
         chamado = get_object_or_404(Chamado, pk=pk)
         chamado.delete()
         return redirect("chamados:lista")
+
+class ChamadoMudarStatusView(View):
+    def post(self, request, pk):
+        chamado = get_object_or_404(Chamado, pk=pk)
+        novo_status = request.POST.get("status")
+
+        if novo_status not in Chamado.Status.values:
+            return redirect("chamados:detalhe", pk=pk)
+
+        chamado.mudar_status(novo_status)
+        return redirect("chamados:detalhe", pk=pk)
 
 #ITENS DO CHAMADO
 class ItemChamadoCreateView(CreateView):
@@ -87,7 +98,8 @@ class ItemChamadoCreateView(CreateView):
 
     def form_valid(self, form):
         # Associa o item ao chamado da URL automaticamente
-        form.instance.chamado_id = self.kwargs["chamado_pk"]
+        chamado = get_object_or_404(Chamado, pk = self.kwargs["chamado_pk"])
+        form.instance.chamado_id = chamado
         return super().form_valid(form)
 
     def get_success_url(self):
