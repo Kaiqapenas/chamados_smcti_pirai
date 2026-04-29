@@ -63,9 +63,17 @@ class ItemEstoque(models.Model):
     def __str__(self):
         return f"[{self.get_unidade_medida_display()}] {self.nome}"
     
+    @property
+    def estoque_baixo(self):                            
+        return self.quantidade <= self.quantidade_minima
+    
 class CategoriaItem(models.Model):
     nome = models.CharField("Nome", max_length=200)
     descricao = models.TextField("Descrição", blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Categoria"
+        verbose_name_plural = "Categorias"
 
     def __str__(self):
         return self.nome
@@ -84,6 +92,8 @@ class ItemImagem(models.Model):
     class Meta:
         ordering = ['ordem', 'id']
         unique_together = ('produto', 'ordem')
+        verbose_name = "Imagem do item"
+        verbose_name_plural = "Imagens dos itens"
 
     def __str__(self):
         return f"Imagem de {self.produto.nome}"
@@ -144,8 +154,6 @@ class MovimentacaoEstoque(models.Model):
     def __str__(self):
         return f"{self.get_tipo_display()} - {self.item.nome} ({self.quantidade})"
     
-    def get_tipo_movimentacao_display(self):
-        return dict(self.TipoMovimentacao.choices).get(self.tipo, "Desconhecido")
 
     # 🔍 VALIDAÇÃO DE NEGÓCIO
     def clean(self):
@@ -168,14 +176,6 @@ class MovimentacaoEstoque(models.Model):
                     saldo -= antiga.quantidade
                 else:
                     saldo += antiga.quantidade
-
-            # 🔥 DEBUG AQUI
-            print("=== DEBUG MOVIMENTAÇÃO ===")
-            print("Item:", self.item)
-            print("Saldo atual:", self.item.quantidade)
-            print("Saldo após reversão:", saldo)
-            print("Tipo novo:", self.tipo)
-            print("Quantidade nova:", self.quantidade)
         
             # 🔥 simula nova movimentação (SEM salvar ainda)
             if self.tipo == self.TipoMovimentacao.ENTRADA:
@@ -198,6 +198,9 @@ class MovimentacaoEstoque(models.Model):
         with transaction.atomic():
 
             if self.tipo == self.TipoMovimentacao.ENTRADA:
+                novo_saldo = self.item.quantidade - self.quantidade
+                if novo_saldo < 0:
+                    raise ValidationError("Não é possível deletar essa movimentação, pois resultaria em estoque negativo.")
                 self.item.quantidade -= self.quantidade
             else:
                 self.item.quantidade += self.quantidade
