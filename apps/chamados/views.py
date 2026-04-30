@@ -1,9 +1,9 @@
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
-
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.urls import reverse_lazy
-
+from django.core.exceptions import ValidationError
 
 from apps.chamados.forms import ChamadoForm
 from .models import Chamado, AlteracaoChamado, ItemChamado
@@ -48,6 +48,7 @@ class ChamadoCreateView(View):
 
         if form.is_valid():
             form.save()
+            messages.success(request, "Chamado criado com sucesso")
             return redirect("chamados:lista")
 
         return render(request, "chamados/form.html", {"form": form})
@@ -60,20 +61,30 @@ class ChamadoDetailView(DetailView):
 class ChamadoUpdateView(View):
     def get(self, request, pk):
         chamado = get_object_or_404(Chamado, pk=pk)
+        if chamado.status == Chamado.Status.FINALIZADO:
+            messages.error(request, "Não é possível editar um chamado finalizado.")
+            return redirect("chamados:detalhe", pk=pk)
         form = ChamadoForm(instance=chamado)
         return render(request, "chamados/form.html", {"form": form, "chamado": chamado})
 
     def post(self, request, pk):
         chamado = get_object_or_404(Chamado, pk=pk)
+        if chamado.status == Chamado.Status.FINALIZADO:
+            messages.error(request, "Não é possível editar um chamado finalizado.")
+            return redirect("chamados:detalhe", pk=pk)
         form = ChamadoForm(request.POST, instance=chamado)
 
         if form.is_valid():
             form.save()
+            messages.success(request, "Chamado atualizado com sucesso.")
             return redirect("chamados:detalhe", pk=pk)
 
         return render(request, "chamados/form.html", {"form": form, "chamado": chamado})
 
 class ChamadoDeleteView(View):
+    def get(self, request, pk):
+        chamado = get_object_or_404(Chamado, pk=pk)
+        return render(request, "chamados/confirmar_delete.html", {"chamado": chamado})
     def post(self, request, pk):
         chamado = get_object_or_404(Chamado, pk=pk)
         chamado.delete()
@@ -85,9 +96,14 @@ class ChamadoMudarStatusView(View):
         novo_status = request.POST.get("status")
 
         if novo_status not in Chamado.Status.values:
+            messages.error(request, "Status inválido")
             return redirect("chamados:detalhe", pk=pk)
 
-        chamado.mudar_status(novo_status)
+        try:
+            chamado.mudar_status(novo_status)
+            messages.success(request, f"Status alterado para {chamado.get_status_display()}")
+        except ValidationError as e:
+            messages.error(request, str(e))
         return redirect("chamados:detalhe", pk=pk)
 
 #ITENS DO CHAMADO
@@ -99,7 +115,7 @@ class ItemChamadoCreateView(CreateView):
     def form_valid(self, form):
         # Associa o item ao chamado da URL automaticamente
         chamado = get_object_or_404(Chamado, pk = self.kwargs["chamado_pk"])
-        form.instance.chamado_id = chamado
+        form.instance.chamado = chamado
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -116,6 +132,15 @@ class ItemChamadoUpdateView(UpdateView):
 class ItemChamadoDeleteView(DeleteView):
     model = ItemChamado
     template_name = "chamados/confirmar_remocao.html"
+
+    def post(self,request, *args, **kwargs):
+        self.object = self.get_object()
+        try:
+            self.object.delete()
+            messages.success(request, "Item removido com sucesso.")
+        except ValidationError as e:
+            messages.error(request, e.message)
+        return redirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk})

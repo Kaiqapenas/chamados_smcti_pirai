@@ -1,4 +1,5 @@
-from django.db import models
+from django.db import models, transaction
+from django.core.exceptions import ValidationError
 import random
 import string
 from django.utils import timezone
@@ -28,6 +29,12 @@ class Chamado(models.Model):
         NORMAL = "NO", "Normal"
         URGENTE = "UR", "Urgente"
 
+    TRANSICOES_VALIDAS = {
+        Status.ABERTO: [Status.EM_ANDAMENTO],
+        Status.EM_ANDAMENTO: [Status.FINALIZADO],
+        Status.FINALIZADO: [],  # chamado finalizado não pode ser reaberto
+    }
+
     #protocolo gerado automaticamente, unico e nao editavel
     numero_protocolo = models.CharField(
         "Protocolo",
@@ -39,10 +46,11 @@ class Chamado(models.Model):
 
     #informacoes do solicitante
     solicitante = models.CharField(
+        "Solicitante",
         max_length=200,
         help_text="Nome do solicitante ou órgão"
     )
-    para_onde_solicitou = models.CharField("Para onde solicitou:", max_length=200, default = "Não informado")
+    para_onde_solicitou = models.CharField("Para onde solicitou", max_length=200)
     
     #informacoes do chamado
     titulo = models.CharField("Título", max_length=200)
@@ -71,25 +79,9 @@ class Chamado(models.Model):
     #datas
     data_criacao = models.DateTimeField("Data de abertura", auto_now_add=True)
     #prazo:
-    data_prevista = models.DateTimeField("Data prevista", null=True, blank=True)
-
-    # metodo para mudar o status do chamado, criando tb um registro da alteração
-    def mudar_status(self, novo_status):
-        status_anterior = self.status
-
-        if status_anterior == novo_status:
-            return
-
-        self.status = novo_status
-        self.save()
-
-        AlteracaoChamado.objects.create(
-            chamado=self,
-            status_anterior=status_anterior,
-            status_novo=novo_status,
-            descricao=f"Status alterado para {self.get_status_display()}"
-        )
-
+    data_prevista = models.DateField("Data prevista", null=True, blank=True)
+    #ultima edicao pra auditoria
+    ultima_edicao = models.DateTimeField("Última edição", auto_now=True)
     class Meta:
         verbose_name = "Chamado"
         verbose_name_plural = "Chamados"
@@ -98,6 +90,62 @@ class Chamado(models.Model):
     def __str__(self):
         return f"[{self.numero_protocolo}] {self.titulo}"
     
+
+    def _validar_estoque(self):
+        """Verifica se todos os itens do chamado têm estoque suficiente para finalizar."""
+        erros = []
+        for item_chamado in self.itens.select_related("item").all():
+            if item_chamado.quantidade > item_chamado.item.quantidade:
+                erros.append(
+                    f"'{item_chamado.item.nome}': necessário {item_chamado.quantidade}, "
+                    f"disponível {item_chamado.item.quantidade}."
+                    )
+        if erros:
+            raise ValidationError(
+            "Estoque insuficiente para finalizar o chamado:\n" + "\n".join(erros)
+            )
+    
+    def _dar_baixa_estoque(self):
+        from apps.estoque.models import MovimentacaoEstoque
+        for item_chamado in self.itens.select_related("item").all():
+            MovimentacaoEstoque.objects.create(
+                item=item_chamado.item,
+                tipo=MovimentacaoEstoque.TipoMovimentacao.SAIDA,
+                quantidade=item_chamado.quantidade,
+                protocolo=self,
+                observacao=f"Baixa automática ao finalizar chamado {self.numero_protocolo}"
+            )
+            # item.quantidade é atualizado pelo save() da MovimentacaoEstoque
+    
+    def mudar_status(self, novo_status):
+        """Muda o status do chamado respeitando as transições válidas."""
+        transicoes = self.TRANSICOES_VALIDAS.get(self.status, [])
+
+        if novo_status not in transicoes:
+            raise ValidationError(
+                f"Não é possível alterar de '{self.get_status_display()}' "
+                f"para '{dict(self.Status.choices)[novo_status]}'."
+            )
+
+        # Valida estoque antes de finalizar
+        if novo_status == self.Status.FINALIZADO:
+            self._validar_estoque()
+
+        status_anterior = self.status
+        self.status = novo_status
+        self.save()
+
+        # Baixa no estoque ao finalizar
+        if novo_status == self.Status.FINALIZADO:
+            self._dar_baixa_estoque()
+
+        AlteracaoChamado.objects.create(
+            chamado=self,
+            status_anterior=status_anterior,
+            status_novo=novo_status,
+            descricao=f"Status alterado para {self.get_status_display()}"
+        )
+
 class ItemChamado(models.Model):
     #peças requisitadas pro chamado
     chamado = models.ForeignKey(
@@ -112,13 +160,28 @@ class ItemChamado(models.Model):
         related_name="chamados"
     )
     quantidade = models.PositiveIntegerField("Quantidade", default=1)
-
-
     class Meta:
+        verbose_name = "Item do chamado"
+        verbose_name_plural = "Itens do chamado"
         unique_together = ("chamado", "item") #nao pode ter o msm item mais de uma vez no chamado, mas a qntd pode ser maior q 1
 
     def __str__(self):
         return f"{self.item.nome} ({self.quantidade})"
+    
+    def clean(self):
+        # Não permite modificar itens de chamado finalizado
+        if self.chamado.status == Chamado.Status.FINALIZADO:
+            raise ValidationError("Não é possível modificar itens de um chamado finalizado.")
+        # Quantidade deve ser maior que zero
+        if self.quantidade <= 0:
+            raise ValidationError("Quantidade deve ser maior que zero.")
+    
+    def delete(self, *args, **kwargs):
+        # Não permite remover itens de chamado finalizado
+        if self.chamado.status == Chamado.Status.FINALIZADO:
+            raise ValidationError("Não é possível remover itens de um chamado finalizado.")
+        super().delete(*args, **kwargs)
+
 
 class AlteracaoChamado(models.Model):
     #historico de alterações do chamado
