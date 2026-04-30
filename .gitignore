@@ -48,3 +48,7 @@ logs/*
 local/*
 !local/.gitkeep
 !local/readme.txt
+
+
+.cursor/
+.vscode-local/

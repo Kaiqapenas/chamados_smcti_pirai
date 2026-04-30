@@ -4,14 +4,7 @@ from .models import Chamado, ItemChamado
 class ChamadoForm(forms.ModelForm):
     class Meta:
         model = Chamado
-        fields = [
-            "solicitante",
-            "para_onde_solicitou", 
-            "titulo", 
-            "descricao", 
-            "urgencia",
-            "status"
-            ]
+        fields = ["solicitante", "titulo", "descricao", "urgencia","para_onde_solicitou"]
         
         
 class ItemChamadoForm(forms.ModelForm):

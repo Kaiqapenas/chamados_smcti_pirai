@@ -2,9 +2,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.db.models import Max
+from django.db.models import Max, ProtectedError
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.contrib import messages
 
 from .models import ItemEstoque, CategoriaItem, ItemImagem, MovimentacaoEstoque
 from .forms import ItemEstoqueForm, CategoriaItemForm, MovimentacaoEstoqueForm
@@ -14,6 +15,16 @@ class EstoqueListView(LoginRequiredMixin, ListView):
     model = ItemEstoque
     template_name = "estoque/lista.html"
     context_object_name = "estoques"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        nome = self.request.GET.get("nome")
+        categoria = self.request.GET.get("categoria")
+        if nome:
+            qs = qs.filter(nome__icontains=nome)
+        if categoria:
+            qs = qs.filter(categoria_id=categoria)
+        return qs
 
 # 🔹 CREATE ESTOQUE
 class EstoqueCreateView(LoginRequiredMixin, View):
@@ -32,6 +43,7 @@ class EstoqueCreateView(LoginRequiredMixin, View):
                     produto=item, imagem=img,
                     ordem=index, is_principal=(index == 0)
                 )
+            messages.success(request, "Item criado com sucesso.")
             return redirect("estoque:editar", pk=item.id)
         return render(request, "estoque/form.html", {"form": form})
 
@@ -83,7 +95,7 @@ class EstoqueUpdateView(LoginRequiredMixin, View):
                         ordem=ultima_ordem + index,
                         is_principal=False
                     )
-
+            messages.success(request, "Item atualizado com sucesso.")
             return redirect("estoque:editar", pk=item.id)
 
         return render(request, "estoque/form.html", {"form": form, "item": item})
@@ -91,16 +103,16 @@ class EstoqueUpdateView(LoginRequiredMixin, View):
 # 🔹 DELETE ESTOQUE
 class EstoqueDeleteView(LoginRequiredMixin, View):
 
-    def get(self, request, pk):  # ⚠️ não recomendado
+    def get(self, request, pk):
+        item = get_object_or_404(ItemEstoque, pk=pk)
+        return render(request, "estoque/confirm_delete.html", {"item": item})
+    
+    def post(self, request, pk):                          
         item = get_object_or_404(ItemEstoque, pk=pk)
         item.delete()
+        messages.success(request, "Item excluído com sucesso.")
         return redirect("estoque:lista")
-
-    def post(self, request, pk):
-        item = get_object_or_404(ItemEstoque, pk=pk)
-        item.delete()
-        return redirect("estoque:lista")
-
+    
 # 🔹 LISTVIEW CATEGORIA
 class CategoriaEstoqueListView(LoginRequiredMixin, ListView):
     model = CategoriaItem
@@ -118,7 +130,9 @@ class CategoriaEstoqueCreateView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
+            messages.success(request, "Categoria criada com sucesso.")
             return redirect("estoque:categoria_lista")
+    
 
         return render(request, "estoque/form_categoria.html", {"form": form})
 
@@ -139,6 +153,7 @@ class CategoriaEstoqueUpdateView(LoginRequiredMixin, View):
 
         if form.is_valid():
             form.save()
+            messages.success(request, "Categoria atualizada com sucesso.")
             return redirect("estoque:categoria_lista")
 
         return render(request, "estoque/form_categoria.html", {
@@ -147,14 +162,18 @@ class CategoriaEstoqueUpdateView(LoginRequiredMixin, View):
         })
 
 # 🔹 DELETE CATEGORIA
-class CategoriaEstoqueDeleteView(LoginRequiredMixin, View):
-    def get(self, request, pk):  # ⚠️ não recomendado
+class CategoriaEstoqueDeleteView(View):
+    def get(self, request, pk):  
         categoria = get_object_or_404(CategoriaItem, pk=pk)
-        categoria.delete()
-        return redirect("estoque:categoria_lista")
+        return render(request, "estoque/confirm_delete_categoria.html", {"categoria": categoria})
+
     def post(self, request, pk):
         categoria = get_object_or_404(CategoriaItem, pk=pk)
-        categoria.delete()
+        try:
+            categoria.delete()
+            messages.success(request, "Categoria excluída com sucesso.")
+        except ProtectedError:
+            messages.error(request, "Não é possível excluir esta categoria, existem itens associados a ela.")
         return redirect("estoque:categoria_lista")
  
 # 🔹 LISTVIEW MOVIMENTAÇÃO ESTOQUE
@@ -162,6 +181,22 @@ class MovimentacaoEstoqueListView(LoginRequiredMixin, ListView):
     model = MovimentacaoEstoque
     template_name = "estoque/lista_movimentacao.html"
     context_object_name = "movimentacoes"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        item_id = self.request.GET.get("item")
+        tipo = self.request.GET.get("tipo")
+        data_inicio = self.request.GET.get("data_inicio")
+        data_fim = self.request.GET.get("data_fim")
+        if item_id:
+            qs = qs.filter(item_id=item_id)
+        if tipo:
+            qs = qs.filter(tipo=tipo)
+        if data_inicio:
+            qs = qs.filter(data_movimentacao__gte=data_inicio)
+        if data_fim:
+            qs = qs.filter(data_movimentacao__lte=data_fim)
+        return qs
        
 # 🔹 CREATE MOVIMENTACAO ESTOQUE
 class MovimentacaoEstoqueCreateView(LoginRequiredMixin, View):
@@ -176,6 +211,7 @@ class MovimentacaoEstoqueCreateView(LoginRequiredMixin, View):
         if form.is_valid():
             try:
                 form.save()  # 🔥 model resolve tudo
+                messages.success(request, "Movimentação criada com sucesso.")
                 return redirect("estoque:movimentacao_lista")
 
             except ValidationError as e:
@@ -201,9 +237,8 @@ class MovimentacaoEstoqueUpdateView(LoginRequiredMixin, View):
 
         if form.is_valid():
             try:
-                with transaction.atomic():
-                    form.save()  # 🔥 TODA lógica está no model
-
+                form.save()
+                messages.success(request, "Movimentação atualizada com sucesso.")
                 return redirect("estoque:movimentacao_lista")
 
             except ValidationError as e:
@@ -215,14 +250,16 @@ class MovimentacaoEstoqueUpdateView(LoginRequiredMixin, View):
         })       
 
 # 🔹 DELETE MOVIMENTACAO ESTOQUE
-class MovimentacaoEstoqueDeleteView(LoginRequiredMixin, View):
-    def get(self, request, pk):  # ⚠️ não recomendado
+class MovimentacaoEstoqueDeleteView(View):
+    def get(self, request, pk):
         movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
-        movimentacao.delete()  # 🔥 model já reverte estoque
-        return redirect("estoque:movimentacao_lista")   
+        return render(request, "estoque/confirm_delete_movimentacao.html", {"movimentacao": movimentacao})
     
     def post(self, request, pk):
         movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
-        movimentacao.delete()  # 🔥 model já reverte estoque
-
+        try:
+            movimentacao.delete()
+            messages.success(request, "Movimentação excluída com sucesso.")
+        except ValidationError as e:
+            messages.error(request, str(e.message))
         return redirect("estoque:movimentacao_lista")
