@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 import random
 import string
@@ -59,6 +60,13 @@ class Chamado(models.Model):
         choices=Status.choices,
         default=Status.ABERTO,
     )
+    
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="chamados_usuario",
+        verbose_name="Usuário de interação"
+    )
 
     # TODO: adicionar após implementar app de usuários
     # tecnicos = models.ManyToManyField(
@@ -113,6 +121,12 @@ class ItemChamado(models.Model):
     )
     quantidade = models.PositiveIntegerField("Quantidade", default=1)
 
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="chamados_item_usuario",
+        verbose_name="Usuário de interação no item"
+    )
 
     class Meta:
         unique_together = ("chamado", "item") #nao pode ter o msm item mais de uma vez no chamado, mas a qntd pode ser maior q 1
@@ -143,6 +157,14 @@ class AlteracaoChamado(models.Model):
     )
 
     data_alteracao = models.DateTimeField("Data da alteração", auto_now_add=True)
+    
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="chamados_alteracoes_usuario",
+        verbose_name="Usuário de interação na alteração"
+    )
+    
     class Meta:
         verbose_name = "Alteração de chamado"
         verbose_name_plural = "Alterações de chamados"

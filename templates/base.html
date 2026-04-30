@@ -9,12 +9,25 @@
 <body>
     <header>
         <h1>Sistema de Chamados — Secretaria de Piraí</h1>
+        <!-- Usuário logado -->
+        <p>Bem-vindo, {{ user.matricula }}!</p>
+        <!-- Botão de sair -->
+        <form method="POST" action="{% url 'core:sair' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">🚪 Sair</button>
+        </form>
         <nav>
             <a href="/chamados/">Chamados</a>
             <a href="/estoque/">Estoque</a>
             <a href="/estoque/categoria/">Categorias</a>
             <a href="/estoque/movimentacao/">Movimentações</a>
-            <a href="/admin/">Administração</a>
+            <a href="/usuarios/">Usuários</a>
+            <!-- Link para a administração do Django 
+             só para quem tem acesso, pode ser protegido por permissão
+             ou simplesmente deixado para usuários staff/superuser -->
+            {% if user.is_staff or user.is_superuser %}
+                <a href="/admin/">Administração</a>
+            {% endif %}
         </nav>
     </header>
     

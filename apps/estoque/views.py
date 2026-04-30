@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -9,13 +10,13 @@ from .models import ItemEstoque, CategoriaItem, ItemImagem, MovimentacaoEstoque
 from .forms import ItemEstoqueForm, CategoriaItemForm, MovimentacaoEstoqueForm
 
 # 🔹 LISTVIEW ESTOQUE
-class EstoqueListView(ListView):
+class EstoqueListView(LoginRequiredMixin, ListView):
     model = ItemEstoque
     template_name = "estoque/lista.html"
     context_object_name = "estoques"
 
 # 🔹 CREATE ESTOQUE
-class EstoqueCreateView(View):
+class EstoqueCreateView(LoginRequiredMixin, View):
     def get(self, request):
         form = ItemEstoqueForm()
         return render(request, "estoque/form.html", {"form": form})
@@ -35,7 +36,7 @@ class EstoqueCreateView(View):
         return render(request, "estoque/form.html", {"form": form})
 
 # 🔹 UPDATE ESTOQUE
-class EstoqueUpdateView(View):
+class EstoqueUpdateView(LoginRequiredMixin, View):
     def get(self, request, pk):
         item = get_object_or_404(ItemEstoque, pk=pk)
         form = ItemEstoqueForm(instance=item)
@@ -88,7 +89,7 @@ class EstoqueUpdateView(View):
         return render(request, "estoque/form.html", {"form": form, "item": item})
 
 # 🔹 DELETE ESTOQUE
-class EstoqueDeleteView(View):
+class EstoqueDeleteView(LoginRequiredMixin, View):
 
     def get(self, request, pk):  # ⚠️ não recomendado
         item = get_object_or_404(ItemEstoque, pk=pk)
@@ -101,13 +102,13 @@ class EstoqueDeleteView(View):
         return redirect("estoque:lista")
 
 # 🔹 LISTVIEW CATEGORIA
-class CategoriaEstoqueListView(ListView):
+class CategoriaEstoqueListView(LoginRequiredMixin, ListView):
     model = CategoriaItem
     template_name = "estoque/lista_categoria.html"
     context_object_name = "categorias"
     
 # 🔹 CREATE CATEGORIA
-class CategoriaEstoqueCreateView(View):
+class CategoriaEstoqueCreateView(LoginRequiredMixin, View):
     def get(self, request):
         form = CategoriaItemForm()
         return render(request, "estoque/form_categoria.html", {"form": form})
@@ -122,7 +123,7 @@ class CategoriaEstoqueCreateView(View):
         return render(request, "estoque/form_categoria.html", {"form": form})
 
 # 🔹 UPDATE CATEGORIA
-class CategoriaEstoqueUpdateView(View):
+class CategoriaEstoqueUpdateView(LoginRequiredMixin, View):
     def get(self, request, pk):
         categoria = get_object_or_404(CategoriaItem, pk=pk)
         form = CategoriaItemForm(instance=categoria)
@@ -146,7 +147,7 @@ class CategoriaEstoqueUpdateView(View):
         })
 
 # 🔹 DELETE CATEGORIA
-class CategoriaEstoqueDeleteView(View):
+class CategoriaEstoqueDeleteView(LoginRequiredMixin, View):
     def get(self, request, pk):  # ⚠️ não recomendado
         categoria = get_object_or_404(CategoriaItem, pk=pk)
         categoria.delete()
@@ -157,13 +158,13 @@ class CategoriaEstoqueDeleteView(View):
         return redirect("estoque:categoria_lista")
  
 # 🔹 LISTVIEW MOVIMENTAÇÃO ESTOQUE
-class MovimentacaoEstoqueListView(ListView):
+class MovimentacaoEstoqueListView(LoginRequiredMixin, ListView):
     model = MovimentacaoEstoque
     template_name = "estoque/lista_movimentacao.html"
     context_object_name = "movimentacoes"
        
 # 🔹 CREATE MOVIMENTACAO ESTOQUE
-class MovimentacaoEstoqueCreateView(View):
+class MovimentacaoEstoqueCreateView(LoginRequiredMixin, View):
 
     def get(self, request):
         form = MovimentacaoEstoqueForm()
@@ -183,7 +184,7 @@ class MovimentacaoEstoqueCreateView(View):
         return render(request, "estoque/form_movimentacao.html", {"form": form})   
 
 # 🔹 UPDATE MOVIMENTACAO ESTOQUE
-class MovimentacaoEstoqueUpdateView(View):
+class MovimentacaoEstoqueUpdateView(LoginRequiredMixin, View):
 
     def get(self, request, pk):
         movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
@@ -214,7 +215,7 @@ class MovimentacaoEstoqueUpdateView(View):
         })       
 
 # 🔹 DELETE MOVIMENTACAO ESTOQUE
-class MovimentacaoEstoqueDeleteView(View):
+class MovimentacaoEstoqueDeleteView(LoginRequiredMixin, View):
     def get(self, request, pk):  # ⚠️ não recomendado
         movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
         movimentacao.delete()  # 🔥 model já reverte estoque

@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
 
@@ -55,6 +56,13 @@ class ItemEstoque(models.Model):
     data_criacao = models.DateTimeField("Data de Criação", auto_now_add=True)
     ultima_edicao = models.DateTimeField("Última edição", auto_now=True)
 
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="itens_estoque_usuario",
+        verbose_name="Usuário de interação no item"
+    )
+    
     class Meta:
         verbose_name = "Item de Estoque"
         verbose_name_plural = "Itens de Estoque"
@@ -66,7 +74,12 @@ class ItemEstoque(models.Model):
 class CategoriaItem(models.Model):
     nome = models.CharField("Nome", max_length=200)
     descricao = models.TextField("Descrição", blank=True, null=True)
-
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="categorias_estoque_usuario",
+        verbose_name="Usuário de interação na categoria"
+    )
     def __str__(self):
         return self.nome
     
@@ -80,7 +93,14 @@ class ItemImagem(models.Model):
     legenda = models.CharField(max_length=255, blank=True, null=True)
     ordem = models.IntegerField(default=0, db_index=True)
     is_principal = models.BooleanField(default=False)
-
+    
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="itens_imagem_usuario",
+        verbose_name="Usuário de interação na imagem"
+    )
+    
     class Meta:
         ordering = ['ordem', 'id']
         unique_together = ('produto', 'ordem')
@@ -132,6 +152,12 @@ class MovimentacaoEstoque(models.Model):
     #null=True
     #)
     
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="movimentacoes_estoque_usuario",
+        verbose_name="Usuário de interação na movimentação"
+    )
 
     class Meta:
         verbose_name = "Movimentação de Estoque"
