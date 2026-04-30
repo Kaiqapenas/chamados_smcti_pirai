@@ -21,11 +21,9 @@
             <a href="/estoque/">Estoque</a>
             <a href="/estoque/categoria/">Categorias</a>
             <a href="/estoque/movimentacao/">Movimentações</a>
-            <a href="/usuarios/">Usuários</a>
-            <!-- Link para a administração do Django 
-             só para quem tem acesso, pode ser protegido por permissão
-             ou simplesmente deixado para usuários staff/superuser -->
-            {% if user.is_staff or user.is_superuser %}
+            <!-- Protegido por permissão para usuários staff/superuser -->
+            {% if user.is_staff or user.is_superuser %}    
+                <a href="/usuarios/">Usuários</a>
                 <a href="/admin/">Administração</a>
             {% endif %}
         </nav>
