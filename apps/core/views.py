@@ -65,3 +65,6 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 # # Create your views here.
 # def index(request):
 #     return render(request, "base.html")
+# Create your views here.
+def index(request):
+    return render(request, "base.html")
