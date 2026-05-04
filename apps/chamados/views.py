@@ -48,7 +48,9 @@ class ChamadoCreateView(LoginRequiredMixin, View):
         form = ChamadoForm(request.POST, request.FILES)
 
         if form.is_valid():
-            form.save()
+            chamado = form.save(commit=False)
+            chamado.usuario = request.user
+            chamado.save()
             messages.success(request, "Chamado criado com sucesso")
             return redirect("chamados:lista")
 
@@ -76,7 +78,9 @@ class ChamadoUpdateView(LoginRequiredMixin, View):
         form = ChamadoForm(request.POST, instance=chamado)
 
         if form.is_valid():
-            form.save()
+            chamado = form.save(commit=False)
+            chamado.usuario = request.user
+            chamado.save()
             messages.success(request, "Chamado atualizado com sucesso.")
             return redirect("chamados:detalhe", pk=pk)
 
@@ -99,7 +103,7 @@ class ChamadoMudarStatusView(View):
             return redirect("chamados:detalhe", pk=pk)
 
         try:
-            chamado.mudar_status(novo_status)
+            chamado.mudar_status(novo_status, request.user)
             messages.success(request, f"Status alterado para {chamado.get_status_display()}")
         except ValidationError as e:
             messages.error(request, str(e))
@@ -115,6 +119,7 @@ class ItemChamadoCreateView(LoginRequiredMixin, CreateView):
         # Associa o item ao chamado da URL automaticamente
         chamado = get_object_or_404(Chamado, pk = self.kwargs["chamado_pk"])
         form.instance.chamado = chamado
+        form.instance.usuario = self.request.user
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -127,6 +132,10 @@ class ItemChamadoUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk})
+
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        return super().form_valid(form)
 
 class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
     model = ItemChamado

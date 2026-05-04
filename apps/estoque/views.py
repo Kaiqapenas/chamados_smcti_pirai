@@ -35,13 +35,16 @@ class EstoqueCreateView(LoginRequiredMixin, View):
     def post(self, request):
         form = ItemEstoqueForm(request.POST, request.FILES)
         if form.is_valid():
-            item = form.save()
+            item = form.save(commit=False)
+            item.usuario = request.user
+            item.save()
             # salvar imagens separadamente (não é campo do ModelForm)
             imagens = request.FILES.getlist("imagens")
             for index, img in enumerate(imagens):
                 ItemImagem.objects.create(
                     produto=item, imagem=img,
-                    ordem=index, is_principal=(index == 0)
+                    ordem=index, is_principal=(index == 0),
+                    usuario=request.user
                 )
             messages.success(request, "Item criado com sucesso.")
             return redirect("estoque:editar", pk=item.id)
@@ -62,7 +65,9 @@ class EstoqueUpdateView(LoginRequiredMixin, View):
         form = ItemEstoqueForm(request.POST, request.FILES, instance=item)
 
         if form.is_valid():
-            form.save()
+            item = form.save(commit=False)
+            item.usuario = request.user
+            item.save()
 
             # 🔥 1. REMOVER IMAGENS (se enviado no form)
             ids_remover = request.POST.getlist("remover_imagens")
@@ -93,7 +98,8 @@ class EstoqueUpdateView(LoginRequiredMixin, View):
                         produto=item,
                         imagem=img,
                         ordem=ultima_ordem + index,
-                        is_principal=False
+                        is_principal=False,
+                        usuario=request.user
                     )
             messages.success(request, "Item atualizado com sucesso.")
             return redirect("estoque:editar", pk=item.id)
@@ -129,7 +135,9 @@ class CategoriaEstoqueCreateView(LoginRequiredMixin, View):
         form = CategoriaItemForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            categoria = form.save(commit=False)
+            categoria.usuario = request.user
+            categoria.save()
             messages.success(request, "Categoria criada com sucesso.")
             return redirect("estoque:categoria_lista")
     
@@ -152,7 +160,9 @@ class CategoriaEstoqueUpdateView(LoginRequiredMixin, View):
         form = CategoriaItemForm(request.POST, instance=categoria)
 
         if form.is_valid():
-            form.save()
+            categoria = form.save(commit=False)
+            categoria.usuario = request.user
+            categoria.save()
             messages.success(request, "Categoria atualizada com sucesso.")
             return redirect("estoque:categoria_lista")
 
@@ -210,7 +220,9 @@ class MovimentacaoEstoqueCreateView(LoginRequiredMixin, View):
 
         if form.is_valid():
             try:
-                form.save()  # 🔥 model resolve tudo
+                movimentacao = form.save(commit=False)
+                movimentacao.usuario = request.user
+                movimentacao.save()  # 🔥 model resolve tudo
                 messages.success(request, "Movimentação criada com sucesso.")
                 return redirect("estoque:movimentacao_lista")
 
@@ -237,7 +249,9 @@ class MovimentacaoEstoqueUpdateView(LoginRequiredMixin, View):
 
         if form.is_valid():
             try:
-                form.save()
+                movimentacao = form.save(commit=False)
+                movimentacao.usuario = request.user
+                movimentacao.save()
                 messages.success(request, "Movimentação atualizada com sucesso.")
                 return redirect("estoque:movimentacao_lista")
 

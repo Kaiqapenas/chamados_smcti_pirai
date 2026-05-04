@@ -113,7 +113,7 @@ class Chamado(models.Model):
             "Estoque insuficiente para finalizar o chamado:\n" + "\n".join(erros)
             )
     
-    def _dar_baixa_estoque(self):
+    def _dar_baixa_estoque(self, usuario):
         from apps.estoque.models import MovimentacaoEstoque
         for item_chamado in self.itens.select_related("item").all():
             MovimentacaoEstoque.objects.create(
@@ -121,11 +121,12 @@ class Chamado(models.Model):
                 tipo=MovimentacaoEstoque.TipoMovimentacao.SAIDA,
                 quantidade=item_chamado.quantidade,
                 protocolo=self,
-                observacao=f"Baixa automática ao finalizar chamado {self.numero_protocolo}"
+                observacao=f"Baixa automática ao finalizar chamado {self.numero_protocolo}",
+                usuario=usuario,
             )
             # item.quantidade é atualizado pelo save() da MovimentacaoEstoque
     
-    def mudar_status(self, novo_status):
+    def mudar_status(self, novo_status, usuario):
         """Muda o status do chamado respeitando as transições válidas."""
         transicoes = self.TRANSICOES_VALIDAS.get(self.status, [])
 
@@ -145,13 +146,14 @@ class Chamado(models.Model):
 
         # Baixa no estoque ao finalizar
         if novo_status == self.Status.FINALIZADO:
-            self._dar_baixa_estoque()
+            self._dar_baixa_estoque(usuario)
 
         AlteracaoChamado.objects.create(
             chamado=self,
             status_anterior=status_anterior,
             status_novo=novo_status,
-            descricao=f"Status alterado para {self.get_status_display()}"
+            descricao=f"Status alterado para {self.get_status_display()}",
+            usuario=usuario,
         )
 
 class ItemChamado(models.Model):

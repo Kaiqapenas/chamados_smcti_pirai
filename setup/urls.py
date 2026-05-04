@@ -8,7 +8,6 @@ urlpatterns = [
     path("", include('apps.core.urls')),
     path("chamados/", include("apps.chamados.urls")),
     path("estoque/", include("apps.estoque.urls")),
-    path("usuarios/", include("apps.core.urls")),
 ]
 
 if settings.DEBUG:
