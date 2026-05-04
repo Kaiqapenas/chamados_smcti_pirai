@@ -1,18 +1,25 @@
-<!doctype html>
+<!doctype html> 
 <html lang="pt-BR">
   <head>
     {% load static %}
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SIGEC - Sistema Integrado de Gestão de Estoque e Chamados</title>
+    <title>{% block titulo %}SIGEC - Sistema Integrado de Gestão de Estoque e Chamados{% endblock %}</title>
     
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="{% static 'main/mainlayout.css' %}" />
+    
+    {% block head %}{% endblock head %}
+    <style>
+      {% block style %}{% endblock style %}
+    </style>
   </head>
   <body>
+    {% block body_top %}{% endblock body_top %}
+    
     <header class="topbar">
       <div class="topbar-brand">
         <div class="brand-text">
@@ -31,7 +38,11 @@
 
           <div class="notif-dropdown" id="notifDropdown">
             <div class="notif-header"><span class="notif-title">Notificações</span></div>
-            <div class="notif-list"><div class="notif-empty">Nenhuma notificação no momento.</div></div>
+            <div class="notif-list">
+              {% block notificacoes %}
+              <div class="notif-empty">Nenhuma notificação no momento.</div>
+              {% endblock notificacoes %}
+            </div>
           </div>
         </div>
 
@@ -53,7 +64,10 @@
                   </g>
                 </svg>
               </div>
-              <div class="user-info"><div class="name">Nome do Func.</div><div class="role">Cargo</div></div>
+              <div class="user-info">
+                <div class="name">{% block nome_usuario_top %}Nome do Func.{% endblock %}</div>
+                <div class="role">{% block cargo_usuario_top %}Cargo{% endblock %}</div>
+              </div>
             </div>
             <div class="dropdown-divider"></div>
             <a href="#" class="dropdown-item">Alterar senha</a>
@@ -83,10 +97,14 @@
               </g>
             </svg>
           </div>
-          <div class="user-info"><div class="name">Nome do Func.</div><div class="role">Cargo</div></div>
+          <div class="user-info">
+            <div class="name">{% block nome_usuario_side %}Nome do Func.{% endblock %}</div>
+            <div class="role">{% block cargo_usuario_side %}Cargo{% endblock %}</div>
+          </div>
         </div>
 
         <nav class="nav">
+          {% block menu_navegacao %}
           <div class="nav-item active" onclick="setActive(this)">
             <span class="nav-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -98,10 +116,14 @@
             </span>
             <span class="nav-text">Título do Módulo</span>
           </div>
+          {% endblock menu_navegacao %}
         </nav>
       </aside>
 
-      <main class="main"></main>
+      <main class="main">
+        {% block conteudo %}
+        {% endblock conteudo %}
+      </main>
     </div>
 
     <script>
@@ -129,5 +151,8 @@
         document.body.classList.toggle('collapsed');
       }
     </script>
+    
+    {% block scripts %}{% endblock scripts %}
+    {% block body_bottom %}{% endblock body_bottom %}
   </body>
 </html>
