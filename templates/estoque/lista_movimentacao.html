@@ -27,7 +27,7 @@
                         <button>✏️ Editar</button>
                     </a>
                     <!-- 🗑️ EXCLUIR -->
-                    <form method="POST" action="{% url 'estoque:excluir_movimentacao' movimentacao.id %}" style="display:inline;">
+                    <form method="POST" action="{% url 'estoque:remover_movimentacao' movimentacao.id %}" style="display:inline;">
                         {% csrf_token %}
                         <button type="submit" onclick="return confirm('Deseja excluir esta movimentação?')">
                             🗑️ Excluir

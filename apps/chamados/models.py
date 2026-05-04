@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models, transaction
 from django.core.exceptions import ValidationError
 import random
@@ -67,6 +68,13 @@ class Chamado(models.Model):
         choices=Status.choices,
         default=Status.ABERTO,
     )
+    
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="chamados_usuario",
+        verbose_name="Usuário de interação"
+    )
 
     # TODO: adicionar após implementar app de usuários
     # tecnicos = models.ManyToManyField(
@@ -105,7 +113,7 @@ class Chamado(models.Model):
             "Estoque insuficiente para finalizar o chamado:\n" + "\n".join(erros)
             )
     
-    def _dar_baixa_estoque(self):
+    def _dar_baixa_estoque(self, usuario):
         from apps.estoque.models import MovimentacaoEstoque
         for item_chamado in self.itens.select_related("item").all():
             MovimentacaoEstoque.objects.create(
@@ -113,11 +121,12 @@ class Chamado(models.Model):
                 tipo=MovimentacaoEstoque.TipoMovimentacao.SAIDA,
                 quantidade=item_chamado.quantidade,
                 protocolo=self,
-                observacao=f"Baixa automática ao finalizar chamado {self.numero_protocolo}"
+                observacao=f"Baixa automática ao finalizar chamado {self.numero_protocolo}",
+                usuario=usuario,
             )
             # item.quantidade é atualizado pelo save() da MovimentacaoEstoque
     
-    def mudar_status(self, novo_status):
+    def mudar_status(self, novo_status, usuario):
         """Muda o status do chamado respeitando as transições válidas."""
         transicoes = self.TRANSICOES_VALIDAS.get(self.status, [])
 
@@ -137,13 +146,14 @@ class Chamado(models.Model):
 
         # Baixa no estoque ao finalizar
         if novo_status == self.Status.FINALIZADO:
-            self._dar_baixa_estoque()
+            self._dar_baixa_estoque(usuario)
 
         AlteracaoChamado.objects.create(
             chamado=self,
             status_anterior=status_anterior,
             status_novo=novo_status,
-            descricao=f"Status alterado para {self.get_status_display()}"
+            descricao=f"Status alterado para {self.get_status_display()}",
+            usuario=usuario,
         )
 
 class ItemChamado(models.Model):
@@ -160,6 +170,14 @@ class ItemChamado(models.Model):
         related_name="chamados"
     )
     quantidade = models.PositiveIntegerField("Quantidade", default=1)
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="chamados_item_usuario",
+        verbose_name="Usuário de interação no item"
+    )
+
     class Meta:
         verbose_name = "Item do chamado"
         verbose_name_plural = "Itens do chamado"
@@ -206,6 +224,14 @@ class AlteracaoChamado(models.Model):
     )
 
     data_alteracao = models.DateTimeField("Data da alteração", auto_now_add=True)
+    
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="chamados_alteracoes_usuario",
+        verbose_name="Usuário de interação na alteração"
+    )
+    
     class Meta:
         verbose_name = "Alteração de chamado"
         verbose_name_plural = "Alterações de chamados"

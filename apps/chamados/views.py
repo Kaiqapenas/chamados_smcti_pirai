@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
@@ -9,7 +10,7 @@ from apps.chamados.forms import ChamadoForm
 from .models import Chamado, AlteracaoChamado, ItemChamado
 from .forms import ItemChamadoForm
 
-class ChamadoListView(ListView):
+class ChamadoListView(LoginRequiredMixin, ListView):
     model = Chamado
     template_name = "chamados/lista.html"
     context_object_name = "chamados"
@@ -38,7 +39,7 @@ class ChamadoListView(ListView):
         context["urgencia_choices"] = Chamado.Urgencia.choices
         return context
         
-class ChamadoCreateView(View):
+class ChamadoCreateView(LoginRequiredMixin, View):
     def get(self, request):
         form = ChamadoForm()
         return render(request, "chamados/form.html", {"form": form})
@@ -47,18 +48,20 @@ class ChamadoCreateView(View):
         form = ChamadoForm(request.POST, request.FILES)
 
         if form.is_valid():
-            form.save()
+            chamado = form.save(commit=False)
+            chamado.usuario = request.user
+            chamado.save()
             messages.success(request, "Chamado criado com sucesso")
             return redirect("chamados:lista")
 
         return render(request, "chamados/form.html", {"form": form})
     
-class ChamadoDetailView(DetailView):
+class ChamadoDetailView(LoginRequiredMixin, DetailView):
     model = Chamado
     template_name = "chamados/detalhe.html"
     context_object_name = "chamado"
     
-class ChamadoUpdateView(View):
+class ChamadoUpdateView(LoginRequiredMixin, View):
     def get(self, request, pk):
         chamado = get_object_or_404(Chamado, pk=pk)
         if chamado.status == Chamado.Status.FINALIZADO:
@@ -75,16 +78,16 @@ class ChamadoUpdateView(View):
         form = ChamadoForm(request.POST, instance=chamado)
 
         if form.is_valid():
-            form.save()
+            chamado = form.save(commit=False)
+            chamado.usuario = request.user
+            chamado.save()
             messages.success(request, "Chamado atualizado com sucesso.")
             return redirect("chamados:detalhe", pk=pk)
 
         return render(request, "chamados/form.html", {"form": form, "chamado": chamado})
 
-class ChamadoDeleteView(View):
-    def get(self, request, pk):
-        chamado = get_object_or_404(Chamado, pk=pk)
-        return render(request, "chamados/confirmar_delete.html", {"chamado": chamado})
+class ChamadoDeleteView(LoginRequiredMixin, View):
+    model = Chamado
     def post(self, request, pk):
         chamado = get_object_or_404(Chamado, pk=pk)
         chamado.delete()
@@ -100,14 +103,14 @@ class ChamadoMudarStatusView(View):
             return redirect("chamados:detalhe", pk=pk)
 
         try:
-            chamado.mudar_status(novo_status)
+            chamado.mudar_status(novo_status, request.user)
             messages.success(request, f"Status alterado para {chamado.get_status_display()}")
         except ValidationError as e:
             messages.error(request, str(e))
         return redirect("chamados:detalhe", pk=pk)
 
 #ITENS DO CHAMADO
-class ItemChamadoCreateView(CreateView):
+class ItemChamadoCreateView(LoginRequiredMixin, CreateView):
     model = ItemChamado
     form_class = ItemChamadoForm
     template_name = "chamados/item_form.html"
@@ -116,12 +119,13 @@ class ItemChamadoCreateView(CreateView):
         # Associa o item ao chamado da URL automaticamente
         chamado = get_object_or_404(Chamado, pk = self.kwargs["chamado_pk"])
         form.instance.chamado = chamado
+        form.instance.usuario = self.request.user
         return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy("chamados:detalhe", kwargs={"pk": self.kwargs["chamado_pk"]})
 
-class ItemChamadoUpdateView(UpdateView):
+class ItemChamadoUpdateView(LoginRequiredMixin, UpdateView):
     model = ItemChamado
     form_class = ItemChamadoForm
     template_name = "chamados/item_form.html"
@@ -129,7 +133,11 @@ class ItemChamadoUpdateView(UpdateView):
     def get_success_url(self):
         return reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk})
 
-class ItemChamadoDeleteView(DeleteView):
+    def form_valid(self, form):
+        form.instance.usuario = self.request.user
+        return super().form_valid(form)
+
+class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
     model = ItemChamado
     template_name = "chamados/confirmar_remocao.html"
 

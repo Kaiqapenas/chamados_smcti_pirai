@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
@@ -10,7 +11,7 @@ from .models import ItemEstoque, CategoriaItem, ItemImagem, MovimentacaoEstoque
 from .forms import ItemEstoqueForm, CategoriaItemForm, MovimentacaoEstoqueForm
 
 # 🔹 LISTVIEW ESTOQUE
-class EstoqueListView(ListView):
+class EstoqueListView(LoginRequiredMixin, ListView):
     model = ItemEstoque
     template_name = "estoque/lista.html"
     context_object_name = "estoques"
@@ -26,7 +27,7 @@ class EstoqueListView(ListView):
         return qs
 
 # 🔹 CREATE ESTOQUE
-class EstoqueCreateView(View):
+class EstoqueCreateView(LoginRequiredMixin, View):
     def get(self, request):
         form = ItemEstoqueForm()
         return render(request, "estoque/form.html", {"form": form})
@@ -34,20 +35,23 @@ class EstoqueCreateView(View):
     def post(self, request):
         form = ItemEstoqueForm(request.POST, request.FILES)
         if form.is_valid():
-            item = form.save()
+            item = form.save(commit=False)
+            item.usuario = request.user
+            item.save()
             # salvar imagens separadamente (não é campo do ModelForm)
             imagens = request.FILES.getlist("imagens")
             for index, img in enumerate(imagens):
                 ItemImagem.objects.create(
                     produto=item, imagem=img,
-                    ordem=index, is_principal=(index == 0)
+                    ordem=index, is_principal=(index == 0),
+                    usuario=request.user
                 )
             messages.success(request, "Item criado com sucesso.")
             return redirect("estoque:editar", pk=item.id)
         return render(request, "estoque/form.html", {"form": form})
 
 # 🔹 UPDATE ESTOQUE
-class EstoqueUpdateView(View):
+class EstoqueUpdateView(LoginRequiredMixin, View):
     def get(self, request, pk):
         item = get_object_or_404(ItemEstoque, pk=pk)
         form = ItemEstoqueForm(instance=item)
@@ -61,7 +65,9 @@ class EstoqueUpdateView(View):
         form = ItemEstoqueForm(request.POST, request.FILES, instance=item)
 
         if form.is_valid():
-            form.save()
+            item = form.save(commit=False)
+            item.usuario = request.user
+            item.save()
 
             # 🔥 1. REMOVER IMAGENS (se enviado no form)
             ids_remover = request.POST.getlist("remover_imagens")
@@ -92,7 +98,8 @@ class EstoqueUpdateView(View):
                         produto=item,
                         imagem=img,
                         ordem=ultima_ordem + index,
-                        is_principal=False
+                        is_principal=False,
+                        usuario=request.user
                     )
             messages.success(request, "Item atualizado com sucesso.")
             return redirect("estoque:editar", pk=item.id)
@@ -100,7 +107,7 @@ class EstoqueUpdateView(View):
         return render(request, "estoque/form.html", {"form": form, "item": item})
 
 # 🔹 DELETE ESTOQUE
-class EstoqueDeleteView(View):
+class EstoqueDeleteView(LoginRequiredMixin, View):
 
     def get(self, request, pk):
         item = get_object_or_404(ItemEstoque, pk=pk)
@@ -113,13 +120,13 @@ class EstoqueDeleteView(View):
         return redirect("estoque:lista")
     
 # 🔹 LISTVIEW CATEGORIA
-class CategoriaEstoqueListView(ListView):
+class CategoriaEstoqueListView(LoginRequiredMixin, ListView):
     model = CategoriaItem
     template_name = "estoque/lista_categoria.html"
     context_object_name = "categorias"
     
 # 🔹 CREATE CATEGORIA
-class CategoriaEstoqueCreateView(View):
+class CategoriaEstoqueCreateView(LoginRequiredMixin, View):
     def get(self, request):
         form = CategoriaItemForm()
         return render(request, "estoque/form_categoria.html", {"form": form})
@@ -128,7 +135,9 @@ class CategoriaEstoqueCreateView(View):
         form = CategoriaItemForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            categoria = form.save(commit=False)
+            categoria.usuario = request.user
+            categoria.save()
             messages.success(request, "Categoria criada com sucesso.")
             return redirect("estoque:categoria_lista")
     
@@ -136,7 +145,7 @@ class CategoriaEstoqueCreateView(View):
         return render(request, "estoque/form_categoria.html", {"form": form})
 
 # 🔹 UPDATE CATEGORIA
-class CategoriaEstoqueUpdateView(View):
+class CategoriaEstoqueUpdateView(LoginRequiredMixin, View):
     def get(self, request, pk):
         categoria = get_object_or_404(CategoriaItem, pk=pk)
         form = CategoriaItemForm(instance=categoria)
@@ -151,7 +160,9 @@ class CategoriaEstoqueUpdateView(View):
         form = CategoriaItemForm(request.POST, instance=categoria)
 
         if form.is_valid():
-            form.save()
+            categoria = form.save(commit=False)
+            categoria.usuario = request.user
+            categoria.save()
             messages.success(request, "Categoria atualizada com sucesso.")
             return redirect("estoque:categoria_lista")
 
@@ -176,7 +187,7 @@ class CategoriaEstoqueDeleteView(View):
         return redirect("estoque:categoria_lista")
  
 # 🔹 LISTVIEW MOVIMENTAÇÃO ESTOQUE
-class MovimentacaoEstoqueListView(ListView):
+class MovimentacaoEstoqueListView(LoginRequiredMixin, ListView):
     model = MovimentacaoEstoque
     template_name = "estoque/lista_movimentacao.html"
     context_object_name = "movimentacoes"
@@ -198,7 +209,7 @@ class MovimentacaoEstoqueListView(ListView):
         return qs
        
 # 🔹 CREATE MOVIMENTACAO ESTOQUE
-class MovimentacaoEstoqueCreateView(View):
+class MovimentacaoEstoqueCreateView(LoginRequiredMixin, View):
 
     def get(self, request):
         form = MovimentacaoEstoqueForm()
@@ -209,7 +220,9 @@ class MovimentacaoEstoqueCreateView(View):
 
         if form.is_valid():
             try:
-                form.save()  # 🔥 model resolve tudo
+                movimentacao = form.save(commit=False)
+                movimentacao.usuario = request.user
+                movimentacao.save()  # 🔥 model resolve tudo
                 messages.success(request, "Movimentação criada com sucesso.")
                 return redirect("estoque:movimentacao_lista")
 
@@ -219,7 +232,7 @@ class MovimentacaoEstoqueCreateView(View):
         return render(request, "estoque/form_movimentacao.html", {"form": form})   
 
 # 🔹 UPDATE MOVIMENTACAO ESTOQUE
-class MovimentacaoEstoqueUpdateView(View):
+class MovimentacaoEstoqueUpdateView(LoginRequiredMixin, View):
 
     def get(self, request, pk):
         movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
@@ -236,7 +249,9 @@ class MovimentacaoEstoqueUpdateView(View):
 
         if form.is_valid():
             try:
-                form.save()
+                movimentacao = form.save(commit=False)
+                movimentacao.usuario = request.user
+                movimentacao.save()
                 messages.success(request, "Movimentação atualizada com sucesso.")
                 return redirect("estoque:movimentacao_lista")
 

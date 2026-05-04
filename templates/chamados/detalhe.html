@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block titulo %}Detalhes do Chamado{% endblock %}
+
+{% block conteudo %}
+    <h2>{{ chamado.titulo }}</h2>
+    <p><strong>Status:</strong> {{ chamado.get_status_display }}</p>
+    <p><strong>Descrição:</strong> {{ chamado.descricao }}</p>
+    <p><strong>Criado em:</strong> {{ chamado.data_criacao|date:"d/m/Y H:i" }}</p>
+    <p><strong>Última edição:</strong> {{ chamado.ultima_edicao|date:"d/m/Y H:i" }}</p>
+
+    <!-- ✏️ EDITAR -->
+    <a href="{% url 'chamados:editar' chamado.id %}">
+        <button>✏️ Editar</button>
+    </a>
+
+    <!-- 🗑️ EXCLUIR -->
+    <form method="POST" action="{% url 'chamados:remover' chamado.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('Deseja excluir este chamado?')">
+            🗑️ Excluir
+        </button>
+    </form>
+
+    <br><br>
+    <a href="{% url 'chamados:lista' %}">← Voltar para a lista de chamados</a>
+{% endblock %}
