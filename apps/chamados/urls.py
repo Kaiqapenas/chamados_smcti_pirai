@@ -1,11 +1,13 @@
 from django.urls import path
-from .views import ChamadoListView, ChamadoCreateView, ChamadoDetailView, ChamadoUpdateView, ChamadoDeleteView, ChamadoMudarStatusView, ItemChamadoCreateView, ItemChamadoDeleteView, ItemChamadoUpdateView
+from .views import CadastroPageView, ChamadoListView, ChamadoCreateView, ChamadoDetailView, ChamadoUpdateView, ChamadoDeleteView, ChamadoMudarStatusView, IndexPageView, ItemChamadoCreateView, ItemChamadoDeleteView, ItemChamadoUpdateView
 
 app_name = "chamados"
 
 urlpatterns = [
     # chamados
-    path("", ChamadoListView.as_view(), name="lista"),
+    path("", IndexPageView.as_view(), name="index"),
+    path("lista/", ChamadoListView.as_view(), name="lista"),
+    path("novo-cadastro/", CadastroPageView.as_view(), name="novo_cadastro"),
     path("adicionar/", ChamadoCreateView.as_view(), name="adicionar"),
     path("<int:pk>/", ChamadoDetailView.as_view(), name="detalhe"),
     path("<int:pk>/editar/", ChamadoUpdateView.as_view(), name="editar"),

@@ -1,0 +1,154 @@
+__{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Novo Chamado{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
+{% endblock head %}
+
+{% block main %}
+    <div class="tickets-page">
+        <!-- Header -->
+        <header class="tickets-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>Novo chamado de manutenção</h1>
+                </div>
+                <div class="header-right">
+                    <a href="{% url 'chamados:index' %}" class="btn-voltar">← Voltar</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="tickets-container">
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Form Container -->
+                <div class="form-container">
+                    <form class="ticket-form" method="POST">
+                        {% csrf_token %}
+                        <!-- Primeira Linha: Solicitante e Setor/Localização -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="requester">Solicitante *</label>
+                                <input 
+                                    type="text" 
+                                    id="requester"
+                                    name="requester"
+                                    placeholder="Nome do solicitante"
+                                    class="input-field"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="destination">Endereço *</label>
+                                <input 
+                                    type="text" 
+                                    id="destination"
+                                    name="destination"
+                                    placeholder="Secretaria — Sala 101"
+                                    class="input-field"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Segunda Linha: Tipo de Manutenção e Prioridade -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="maintenance_type">Tipo de manutenção *</label>
+                                <input 
+                                    type="text" 
+                                    id="maintenance_type"
+                                    name="maintenance_type"
+                                    placeholder="Preencher qual manutenção"
+                                    class="input-field"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label>Prioridade *</label>
+                                <input type="hidden" name="prioridade" id="prioridade" value="{{ prioridade|default:'padrao' }}">
+                                <div class="urgency-buttons">
+                                    <button 
+                                        type="button" 
+                                        class="urgency-btn {% if prioridade == 'padrao' or not prioridade %}active{% endif %}"
+                                        data-value="padrao"
+                                    >
+                                        Padrão
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        class="urgency-btn urgent {% if prioridade == 'urgente' %}active{% endif %}"
+                                        data-value="urgente"
+                                    >
+                                        Urgente
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terceira Linha: Técnico, Data da Solicitação e Prazo -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="technician">Técnico responsável *</label>
+                                <input 
+                                    type="text" 
+                                    id="technician"
+                                    name="technician"
+                                    placeholder="Preencher"
+                                    class="input-field"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="due_date">Data da solicitação *</label>
+                                <input 
+                                    type="date" 
+                                    id="due_date"
+                                    name="due_date"
+                                    class="input-field"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="desired_deadline">Prazo desejado *</label>
+                                <input 
+                                    type="date" 
+                                    id="desired_deadline"
+                                    name="desired_deadline"
+                                    class="input-field"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Descrição do Problema -->
+                        <div class="form-group full-width">
+                            <label for="description">Descrição do problema *</label>
+                            <textarea 
+                                id="description"
+                                name="description"
+                                placeholder="Descrição do problema"
+                                class="input-field textarea-field"
+                                rows="6"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">Abrir chamado</button>
+                            <a href="{% url 'chamados:index' %}" class="btn-cancel">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+{% endblock main %}
+
+{% block scripts %}
+    <script src="{% static 'js/buttonselect.js' %}"></script>
+    <script src="{% static 'js/modal.js' %}"></script>
+{% endblock scripts %}

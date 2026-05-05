@@ -153,3 +153,10 @@ class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         return reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk})
 
+from django.views.generic import TemplateView
+
+class IndexPageView(TemplateView):
+    template_name = "chamados/index.html"
+
+class CadastroPageView(TemplateView):
+    template_name = "chamados/cadastro.html"
