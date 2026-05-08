@@ -10,6 +10,10 @@ from apps.chamados.forms import ChamadoForm
 from .models import Chamado, AlteracaoChamado, ItemChamado
 from .forms import ItemChamadoForm
 
+from apps.estoque.models import ItemEstoque
+from django.db import models
+
+
 class ChamadoListView(LoginRequiredMixin, ListView):
     model = Chamado
     template_name = "chamados/lista.html"
@@ -160,3 +164,19 @@ class IndexPageView(TemplateView):
 
 class CadastroPageView(TemplateView):
     template_name = "chamados/cadastro.html"
+
+class ChamadosAtribuidosView(LoginRequiredMixin, ListView):
+    model = Chamado
+    template_name = "chamados/atribuidos.html"
+    context_object_name = "chamados"
+
+    def get_queryset(self):
+        return Chamado.objects.filter(tecnico=self.request.user).select_related('usuario')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["chamados_abertos_count"] = self.get_queryset().filter(status__in=['AB', 'EA']).count()
+        context["status_choices"] = Chamado.Status.choices
+        # Pega o primeiro item com estoque baixo para o alerta
+        context["estoque_baixo"] = ItemEstoque.objects.filter(quantidade__lte=models.F('quantidade_minima')).first()
+        return context

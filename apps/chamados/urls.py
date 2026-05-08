@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CadastroPageView, ChamadoListView, ChamadoCreateView, ChamadoDetailView, ChamadoUpdateView, ChamadoDeleteView, ChamadoMudarStatusView, IndexPageView, ItemChamadoCreateView, ItemChamadoDeleteView, ItemChamadoUpdateView
+from .views import CadastroPageView, ChamadoListView, ChamadoCreateView, ChamadoDetailView, ChamadoUpdateView, ChamadoDeleteView, ChamadoMudarStatusView, IndexPageView, ItemChamadoCreateView, ItemChamadoDeleteView, ItemChamadoUpdateView, ChamadosAtribuidosView 
 
 app_name = "chamados"
 
@@ -13,6 +13,8 @@ urlpatterns = [
     path("<int:pk>/editar/", ChamadoUpdateView.as_view(), name="editar"),
     path("<int:pk>/remover/", ChamadoDeleteView.as_view(), name="remover"),
     path("<int:pk>/mudar_status/", ChamadoMudarStatusView.as_view(), name="mudar_status"),
+    #chamado tecnico
+    path("atribuidos/", ChamadosAtribuidosView.as_view(), name="atribuidos"),
     #itens do chamado
     path("<int:chamado_id>/itens/adicionar/", ItemChamadoCreateView.as_view(), name="adicionar_item"),
     path("itens/<int:pk>/editar/", ItemChamadoUpdateView.as_view(), name="editar_item"),
