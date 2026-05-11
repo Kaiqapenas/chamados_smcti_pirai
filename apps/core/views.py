@@ -66,5 +66,9 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 # def index(request):
 #     return render(request, "base.html")
 # Create your views here.
+
+# class AdminFuncionariosView(View): 
+#     def get(self, request):
+#         return render(request, "admin/administracao_funcionarios.html")
 def index(request):
     return render(request, "base.html")
