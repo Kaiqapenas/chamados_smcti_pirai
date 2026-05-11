@@ -109,13 +109,14 @@ input:-webkit-autofill:active {
 .table-container {
   background: white;
   border-radius: 10px;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
+  min-width: 600px;
 }
 
 thead {
@@ -126,7 +127,7 @@ thead {
 th, td {
   padding: 12px;
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: clip;
   font-size: 0.85rem;
   text-align: center; 
   vertical-align: middle;
@@ -208,6 +209,7 @@ tbody tr:hover {
   grid-template-columns: 1fr 1fr;
   gap: 14px;
   padding: 1.5rem;
+  align-items: start;
 }
 
 .fg2 input,
@@ -226,6 +228,11 @@ tbody tr:hover {
   outline: none;
   border-color: var(--b4);
   box-shadow: 0 0 0 3px rgba(59,130,246,.10);
+}
+
+.campo-erro {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
 }
 
 .modal-footer {
@@ -270,6 +277,27 @@ tbody tr:hover {
   z-index: 999;
   white-space: nowrap;
 }
+
+th {
+  position: relative;
+}
+
+.resizer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  background: transparent;
+}
+
+.resizer:hover,
+.resizer.resizing {
+  background: rgba(255, 255, 255, 0.4);
+}
+
 {% endblock %}
 
 {% block conteudo %}
@@ -306,11 +334,11 @@ tbody tr:hover {
     <table>
       <thead>
         <tr>
-          <th>Nome</th>
-          <th>Matrícula</th>
-          <th>E-mail</th>
-          <th>Telefone</th>
-          <th>Setor</th>
+          <th>Nome<div class="resizer"></div></th>
+          <th>Matrícula<div class="resizer"></div></th>
+          <th>E-mail<div class="resizer"></div></th>
+          <th>Telefone<div class="resizer"></div></th>
+          <th>Setor<div class="resizer"></div></th>
         </tr>
       </thead>
       <tbody id="tBody"></tbody>
@@ -331,20 +359,20 @@ tbody tr:hover {
     </div>
 
     <div class="fg2">
-      <input id="nome" placeholder="Nome completo" autocomplete="off">
-      <input id="matricula" placeholder="Matrícula" autocomplete="off">
-      <input id="telefone" placeholder="(83) 9 9999-9999" autocomplete="off">
-      <input id="email" type="email" placeholder="Email" autocomplete="off">
-      <select id="setor">
-        <option value="">Selecione…</option>
-        <option>Administrativo</option>
-        <option>Técnico</option>
-        <option>Almoxarife</option>
-        <option>Solicitante</option>
-        <option>Secretário</option>
-      </select>
-      <input id="senha" type="password" placeholder="Senha" autocomplete="off">
-    </div>
+  <input id="nome" placeholder="Nome completo" autocomplete="off">
+  <input id="matricula" placeholder="Matrícula" autocomplete="off">
+  <input id="telefone" placeholder="(83) 9 9999-9999" autocomplete="off">
+  <input id="email" type="email" placeholder="Email" autocomplete="off">
+  <select id="setor">
+    <option value="">Selecione…</option>
+    <option>Administrativo</option>
+    <option>Técnico</option>
+    <option>Almoxarife</option>
+    <option>Solicitante</option>
+    <option>Secretário</option>
+  </select>
+  <input id="senha" type="password" placeholder="Senha" autocomplete="off">
+</div>
 
     <div class="modal-footer">
       <button class="btn btn-o" onclick="fecharModal()">Cancelar</button>
@@ -360,6 +388,47 @@ tbody tr:hover {
 {% block scripts %}
 <script>
 let funcionarios = [];
+
+function iniciarRedimensionamento() {
+  const table = document.querySelector('table');
+  const ths = table.querySelectorAll('th');
+
+  // Define larguras iniciais explícitas em cada coluna
+  ths.forEach(th => {
+    th.style.width = th.offsetWidth + 'px';
+  });
+
+  ths.forEach(th => {
+    const resizer = th.querySelector('.resizer');
+    if (!resizer) return;
+
+    let startX, startWidth;
+
+    resizer.addEventListener('mousedown', function (e) {
+      startX = e.pageX;
+      startWidth = th.offsetWidth;
+      resizer.classList.add('resizing');
+
+      function onMouseMove(e) {
+        const diff = e.pageX - startX;
+        const novaLargura = Math.max(60, startWidth + diff);
+        th.style.width = novaLargura + 'px';
+      }
+
+      function onMouseUp() {
+        resizer.classList.remove('resizing');
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      }
+
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      e.preventDefault();
+    });
+  });
+}
+
+iniciarRedimensionamento();
 
 function filtrar() {
   const q = document.getElementById('searchInput').value.toLowerCase();
@@ -395,6 +464,20 @@ function render(lista = funcionarios) {
   });
 }
 
+function limparErros() {
+  ['nome', 'matricula', 'telefone', 'email', 'setor', 'senha'].forEach(id => {
+    document.getElementById(id).classList.remove('campo-erro');
+  });
+  document.getElementById('nomeHint').textContent = '';
+}
+
+function marcarErro(id) {
+  const el = document.getElementById(id);
+  el.classList.add('campo-erro');
+  el.addEventListener('input', () => el.classList.remove('campo-erro'), { once: true });
+  el.addEventListener('change', () => el.classList.remove('campo-erro'), { once: true });
+}
+
 function abrirModal(idx = null) {
   document.getElementById('modal').classList.add('open');
   document.getElementById('nome').value = '';
@@ -403,6 +486,7 @@ function abrirModal(idx = null) {
   document.getElementById('email').value = '';
   document.getElementById('setor').value = '';
   document.getElementById('senha').value = '';
+  limparErros();
 }
 
 function fecharModal() {
@@ -426,10 +510,15 @@ function salvar() {
   const setor = document.getElementById('setor').value;
   const senha = document.getElementById('senha').value.trim();
 
-  if (!nome || !matricula || !email || !setor || !senha) {
-    toast('⚠️ Preencha todos os campos obrigatórios.');
-    return;
-  }
+  let valido = true;
+
+  if (!nome) { marcarErro('nome'); valido = false; }
+  if (!matricula)                     { marcarErro('matricula'); valido = false; }
+  if (!email)                         { marcarErro('email'); valido = false; }
+  if (!setor)                         { marcarErro('setor'); valido = false; }
+  if (!senha)                         { marcarErro('senha'); valido = false; }
+
+  if (!valido) return;
 
   funcionarios.push({
     nome,
@@ -454,6 +543,30 @@ document.getElementById("tBody").addEventListener("mouseover", function(e) {
       celula.removeAttribute("title");
     }
   }
+});
+
+document.getElementById('nome').addEventListener('input', function () {
+  const pos = this.selectionStart;
+  const anterior = this.value;
+  this.value = anterior.replace(/[0-9]/g, '');
+  // Reposiciona o cursor descontando os dígitos removidos
+  const removidos = anterior.length - this.value.length;
+  this.setSelectionRange(pos - removidos, pos - removidos);
+});
+
+// ── Máscara de telefone ──────────────────────────────────────
+document.getElementById('telefone').addEventListener('input', function () {
+  let v = this.value.replace(/\D/g, '').slice(0, 11);
+  if (v.length > 7) {
+    v = `(${v.slice(0,2)}) ${v.slice(2,3)} ${v.slice(3,7)}-${v.slice(7)}`;
+  } else if (v.length > 3) {
+    v = `(${v.slice(0,2)}) ${v.slice(2,3)} ${v.slice(3)}`;
+  } else if (v.length > 2) {
+    v = `(${v.slice(0,2)}) ${v.slice(2)}`;
+  } else if (v.length > 0) {
+    v = `(${v}`;
+  }
+  this.value = v;
 });
 
 filtrar();
