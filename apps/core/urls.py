@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserListView, UserCreateView, UserDetailView, UserLoginView, UserLogoutView, UserUpdateView, UserDeleteView
+from .views import UserListView, UserCreateView, UserDetailView, UserLoginView, UserLogoutView, UserUpdateView, UserDeleteView, AdminFuncionariosView
 from django.contrib.auth.views import LogoutView
 
 app_name = "core"
@@ -11,5 +11,6 @@ urlpatterns = [
     path("<int:pk>/editar/", UserUpdateView.as_view(), name="editar"),
     path("<int:pk>/remover/", UserDeleteView.as_view(), name="excluir"),
     path("login/", UserLoginView.as_view(), name="login"),  # Placeholder para login 
-    path("sair/", UserLogoutView.as_view(), name="sair")
+    path("sair/", UserLogoutView.as_view(), name="sair"),
+    path("administracao-funcionarios/", AdminFuncionariosView.as_view(), name="admin_funcionarios")
 ]
