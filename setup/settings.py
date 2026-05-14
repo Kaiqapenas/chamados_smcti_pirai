@@ -20,7 +20,6 @@ INSTALLED_APPS = [
     "apps.core.apps.CoreConfig",
     "apps.chamados",
     "apps.estoque",
-    'apps.core',
 ]
 
 MIDDLEWARE = [

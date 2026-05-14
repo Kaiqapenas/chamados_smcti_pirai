@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
-
+from django.views.generic import TemplateView
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.urls import reverse_lazy
@@ -80,5 +80,15 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 # class AdminFuncionariosView(View): 
 #     def get(self, request):
 #         return render(request, "admin/administracao_funcionarios.html")
-def index(request):
-    return render(request, "base.html")
+class IndexView(TemplateView):
+    template_name = "base.html"
+
+
+class RecuperarSenhaView(TemplateView):
+    template_name = "recuperar_senha.html"
+
+class EmailEnviadoView(TemplateView):
+    template_name = "email_enviado.html"
+
+class NovaSenhaView(TemplateView):
+    template_name = "nova_senha.html"

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Requisitar Peças para OS — SECTI Piraí{% endblock %}
+
+{% block style %}
+    .card-requisicao {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        max-width: 900px;
+        margin: 20px auto;
+    }
+    .title {
+        color: #5c7cba;
+        font-weight: bold;
+        font-size: 1.5rem;
+        margin-bottom: 25px;
+    }
+    .form-label {
+        color: #4a5568;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+    }
+    .form-select, .form-control {
+        border-radius: 10px;
+        border: 1px solid #cbd5e0;
+        padding: 10px 15px;
+        background-color: #f0f9ff;
+    }
+    .urgencia-container {
+        display: flex;
+        gap: 15px;
+    }
+    .btn-urgencia {
+        flex: 1;
+        border-radius: 10px;
+        padding: 10px;
+        font-weight: bold;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+    }
+    .btn-normal {
+        background-color: #94c152;
+        color: white;
+    }
+    .btn-urgente {
+        background-color: #fce4e4;
+        color: #e53e3e;
+        border-color: #feb2b2;
+    }
+    .btn-normal.active {
+        box-shadow: 0 0 0 3px rgba(148, 193, 82, 0.4);
+    }
+    .btn-urgente.active {
+        background-color: #e53e3e;
+        color: white;
+        box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.4);
+    }
+    .justificativa-box {
+        background-color: #e0f7fa;
+        border: none;
+        border-radius: 15px;
+        padding: 15px;
+        min-height: 120px;
+        width: 100%;
+        resize: none;
+    }
+    .btn-enviar {
+        background-color: #5479c1;
+        color: white;
+        border-radius: 25px;
+        padding: 10px 40px;
+        font-weight: bold;
+        border: none;
+        float: right;
+        margin-top: 20px;
+    }
+    .btn-enviar:hover {
+        background-color: #43619c;
+    }
+{% endblock style %}
+
+{% block conteudo %}
+<div class="card-requisicao">
+    <h2 class="title">Requisitar Peças para OS</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Chamado (OS) *</label>
+                {{ form.chamado }}
+                {% if form.chamado.errors %}
+                    <div class="text-danger small">{{ form.chamado.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Item solicitado *</label>
+                {{ form.item_solicitado }}
+                {% if form.item_solicitado.errors %}
+                    <div class="text-danger small">{{ form.item_solicitado.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Quantidade *</label>
+                {{ form.quantidade }}
+                {% if form.quantidade.errors %}
+                    <div class="text-danger small">{{ form.quantidade.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Urgência</label>
+                <div class="urgencia-container">
+                    <div id="btn-normal" class="btn-urgencia btn-normal active" onclick="setUrgencia('NO')">Normal</div>
+                    <div id="btn-urgente" class="btn-urgencia btn-urgente" onclick="setUrgencia('UR')">Urgente</div>
+                </div>
+                {{ form.urgencia }}
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12">
+                <label class="form-label">Justificativa</label>
+                {{ form.justificativa }}
+                {% if form.justificativa.errors %}
+                    <div class="text-danger small">{{ form.justificativa.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <button type="submit" class="btn-enviar">Enviar</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock conteudo %}
+
+{% block scripts %}
+<script>
+    function setUrgencia(val) {
+        document.getElementById('id_urgencia').value = val;
+        
+        const btnNormal = document.getElementById('btn-normal');
+        const btnUrgente = document.getElementById('btn-urgente');
+        
+        if (val === 'NO') {
+            btnNormal.classList.add('active');
+            btnUrgente.classList.remove('active');
+        } else {
+            btnUrgente.classList.add('active');
+            btnNormal.classList.remove('active');
+        }
+    }
+    
+    // Inicializar o valor se houver erro no form
+    window.onload = function() {
+        const currentVal = document.getElementById('id_urgencia').value;
+        if (currentVal) setUrgencia(currentVal);
+    };
+</script>
+{% endblock scripts %}
