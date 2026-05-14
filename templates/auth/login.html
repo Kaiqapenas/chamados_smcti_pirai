@@ -13,16 +13,20 @@
             <p>Sistema Integrado de Gestão de Estoque e Chamados</p>
         </div>
         <div class="auth-body">
-            <form action="#" method="POST" onsubmit="event.preventDefault();">
+            <form action="{% url 'core:login' %}" method="POST">
+                {% csrf_token %}
                 <div class="auth-input-group">
-                    <input type="text" placeholder="Matrícula" required>
+                    <input type="text" name="matricula" placeholder="Matrícula" value="{{ request.POST.matricula }}" required>
                 </div>
                 <div class="auth-input-group">
-                    <input type="password" placeholder="Senha" required>
+                    <input type="password" name="password" placeholder="Senha" required>
                 </div>
+                {% if erro %}
+                    <div class="error-msg" style="display:block;">{{ erro }}</div>
+                {% endif %}
                 <button type="submit" class="btn-green">Entrar</button>
             </form>
-            <a href="recuperar_senha.html" class="forgot-link">Esqueci minha senha</a>
+            <a href="{% url 'core:recuperar_senha' %}" class="forgot-link">Esqueci minha senha</a>
         </div>
         <div class="auth-footer">
             <img src="../img/prefeitura-pirai.png" alt="Prefeitura de Piraí">

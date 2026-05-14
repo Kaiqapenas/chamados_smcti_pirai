@@ -22,23 +22,23 @@
             
             <h2>E-mail enviado!</h2>
             <p class="subtitle" style="margin-bottom: 10px;">Enviamos o link de recuperação para:</p>
-            <p class="email-display" id="displayEmail">usuario@pirai.rj.gov.br</p>
+            <p class="email-display">{{ email }}</p>
             
             <p class="subtitle" style="margin-top: 15px;">Verifique sua caixa de entrada e clique no link para criar uma nova senha.</p>
             
             <p class="spam-note">Não recebeu? Aguarde alguns minutos ou verifique o spam.</p>
             
             <!-- Botão com cor mais clara para contraste conforme pedido -->
-            <button onclick="window.location.href='login.html'" class="btn-light-blue" style="margin-top: 0;">Voltar para o login</button>
+            <button onclick="window.location.href='{% url 'core:login' %}'" class="btn-light-blue" style="margin-top: 0;">Voltar para o login</button>
             
             <!-- Link temporário apenas para demonstrar a quarta página na apresentação -->
-            <a href="nova_senha.html" style="color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 20px; text-decoration: none;">[Acessar página de Nova Senha]</a>
+            <a href="{% url 'core:nova_senha' %}" style="color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 20px; text-decoration: none;">[Acessar página de Nova Senha]</a>
         </div>
         <div class="auth-footer">
             <img src="../img/prefeitura-pirai.png" alt="Prefeitura de Piraí">
         </div>
     </div>
-
+    < !-- retirar depois -->
     <script>
         // Recupera o e-mail digitado na tela anterior, se houver
         const savedEmail = sessionStorage.getItem('recoveryEmail');
