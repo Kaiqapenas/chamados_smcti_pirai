@@ -2,8 +2,8 @@ from django.urls import path
 from .views import (
     UserListView, UserCreateView, UserDetailView,
     UserLoginView, UserLogoutView, UserUpdateView, UserDeleteView,
-   RecuperarSenhaView, EmailEnviadoView, NovaSenhaView, RegistroAutoriaView, RegistroAutoriaKPIView,
-    RegistroAutoriaListAPIView, RegistroAutoriaExportCSVView,
+   RecuperarSenhaView, EmailEnviadoView, NovaSenhaView, RegistroauditoriaView, RegistroauditoriaKPIView,
+    RegistroauditoriaListAPIView, RegistroauditoriaExportCSVView,
 )
 
 app_name = "core"
@@ -17,10 +17,10 @@ urlpatterns = [
     path("login/", UserLoginView.as_view(), name="login"),
     path("sair/", UserLogoutView.as_view(), name="sair"),
     path("administracao-funcionarios/", AdminFuncionariosView.as_view(), name="admin_funcionarios"),
-    path("registro-autoria/", RegistroAutoriaView.as_view(), name="registro_autoria"),
-    path("api/registro-autoria/kpi/",    RegistroAutoriaKPIView.as_view(),    name="registro_autoria_kpi"),
-    path("api/registro-autoria/lista/",  RegistroAutoriaListAPIView.as_view(), name="registro_autoria_lista"),
-    path("api/registro-autoria/export/", RegistroAutoriaExportCSVView.as_view(), name="registro_autoria_export"),
+    path("registro-auditoria/", RegistroauditoriaView.as_view(), name="registro_auditoria"),
+    path("api/registro-auditoria/kpi/",    RegistroauditoriaKPIView.as_view(),    name="registro_auditoria_kpi"),
+    path("api/registro-auditoria/lista/",  RegistroauditoriaListAPIView.as_view(), name="registro_auditoria_lista"),
+    path("api/registro-auditoria/export/", RegistroauditoriaExportCSVView.as_view(), name="registro_auditoria_export"),
 ]
 
     #path("administracao-funcionarios/", AdminFuncionariosView.as_view(), name="admin_funcionarios")

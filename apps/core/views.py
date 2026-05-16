@@ -105,14 +105,14 @@ class AdminFuncionariosView(LoginRequiredMixin, View):
         return render(request, "admin/administracao_funcionarios.html")
 
 
-# class RegistroAutoriaView(LoginRequiredMixin, View):
-class RegistroAutoriaView(View):
+# class RegistroauditoriaView(LoginRequiredMixin, View):
+class RegistroauditoriaView(View):
     def get(self, request):
-        return render(request, "admin/registro_autoria.html")
+        return render(request, "admin/registro_auditoria.html")
 
 
-# class RegistroAutoriaKPIView(LoginRequiredMixin, View):
-class RegistroAutoriaKPIView(View):
+# class RegistroauditoriaKPIView(LoginRequiredMixin, View):
+class RegistroauditoriaKPIView(View):
     def get(self, request):
         hoje = timezone.now().date()
         total_eventos = AuditoriaLog.objects.filter(data__date=hoje).count()
@@ -265,7 +265,7 @@ def _serialize_log(log):
 
 # ─── Lista paginada ───────────────────────────────────────────────────────────
 
-class RegistroAutoriaListAPIView(View):
+class RegistroauditoriaListAPIView(View):
     PAGE_SIZE = 15
 
     def get(self, request):
@@ -286,7 +286,7 @@ class RegistroAutoriaListAPIView(View):
 
 # ─── Exportação CSV ───────────────────────────────────────────────────────────
 
-class RegistroAutoriaExportCSVView(View):
+class RegistroauditoriaExportCSVView(View):
     def get(self, request):
         qs = _build_log_queryset(request)
 
