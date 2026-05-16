@@ -75,15 +75,14 @@ class Chamado(models.Model):
         related_name="chamados_usuario",
         verbose_name="Usuário de interação"
     )
-
-    # TODO: adicionar após implementar app de usuários
-    # tecnicos = models.ManyToManyField(
-    #     "usuarios.Usuario",
-    #     verbose_name="Técnicos",
-    #     related_name="chamados",
-    #     blank=True
-    # )
-
+    tecnico = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="chamados_atribuidos",
+        verbose_name="Técnico responsável"
+    )
     #datas
     data_criacao = models.DateTimeField("Data de abertura", auto_now_add=True)
     #prazo:

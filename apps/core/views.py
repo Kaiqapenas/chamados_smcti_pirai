@@ -1,6 +1,7 @@
 import csv
 
 from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
@@ -27,6 +28,8 @@ def get_client_ip(request):
     return request.META.get('REMOTE_ADDR')
 
 
+#CRUD DE USUARIOS:
+
 class UserListView(LoginRequiredMixin, ListView):
     model = User
     template_name = "core/lista.html"
@@ -35,34 +38,28 @@ class UserListView(LoginRequiredMixin, ListView):
 
 class UserLoginView(View):
     def get(self, request):
-        return render(request, "core/login.html")
+        if request.user.is_authenticated:
+            return redirect("estoque:lista")
+        return render(request, "auth/login.html")
 
     def post(self, request):
-        matricula = request.POST.get("matricula", "").strip()
-        password = request.POST.get("password")
+        matricula = request.POST.get("matricula", "").strip(, "").strip()
+        password = request.POST.get("password", "")
         ip = get_client_ip(request)
 
-        user = authenticate(request, matricula=matricula, password=password)
+        user = authenticate(request, username=matricula, password=password)
 
         if user is not None:
-            login(request, user)
-            AuditoriaLog.objects.create(
-                tipo=TipoEvento.LOGIN,
-                usuario=user,
-                descricao=f"Login bem-sucedido para a matrícula {matricula}.",
-                ip=ip,
-            )
-            return redirect("estoque:lista")
+            if not user.ativo:
+                return render(request, "auth/login.html", {
+                    "erro": "Usuário inativo. Contate o administrador."
+                })
+            login(request,user)
+            next_url = request.GET.get("next") or "estoque:lista"
+            return redirect(next_url)
 
-        AuditoriaLog.objects.create(
-            tipo=TipoEvento.LOGIN_FALHA,
-            usuario=None,
-            matricula_tentativa=matricula,
-            descricao=f"Tentativa de login falhou para a matrícula '{matricula}'.",
-            ip=ip,
-        )
-        return render(request, "core/login.html", {
-            "erro": "Credenciais inválidas"
+        return render(request, "auth/login.html", {
+            "erro": "Matrícula ou senha inválidas."
         })
 
 
@@ -130,6 +127,76 @@ class RegistroAutoriaKPIView(View):
             'logins_realizados': total_logins,
             'acessos_negados': total_falhas,
         })
+
+
+#auth de senha
+
+class RecuperarSenhaView(View):
+    """
+    simula o envio de e-mail de recuperação.
+    não faz nada de verdade, o envio de e-mail será implementado depois.
+    a resposta é sempre a mesma para não revelar se a matrícula existe.
+    """
+    def get(self, request):
+        return render(request, "auth/recuperar_senha.html")
+    
+    def post(self, request):
+        email = request.POST.get("email", "").strip()
+
+        if not email or not "@" in email:
+            return render(request, "auth/recuperar_senha.html",{
+                "erro": "Informe um e-mail válido."
+            })
+        
+        # TODO: quando o backend de e-mail estiver pronto:
+        #   1. Buscar User.objects.filter(email=email).first()
+        #   2. Gerar token com django.contrib.auth.tokens.default_token_generator
+        #   3. Salvar / associar ao usuário
+        #   4. Disparar send_mail() com o link contendo o token
+        #
+        # Por enquanto apenas guardamos o e-mail na sessão pra exibir na tela seguinte.
+
+        request.session["recuperacao_email"] = email
+        return redirect("core:email_enviado")
+
+class EmailEnviadoView(View):
+    """Tela de confirmação exibida após solicitar recuperação de senha."""
+ 
+    def get(self, request):
+        # Recupera o e-mail salvo na sessão (pode estar vazio se acessado direto)
+        email = request.session.pop("recuperacao_email", "seu e-mail cadastrado")
+        return render(request, "auth/email_enviado.html", {"email": email})
+
+class NovaSenhaView(View):
+    """
+    Tela de redefinição de senha.
+    Sem token real por enquanto — o fluxo completo depende do envio de e-mail.
+    Quando estiver pronto: validar token via PasswordResetConfirmView ou implementação própria,
+    identificar o usuário e chamar user.set_password(senha).
+    """
+ 
+    def get(self, request):
+        return render(request, "auth/nova_senha.html")
+ 
+    def post(self, request):
+        senha1 = request.POST.get("password1", "")
+        senha2 = request.POST.get("password2", "")
+ 
+        if not senha1 or senha1 != senha2:
+            return render(request, "auth/nova_senha.html", {
+                "erro": "As senhas não coincidem ou estão vazias."
+            })
+ 
+        if len(senha1) < 6:
+            return render(request, "auth/nova_senha.html", {
+                "erro": "A senha deve ter pelo menos 6 caracteres."
+            })
+ 
+        # TODO: identificar usuário pelo token e aplicar:
+        #   user.set_password(senha1)
+        #   user.save()
+ 
+        return render(request, "auth/nova_senha.html", {"sucesso": True})
 
 
 def index(request):

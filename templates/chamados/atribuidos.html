@@ -1,0 +1,117 @@
+{% extends "main/mainlayout.html" %}
+{% load static %}
+
+{% block titulo %}Chamados Atribuídos a Mim{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
+    <style>
+        .badge-count {
+            background-color: #f39c12;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .alert-bar {
+            background-color: #78b159;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            margin-top: 30px;
+            font-weight: 500;
+        }
+        .alert-bar i { margin-right: 10px; }
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-action {
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn-details { background-color: #dff9fb; color: #22a6b3; }
+        .btn-request { background-color: #6ab04c; color: white; }
+        .status-select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: white;
+        }
+    </style>
+{% endblock head %}
+
+{% block conteudo %}
+    <div class="tickets-page">
+        <header class="tickets-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="header-title">Chamados Atribuídos a Mim</h1>
+                </div>
+                <div class="header-right">
+                    <div class="badge-count">{{ chamados_abertos_count }} em aberto</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="tickets-container">
+            <main class="main-content">
+                <div class="tickets-list">
+                    {% for chamado in chamados %}
+                    <div class="ticket-card">
+                        <div class="ticket-header">
+                            <div class="ticket-info">
+                                <h3 class="ticket-protocol">#{{ chamado.numero_protocolo }}</h3>
+                                <p class="ticket-title">{{ chamado.titulo }} — {{ chamado.para_onde_solicitou }}</p>
+                                <p class="ticket-meta">Setor: {{ chamado.usuario.setor|default:"Não informado" }} · Solicitante: {{ chamado.solicitante }}</p>
+                            </div>
+                            <div class="ticket-badges">
+                                <span class="badge status {% if chamado.status == 'AB' %}status-pendente{% elif chamado.status == 'EA' %}status-em-andamento{% else %}status-concluido{% endif %}">
+                                    {{ chamado.get_status_display }}
+                                </span>
+                                <span class="badge urgency {% if chamado.urgencia == 'UR' %}urgency-urgente{% else %}urgency-padrao{% endif %}">
+                                    {{ chamado.get_urgencia_display }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="ticket-footer">
+                            <span class="ticket-date">Aberto em {{ chamado.data_criacao|date:"d/m/Y" }}</span>
+                            {% if chamado.data_prevista %}
+                            <span class="ticket-due">Prazo: {{ chamado.data_prevista|date:"d/m/Y" }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="actions">
+                            <a href="{% url 'chamados:detalhe' chamado.pk %}" class="btn-action btn-details">Ver detalhes</a>
+                            <a href="{% url 'chamados:adicionar_item' chamado.pk %}" class="btn-action btn-request">Requisitar peça</a>
+                            
+                            <form action="{% url 'chamados:mudar_status' chamado.pk %}" method="POST" style="display: inline;">
+                                {% csrf_token %}
+                                <select name="status" class="status-select" onchange="this.form.submit()">
+                                    <option value="" selected disabled>Mudar status</option>
+                                    {% for value, label in status_choices %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>Nenhum chamado atribuído a você no momento.</p>
+                    {% endfor %}
+                </div>
+
+                {% if estoque_baixo %}
+                <div class="alert-bar">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Estoque: {{ estoque_baixo.nome }} — {{ estoque_baixo.quantidade }} unidades disponíveis (abaixo do mínimo)</span>
+                </div>
+                {% endif %}
+            </main>
+        </div>
+    </div>
+{% endblock conteudo %}

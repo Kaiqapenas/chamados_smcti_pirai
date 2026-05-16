@@ -13,7 +13,7 @@
             <p>Sistema Integrado de Gestão de Estoque e Chamados</p>
         </div>
         <div class="auth-body">
-            <a href="login.html" class="back-link">
+            <a href="{% url 'core:login' %}" class="back-link">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
                 Voltar para o login
             </a>
@@ -28,7 +28,8 @@
             <h2>Esqueceu sua senha?</h2>
             <p class="subtitle">Informe o e-mail cadastrado na sua matrícula.<br>Enviaremos um link para redefinir sua senha.</p>
             
-            <form id="recoveryForm">
+            <form action="{% url 'core:recuperar_senha' %}" method="POST">
+                {% csrf_token %}
                 <div class="auth-input-group has-icon" id="emailGroup">
                     <div class="icon">
                         <svg viewBox="0 0 24 24">
@@ -36,8 +37,10 @@
                             <polyline points="22,6 12,13 2,6"></polyline>
                         </svg>
                     </div>
-                    <input type="email" id="emailInput" placeholder="Ex: usuario@pirai.rj.gov.br" required>
-                    <div class="error-msg" id="errorMsg">E-mail inválido ou não cadastrado (teste com erro@erro.com).</div>
+                    <input type="email" id="emailInput" name="email"placeholder="Ex: usuario@pirai.rj.gov.br" required>
+                    <div class="error-msg" id="errorMsg" {% if not erro %}style="display:none;"{% endif %}>
+                        {% if erro %}{{ erro }}{% else %}E-mail inválido.{% endif %}
+                    </div>
                 </div>
                 <!-- Botão com cor mais clara para contraste conforme pedido -->
                 <button type="submit" class="btn-light-blue">Enviar link de recuperação</button>
@@ -48,6 +51,7 @@
         </div>
     </div>
 
+            {# ── isso é falso, dps retiramos ── #}
     <script>
         document.getElementById('recoveryForm').addEventListener('submit', function(e) {
             e.preventDefault();
