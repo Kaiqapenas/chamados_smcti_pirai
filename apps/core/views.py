@@ -1,12 +1,16 @@
+import csv
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.db.models import Q
+from django.core.paginator import Paginator
 
 from apps.core.forms import UserForm
 from apps.core.models import AuditoriaLog, TipoEvento
@@ -130,3 +134,118 @@ class RegistroAutoriaKPIView(View):
 
 def index(request):
     return render(request, "base.html")
+
+
+# ─── Audit Log helpers ────────────────────────────────────────────────────────
+
+TIPO_COR_MAP = {
+    TipoEvento.LOGIN:       'blue',
+    TipoEvento.LOGIN_FALHA: 'red',
+    TipoEvento.LOGOUT:      'yellow',
+    TipoEvento.ACESSO:      'blue',
+    TipoEvento.CRIACAO:     'green',
+    TipoEvento.EDICAO:      'yellow',
+    TipoEvento.EXCLUSAO:    'red',
+}
+
+FILTRO_TIPO_MAP = {
+    'login':      [TipoEvento.LOGIN, TipoEvento.LOGOUT, TipoEvento.ACESSO],
+    'modificacao':[TipoEvento.EDICAO, TipoEvento.CRIACAO, TipoEvento.EXCLUSAO],
+    'negado':     [TipoEvento.LOGIN_FALHA],
+}
+
+
+def _build_log_queryset(request):
+    """Retorna queryset de AuditoriaLog aplicando busca e filtro da request."""
+    qs = AuditoriaLog.objects.select_related('usuario').all()
+
+    q = request.GET.get('q', '').strip()
+    if q:
+        qs = qs.filter(
+            Q(descricao__icontains=q) |
+            Q(ip__icontains=q) |
+            Q(usuario__matricula__icontains=q) |
+            Q(matricula_tentativa__icontains=q)
+        )
+
+    tipo_filtro = request.GET.get('tipo', '').strip()
+    if tipo_filtro in FILTRO_TIPO_MAP:
+        qs = qs.filter(tipo__in=FILTRO_TIPO_MAP[tipo_filtro])
+
+    return qs
+
+
+def _serialize_log(log):
+    """Serializa um AuditoriaLog para dicionário JSON."""
+    local_dt = timezone.localtime(log.data)
+    ator = log.usuario.matricula if log.usuario else (log.matricula_tentativa or 'Desconhecido')
+    nome = ''
+    if log.usuario:
+        nome = f"{log.usuario.first_name} {log.usuario.last_name}".strip()
+    return {
+        'id':        log.id,
+        'tipo':      log.tipo,
+        'titulo':    log.get_tipo_display(),
+        'subtitulo': log.descricao,
+        'usuario':   ator,
+        'nome':      nome,
+        'ip':        log.ip or '',
+        'data':      local_dt.strftime('%d/%m'),
+        'hora':      local_dt.strftime('%H:%M'),
+        'cor':       TIPO_COR_MAP.get(log.tipo, 'blue'),
+    }
+
+
+# ─── Lista paginada ───────────────────────────────────────────────────────────
+
+class RegistroAutoriaListAPIView(View):
+    PAGE_SIZE = 15
+
+    def get(self, request):
+        qs = _build_log_queryset(request)
+        page_num = max(1, int(request.GET.get('page', 1) or 1))
+        paginator = Paginator(qs, self.PAGE_SIZE)
+        page_obj  = paginator.get_page(page_num)
+
+        return JsonResponse({
+            'results':      [_serialize_log(log) for log in page_obj.object_list],
+            'page':         page_obj.number,
+            'total_pages':  paginator.num_pages,
+            'total_count':  paginator.count,
+            'has_previous': page_obj.has_previous(),
+            'has_next':     page_obj.has_next(),
+        })
+
+
+# ─── Exportação CSV ───────────────────────────────────────────────────────────
+
+class RegistroAutoriaExportCSVView(View):
+    def get(self, request):
+        qs = _build_log_queryset(request)
+
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = 'attachment; filename="auditoria_logs.csv"'
+        response.write('\ufeff')  # BOM para compatibilidade com Excel
+
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Tipo', 'Evento', 'Nome', 'Matrícula/Ator', 'IP', 'Descrição', 'Data', 'Hora'])
+
+        for log in qs:
+            local_dt = timezone.localtime(log.data)
+            ator = log.usuario.matricula if log.usuario else (log.matricula_tentativa or 'Desconhecido')
+            nome = ''
+            if log.usuario:
+                nome = f"{log.usuario.first_name} {log.usuario.last_name}".strip()
+            writer.writerow([
+                log.id,
+                log.tipo,
+                log.get_tipo_display(),
+                nome,
+                ator,
+                log.ip or '',
+                log.descricao,
+                local_dt.strftime('%d/%m/%Y'),
+                local_dt.strftime('%H:%M'),
+            ])
+
+        return response

@@ -3,6 +3,7 @@ from .views import (
     UserListView, UserCreateView, UserDetailView,
     UserLoginView, UserLogoutView, UserUpdateView, UserDeleteView,
     AdminFuncionariosView, RegistroAutoriaView, RegistroAutoriaKPIView,
+    RegistroAutoriaListAPIView, RegistroAutoriaExportCSVView,
 )
 
 app_name = "core"
@@ -17,5 +18,7 @@ urlpatterns = [
     path("sair/", UserLogoutView.as_view(), name="sair"),
     path("administracao-funcionarios/", AdminFuncionariosView.as_view(), name="admin_funcionarios"),
     path("registro-autoria/", RegistroAutoriaView.as_view(), name="registro_autoria"),
-    path("api/registro-autoria/kpi/", RegistroAutoriaKPIView.as_view(), name="registro_autoria_kpi"),
+    path("api/registro-autoria/kpi/",    RegistroAutoriaKPIView.as_view(),    name="registro_autoria_kpi"),
+    path("api/registro-autoria/lista/",  RegistroAutoriaListAPIView.as_view(), name="registro_autoria_lista"),
+    path("api/registro-autoria/export/", RegistroAutoriaExportCSVView.as_view(), name="registro_autoria_export"),
 ]
