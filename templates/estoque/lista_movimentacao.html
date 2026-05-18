@@ -18,7 +18,7 @@
             {% for movimentacao in movimentacoes %}
                 <li>
                     <strong>{{ movimentacao.item }}</strong>
-                    — Tipo: {{ movimentacao.get_tipo_movimentacao_display }}
+                    — Tipo: {{ movimentacao.get_tipo_display }}
                     — Quantidade: {{ movimentacao.quantidade }}
                     <small>({{ movimentacao.data_movimentacao|date:"d/m/Y H:i" }})</small>
                     <br>

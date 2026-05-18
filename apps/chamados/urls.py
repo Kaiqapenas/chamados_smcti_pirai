@@ -16,7 +16,7 @@ urlpatterns = [
     #chamado tecnico
     path("atribuidos/", ChamadosAtribuidosView.as_view(), name="atribuidos"),
     #itens do chamado
-    path("<int:chamado_id>/itens/adicionar/", ItemChamadoCreateView.as_view(), name="adicionar_item"),
+    path("<int:chamado_pk>/itens/adicionar/", ItemChamadoCreateView.as_view(), name="adicionar_item"),
     path("itens/<int:pk>/editar/", ItemChamadoUpdateView.as_view(), name="editar_item"),
     path("itens/<int:pk>/remover/", ItemChamadoDeleteView.as_view(), name="remover_item"),
      # # ATENÇÃO: As views atuais são temporárias, mudar conforme forem implementadas

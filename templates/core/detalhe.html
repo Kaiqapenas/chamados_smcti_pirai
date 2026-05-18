@@ -3,18 +3,21 @@
 {% block titulo %}Detalhes do usuário{% endblock %}
 
 {% block conteudo %}
-    <h2>{{ usuario.nome }}</h2>
+    <h2>{{ usuario.first_name }} {{ usuario.last_name }}</h2>
     <p><strong>Matrícula:</strong> {{ usuario.matricula }}</p>
-    <p><strong>Criado em:</strong> {{ usuario.data_criacao|date:"d/m/Y H:i" }}</p>
-    <p><strong>Última edição:</strong> {{ usuario.ultima_edicao|date:"d/m/Y H:i" }}</p>
+    <p><strong>Setor:</strong> {{ usuario.setor|default:"Não informado" }}</p>
+    <p><strong>Telefone:</strong> {{ usuario.telefone|default:"Não informado" }}</p>
+    <p><strong>E-mail:</strong> {{ usuario.email|default:"Não informado" }}</p>
+    <p><strong>Ativo:</strong> {{ usuario.ativo|yesno:"Sim,Não" }}</p>
+    <p><strong>Membro desde:</strong> {{ usuario.date_joined|date:"d/m/Y H:i" }}</p>
 
     <!-- ✏️ EDITAR -->
-    <a href="{% url 'usuario:editar' usuario.id %}">
+    <a href="{% url 'core:editar' usuario.id %}">
         <button>✏️ Editar</button>
     </a>
 
     <!-- 🗑️ EXCLUIR -->
-    <form method="POST" action="{% url 'usuario:excluir' usuario.id %}" style="display:inline;">
+    <form method="POST" action="{% url 'core:excluir' usuario.id %}" style="display:inline;">
         {% csrf_token %}
         <button type="submit" onclick="return confirm('Deseja excluir este usuário?')">
             🗑️ Excluir
@@ -22,5 +25,5 @@
     </form>
 
     <br><br>
-    <a href="{% url 'usuario:lista' %}">← Voltar para a lista de usuários</a>
+    <a href="{% url 'core:index' %}">← Voltar para a lista de usuários</a>
 {% endblock %}

@@ -1,39 +1,118 @@
-{% extends "base.html" %}
+{% extends "main/mainlayout.html" %}
+{% load static %}
 
 {% block titulo %}Lista de Chamados{% endblock %}
 
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
+{% endblock head %}
+
 {% block conteudo %}
-    <h2>Chamados Abertos</h2>
+<div class="tickets-page">
 
-        <!-- 🔹 BOTÃO ADICIONAR -->
-    <a href="{% url 'chamados:adicionar' %}">
-        <button>➕ Adicionar Chamado</button>
-    </a>
+    <header class="tickets-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="header-title">Chamados</h1>
+            </div>
+            <div class="header-right">
+                <form method="GET" style="display:contents;">
+                    <input
+                        type="text"
+                        name="protocolo"
+                        class="search-input"
+                        placeholder="Buscar por protocolo..."
+                        value="{{ request.GET.protocolo }}"
+                    >
+                </form>
+                <a href="{% url 'chamados:adicionar' %}" class="btn-new-ticket">+ Novo Chamado</a>
+            </div>
+        </div>
+    </header>
 
-    <br><br>
-    {% if chamados %}
-        <ul>
-            {% for chamado in chamados %}
-                <li>
-                    <strong>{{ chamado.titulo }}</strong>
-                    — {{ chamado.get_status_display }}
-                    <small>({{ chamado.data_criacao|date:"d/m/Y H:i" }})</small>
-                    <br>
-                    <!-- ✏️ EDITAR -->
-                    <a href="{% url 'chamados:editar' chamado.id %}">
-                        <button>✏️ Editar</button>
-                    </a>
-                    <!-- 🗑️ EXCLUIR -->
-                    <form method="POST" action="{% url 'chamados:remover' chamado.id %}" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" onclick="return confirm('Deseja excluir este chamado?')">
-                            🗑️ Excluir
-                        </button>
-                    </form>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Nenhum chamado encontrado.</p>
-    {% endif %}
-{% endblock %}
+    <div class="tickets-container">
+        <main class="main-content">
+
+            <!-- FILTROS -->
+            <form method="GET">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select name="status" class="filter-select" onchange="this.form.submit()">
+                            <option value="">Todos</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Urgência</label>
+                        <select name="urgencia" class="filter-select" onchange="this.form.submit()">
+                            <option value="">Todas</option>
+                            {% for value, label in urgencia_choices %}
+                                <option value="{{ value }}" {% if request.GET.urgencia == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if request.GET.status or request.GET.urgencia or request.GET.protocolo %}
+                        <div class="filter-group">
+                            <a href="{% url 'chamados:lista' %}" class="btn-cancel" style="padding: 8px 16px;">Limpar filtros</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </form>
+
+            <!-- LISTA -->
+            <div class="tickets-list">
+                {% for chamado in chamados %}
+                <div class="ticket-card">
+
+                    <!-- Barra de progresso -->
+                    <div class="ticket-progress">
+                        <div class="progress-bar {% if chamado.status == 'AB' %}status-pendente{% elif chamado.status == 'EA' %}status-em-andamento{% else %}status-concluido{% endif %}"></div>
+                    </div>
+
+                    <div class="ticket-header">
+                        <div class="ticket-info">
+                            <p class="ticket-protocol">#{{ chamado.numero_protocolo }}</p>
+                            <p class="ticket-title">{{ chamado.titulo }}</p>
+                            <p style="font-size:13px; color: var(--color-text-secondary); margin-top:4px;">
+                                {{ chamado.solicitante }} — {{ chamado.para_onde_solicitou }}
+                            </p>
+                        </div>
+                        <div class="ticket-badges">
+                            <span class="badge status {% if chamado.status == 'AB' %}status-pendente{% elif chamado.status == 'EA' %}status-em-andamento{% else %}status-concluido{% endif %}">
+                                {{ chamado.get_status_display }}
+                            </span>
+                            <span class="badge urgency {% if chamado.urgencia == 'UR' %}urgency-urgente{% else %}urgency-padrao{% endif %}">
+                                {{ chamado.get_urgencia_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="ticket-footer">
+                        <span>Aberto em {{ chamado.data_criacao|date:"d/m/Y H:i" }}</span>
+                        <div style="display:flex; gap:8px;">
+                            <a href="{% url 'chamados:detalhe' chamado.pk %}" class="btn-cancel" style="padding:6px 14px; font-size:13px;">Ver detalhes</a>
+                            <a href="{% url 'chamados:editar' chamado.pk %}" class="btn-cancel" style="padding:6px 14px; font-size:13px;">✏️ Editar</a>
+                            <form method="POST" action="{% url 'chamados:remover' chamado.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    onclick="return confirm('Deseja excluir este chamado?')"
+                                    style="padding:6px 14px; font-size:13px; background:var(--color-danger); color:white; border:none; border-radius:4px; cursor:pointer;">
+                                    🗑️ Excluir
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+                {% empty %}
+                <p style="color: var(--color-text-secondary);">Nenhum chamado encontrado.</p>
+                {% endfor %}
+            </div>
+
+        </main>
+    </div>
+</div>
+{% endblock conteudo %}
