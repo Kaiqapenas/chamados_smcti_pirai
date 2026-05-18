@@ -43,7 +43,7 @@ class UserLoginView(View):
         return render(request, "auth/login.html")
 
     def post(self, request):
-        matricula = request.POST.get("matricula", "").strip(, "").strip()
+        matricula = request.POST.get("matricula", "").strip()
         password = request.POST.get("password", "")
         ip = get_client_ip(request)
 
