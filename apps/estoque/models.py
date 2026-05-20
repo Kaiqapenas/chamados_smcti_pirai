@@ -235,3 +235,46 @@ class MovimentacaoEstoque(models.Model):
             self.item.save()
 
             super().delete(*args, **kwargs)
+#Requisição de peça para manutenção, associada a um chamado (OS)
+class RequisicaoPeca(models.Model):
+    class Urgencia(models.TextChoices):
+        NORMAL = "NO", "Normal"
+        URGENTE = "UR", "Urgente"
+
+    chamado = models.ForeignKey(
+        "chamados.Chamado",
+        on_delete=models.CASCADE,
+        related_name="requisicoes_pecas",
+        verbose_name="Chamado (OS)"
+    )
+    item_solicitado = models.ForeignKey(
+        "ItemEstoque",
+        on_delete=models.CASCADE,
+        related_name="requisicoes",
+        verbose_name="Item solicitado"
+    )
+    quantidade = models.PositiveIntegerField("Quantidade", default=1)
+    urgencia = models.CharField(
+        "Urgência",
+        max_length=2,
+        choices=Urgencia.choices,
+        default=Urgencia.NORMAL
+    )
+    justificativa = models.TextField("Justificativa")
+    
+    data_criacao = models.DateTimeField("Data de Criação", auto_now_add=True)
+    
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="requisicoes_pecas_usuario",
+        verbose_name="Usuário que requisitou"
+    )
+
+    class Meta:
+        verbose_name = "Requisição de Peça"
+        verbose_name_plural = "Requisições de Peças"
+        ordering = ["-data_criacao"]
+
+    def __str__(self):
+        return f"Req: {self.item_solicitado.nome} para OS {self.chamado.numero_protocolo}"

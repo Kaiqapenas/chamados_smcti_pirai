@@ -1,5 +1,5 @@
 from django import forms
-from .models import ItemEstoque, CategoriaItem, MovimentacaoEstoque
+from .models import ItemEstoque, CategoriaItem, MovimentacaoEstoque, RequisicaoPeca
 
 class ItemEstoqueForm(forms.ModelForm):
     class Meta:
@@ -41,3 +41,15 @@ class MovimentacaoEstoqueForm(forms.ModelForm):
             if self.instance and self.instance.pk:
                 return self.instance.tipo
             return self.cleaned_data['tipo']
+
+class RequisicaoPecaForm(forms.ModelForm):
+    class Meta:
+        model = RequisicaoPeca
+        fields = ['chamado', 'item_solicitado', 'quantidade', 'urgencia', 'justificativa']
+        widgets = {
+            'chamado': forms.Select(attrs={'class': 'form-select'}),
+            'item_solicitado': forms.Select(attrs={'class': 'form-select'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'urgencia': forms.HiddenInput(),
+            'justificativa': forms.Textarea(attrs={'class': 'justificativa-box', 'rows': 4, 'placeholder': 'Necessário para manutenção...'}),
+        }

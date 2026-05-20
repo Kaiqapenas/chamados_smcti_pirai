@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CategoriaEstoqueListView, EstoqueListView, EstoqueCreateView, EstoqueUpdateView, EstoqueDeleteView, CategoriaEstoqueCreateView, CategoriaEstoqueUpdateView, CategoriaEstoqueDeleteView, MovimentacaoEstoqueCreateView, MovimentacaoEstoqueListView, MovimentacaoEstoqueUpdateView, MovimentacaoEstoqueDeleteView
+from .views import CategoriaEstoqueListView, EstoqueListView, EstoqueCreateView, EstoqueUpdateView, EstoqueDeleteView, CategoriaEstoqueCreateView, CategoriaEstoqueUpdateView, CategoriaEstoqueDeleteView, MovimentacaoEstoqueCreateView, MovimentacaoEstoqueListView, MovimentacaoEstoqueUpdateView, MovimentacaoEstoqueDeleteView, RequisicaoPecaCreateView
 
 app_name = "estoque"
 
@@ -22,4 +22,6 @@ urlpatterns = [
     path("movimentacao/<int:pk>/editar/", MovimentacaoEstoqueUpdateView.as_view(), name="editar_movimentacao"),
     path("movimentacao/<int:pk>/remover/", MovimentacaoEstoqueDeleteView.as_view(), name="remover_movimentacao"),
     
+    # requisição de peças
+    path("requisitar/", RequisicaoPecaCreateView.as_view(), name="requisitar_peca"),
 ]
