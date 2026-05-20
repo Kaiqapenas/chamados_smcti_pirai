@@ -90,9 +90,15 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
     
 class UserCreateView(LoginRequiredMixin, CreateView):
     form_class = UserForm
+    modo_edicao = False
     template_name = "core/form.html"
     success_url = reverse_lazy("core:index")
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["modo_edicao"] = self.modo_edicao
+        return context
+
 class UserDetailView(LoginRequiredMixin, DetailView):
     model = User
     template_name = "core/detalhe.html"
@@ -101,8 +107,15 @@ class UserDetailView(LoginRequiredMixin, DetailView):
 class UserUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserForm
+    modo_edicao = True
     template_name = "core/form.html"
     success_url = reverse_lazy("core:index")
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["modo_edicao"] = self.modo_edicao
+        return context
+    
     
 class UserDeleteView(LoginRequiredMixin, DeleteView):
     model = User

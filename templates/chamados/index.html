@@ -93,61 +93,29 @@
                     
                     {% for chamado in chamados %}
 
-                        <a href="{% url 'chamados:editar' chamado.id %}">
+                        <div class="ticket-card">
 
-                            <div class="ticket-card">
+                            <div class="ticket-header">
 
-                                <div class="ticket-header">
+                                <div class="ticket-info">
 
-                                    <div class="ticket-info">
+                                    <h3 class="ticket-protocol">
+                                        PROT-{{ chamado.numero_protocolo }}
+                                    </h3>
 
-                                        <h3 class="ticket-protocol">
-                                            PROT-{{ chamado.numero_protocolo }}
-                                        </h3>
+                                    <p class="ticket-title">
+                                        {{ chamado.titulo }}
+                                    </p>
 
-                                        <p class="ticket-title">
-                                            {{ chamado.titulo }}
-                                        </p>
-
-                                        <p class="ticket-meta">
-                                            Setor: {{ chamado.get_setor_display|default:"Sem setor" }}
-                                        </p>
-
-                                    </div>
-
-                                    <div class="ticket-badges">
-
-                                        <span class="badge status
-                                            {% if chamado.status == 'AB' %}
-                                                status-aberto
-                                            {% elif chamado.status == 'PE' %}
-                                                status-pendente
-                                            {% elif chamado.status == 'EA' %}
-                                                status-em-andamento
-                                            {% elif chamado.status == 'FI' %}
-                                                status-concluido
-                                            {% endif %}
-                                        ">
-                                            {{ chamado.get_status_display  }}
-                                        </span>
-
-                                        <span class="badge urgency
-                                            {% if chamado.urgencia == 'UR' %}
-                                                urgency-urgente
-                                            {% else %}
-                                                urgency-padrao
-                                            {% endif %}
-                                        ">
-                                            {{ chamado.get_urgencia_display  }}
-                                        </span>
-
-                                    </div>
+                                    <p class="ticket-meta">
+                                        Setor: {{ chamado.get_setor_display|default:"Sem setor" }}
+                                    </p>
 
                                 </div>
 
-                                <div class="ticket-progress">
+                                <div class="ticket-badges">
 
-                                    <div class="progress-bar
+                                    <span class="badge status
                                         {% if chamado.status == 'AB' %}
                                             status-aberto
                                         {% elif chamado.status == 'PE' %}
@@ -157,37 +125,73 @@
                                         {% elif chamado.status == 'FI' %}
                                             status-concluido
                                         {% endif %}
-                                    "></div>
-
-                                </div>
-
-                                <div class="ticket-footer">
-
-                                    <span class="ticket-date">
-                                        Aberto em
-                                        {{ chamado.data_criacao|date:"d/m/Y" }}
+                                    ">
+                                        {{ chamado.get_status_display  }}
                                     </span>
 
-                                    {% if chamado.data_prevista %}
-                                        <span class="ticket-due">
-                                            Prazo:
-                                            {{ chamado.data_prevista|date:"d/m/Y" }}
-                                        </span>
-                                    {% endif %}
-
-                                    <!-- 🗑️ EXCLUIR -->
-                                    <form method="POST" action="{% url 'chamados:remover' chamado.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn-new-ticket" onclick="return confirm('Deseja excluir este chamado?')">
-                                            🗑️ Excluir
-                                        </button>
-                                    </form>
+                                    <span class="badge urgency
+                                        {% if chamado.urgencia == 'UR' %}
+                                            urgency-urgente
+                                        {% else %}
+                                            urgency-padrao
+                                        {% endif %}
+                                    ">
+                                        {{ chamado.get_urgencia_display  }}
+                                    </span>
 
                                 </div>
 
                             </div>
 
-                        </a>
+                            <div class="ticket-progress">
+
+                                <div class="progress-bar
+                                    {% if chamado.status == 'AB' %}
+                                        status-aberto
+                                    {% elif chamado.status == 'PE' %}
+                                        status-pendente
+                                    {% elif chamado.status == 'EA' %}
+                                        status-em-andamento
+                                    {% elif chamado.status == 'FI' %}
+                                        status-concluido
+                                    {% endif %}
+                                "></div>
+
+                            </div>
+
+                            <div class="ticket-footer">
+
+                                <span class="ticket-date">
+                                    Aberto em
+                                    {{ chamado.data_criacao|date:"d/m/Y" }}
+                                </span>
+
+                                {% if chamado.data_prevista %}
+                                    <span class="ticket-due">
+                                        Prazo:
+                                        {{ chamado.data_prevista|date:"d/m/Y" }}
+                                    </span>
+                                {% endif %}
+
+                                <a href="{% url 'chamados:editar' chamado.id %}" class="btn-new-ticket">   
+                                    ✏️ Editar
+                                </a>
+
+                                <a href="{% url 'chamados:detalhe' chamado.id %}" class="btn-new-ticket">   
+                                    👁️ Detalhes
+                                </a>
+
+                                <!-- 🗑️ EXCLUIR -->
+                                <form method="POST" action="{% url 'chamados:remover' chamado.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-new-ticket" onclick="return confirm('Deseja excluir este chamado?')">
+                                        🗑️ Excluir
+                                    </button>
+                                </form>
+
+                            </div>
+
+                        </div>
 
                     {% empty %}
 

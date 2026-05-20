@@ -1,14 +1,212 @@
-{% extends "base.html" %}
+__{% extends "main/mainlayout.html" %}
+{% load static %}
 
-{% block titulo %}Formulário de usuários{% endblock %}
+{% block titulo %}
+    {% if modo_edicao %}
+        Editar Usuário
+    {% else %}
+        Novo Usuário
+    {% endif %}
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
+{% endblock head %}
 
 {% block conteudo %}
-    <h2>Usuários</h2>
+    <div class="tickets-page">
+        <!-- Header -->
+        <header class="tickets-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>{% if modo_edicao %}
+                            Editar Usuário
+                        {% else %}
+                            Novo Usuário
+                        {% endif %}
+                    </h1>
+                </div>
+                <div class="header-right">
+                    <a href="{% url 'core:index' %}" class="btn-voltar">← Voltar</a>
+                </div>
+            </div>
+        </header>
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Salvar</button>
-    </form>
+        <div class="tickets-container">
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Form Container -->
+                <div class="form-container">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+                    {% if form.errors %}
 
-{% endblock %}
+                        <div class="alert alert-danger">
+
+                            {{ form.errors }}
+
+                        </div>
+
+                    {% endif %}
+                    <form 
+                        class="ticket-form" 
+                        method="post" 
+                        enctype="multipart/form-data" 
+                        action="
+                            {% if usuario %}
+                                {% url 'core:editar' usuario.id %}
+                            {% else %}
+                                {% url 'core:adicionar' %}
+                            {% endif %}
+                        "
+                    >
+                        {% csrf_token %}
+                        <!-- Primeira Linha: Nome (First Name e Second Name)  -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="first_name">Primeiro Nome *</label>
+                                <input 
+                                    type="text" 
+                                    id="first_name"
+                                    name="first_name"
+                                    placeholder="Primeiro Nome"
+                                    class="input-field"
+                                    value="{{ form.first_name.value|default:'' }}"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="last_name">Sobrenome *</label>
+                                <input 
+                                    type="text" 
+                                    id="last_name"
+                                    name="last_name"
+                                    placeholder="Sobrenome"
+                                    class="input-field"
+                                    value="{{ form.last_name.value|default:'' }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Segunda Linha: E-mail -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">E-mail *</label>
+                                <input 
+                                    type="text" 
+                                    id="email"
+                                    name="email"
+                                    placeholder="E-mail"
+                                    class="input-field"
+                                    value="{{ form.email.value|default:'' }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Terceira Linha: Matrícula, telefone e senha -->
+                        <div class="form-row"> 
+                            <div class="form-group">
+                                <label for="matricula">Matrícula *</label>
+                                <input 
+                                    type="text" 
+                                    id="matricula"
+                                    name="matricula"
+                                    placeholder="Matrícula"
+                                    class="input-field"
+                                    value="{{ form.matricula.value|default:'' }}"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phone">Telefone *</label>
+                                <input 
+                                    type="text" 
+                                    id="phone"
+                                    name="telefone"
+                                    placeholder="Telefone"
+                                    class="input-field"
+                                    value="{{ form.telefone.value|default:'' }}"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Senha *</label>
+                                <input 
+                                    type="password" 
+                                    id="password"
+                                    name="password"
+                                    placeholder="Senha"
+                                    class="input-field"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_is_active">Ativo: *</label>
+                                <input 
+                                    type="checkbox" 
+                                    id="id_is_active"
+                                    name="is_active"
+                                    class="input-field"
+                                    value="{{ form.is_active.value|default:'' }}"
+                                    checked="{{ form.is_active.value|default:'' }}"
+                                >
+                            </div>
+                            <span class="helptext" id="id_is_active_helptext">Indica que o usuário será tratado como ativo. Ao invés de excluir contas de usuário, desmarque isso.</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_is_staff">Membro da equipe: *</label>
+                                <input 
+                                    type="checkbox" 
+                                    id="id_is_staff"
+                                    name="is_staff"
+                                    class="input-field"
+                                    value="{{ form.is_staff.value|default:'' }}"
+                                    checked="{{ form.is_staff.value|default:'' }}"
+                                >
+                            </div>
+                            <span class="helptext" id="id_is_staff_helptext">Indica que usuário consegue acessar este site de administração.</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_is_superuser">Status de superusuário: *</label>
+                                <input 
+                                    type="checkbox" 
+                                    id="id_is_superuser"
+                                    name="is_superuser"
+                                    class="input-field"
+                                    value="{{ form.is_superuser.value|default:'' }}"
+                                    checked="{{ form.is_superuser.value|default:'' }}"
+                                >
+                            </div>
+                            <span class="helptext" id="id_is_superuser_helptext">Indica que este usuário tem todas as permissões sem atribuí-las explicitamente.</span>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">
+                                {% if modo_edicao %}
+                                    Atualizar
+                                {% else %}
+                                    Salvar
+                                {% endif %}
+                            </button>
+                            <a href="{% url 'core:index' %}" class="btn-cancel">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+{% endblock conteudo %}
