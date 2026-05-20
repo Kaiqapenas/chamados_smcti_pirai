@@ -1,0 +1,175 @@
+{% extends "main/mainlayout.html" %}
+{% load static %}
+
+{% block titulo %}Reatribuição de Técnico - SIGEC{% endblock %}
+
+{% block head %}
+<script src="https://cdn.tailwindcss.com"></script>
+
+{% endblock %}
+
+{% block nome_usuario_top %}{{ request.user.first_name }}{% endblock %}
+{% block cargo_usuario_top %}{{ request.user.setor }}{% endblock %}
+{% block nome_usuario_side %}{{ request.user.first_name }}{% endblock %}
+{% block cargo_usuario_side %}{{ request.user.setor }}{% endblock %}
+
+{% block conteudo %}
+<div class="p-6 font-nunito">
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <h1 class="text-2xl font-bold text-blue-700">Reatribuição de Técnico</h1>
+        
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="relative">
+                <select class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-600 shadow-sm">
+                    <option>Todos os status</option>
+                    <option value="AB">Aberto</option>
+                    <option value="EA">Em andamento</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 7.293 8.122 5.879 9.508z"/></svg>
+                </div>
+            </div>
+            
+            <div class="relative">
+                <input type="text" placeholder="Buscar protocolo ou técnico..." class="bg-white border border-gray-300 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-64 shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-8">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 border-b border-gray-100">
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Protocolo</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Chamado</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Setor</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Técnico Atual</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Ação</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for chamado in chamados %}
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="px-6 py-4 text-sm font-medium text-blue-600">#{{ chamado.numero_protocolo }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-700">{{ chamado.titulo }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">{{ chamado.usuario.setor|default:"TI" }}</td>
+                    <td class="px-6 py-4 text-sm">
+                        <span class="text-orange-500 font-semibold">{{ chamado.tecnico.first_name|default:"Não atribuído" }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                        {% if chamado.status == 'EA' %}
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-600">Em andamento</span>
+                        {% elif chamado.status == 'AB' %}
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-600">Aberto</span>
+                        {% else %}
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">{{ chamado.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick="openReassignModal('{{ chamado.id }}', '{{ chamado.numero_protocolo }}', '{{ chamado.tecnico.id|default:'' }}')" class="inline-flex items-center gap-2 px-4 py-1.5 border border-blue-200 rounded-lg text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                            </svg>
+                            Reatribuir
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-10 text-center text-gray-500 italic">
+                        Nenhum chamado disponível para reatribuição.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <h2 class="text-lg font-bold text-gray-800">Histórico de Reatribuições</h2>
+        </div>
+        <div class="p-6">
+            {% if historico %}
+                <div class="space-y-4">
+                {% for log in historico %}
+                    <div class="flex items-start gap-3 text-sm text-gray-600">
+                        <div class="mt-1 w-2 h-2 rounded-full bg-blue-400"></div>
+                        <p>{{ log.descricao }} em <span class="font-medium text-gray-800">{{ log.data_alteracao|date:"d/m/Y H:i" }}</span> por {{ log.usuario.first_name }}</p>
+                    </div>
+                {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-400 italic">Nenhuma reatribuição realizada nesta sessão.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div id="reassignModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-black opacity-30"></div>
+        <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div class="mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Reatribuir Chamado</h3>
+                <p class="text-sm text-gray-500 mt-1">Selecione o novo técnico para o protocolo <span id="modalProtocol" class="font-bold text-blue-600"></span></p>
+            </div>
+            
+            <form id="reassignForm" method="POST" action="{% url 'chamados:reatribuir_tecnico' %}">
+                {% csrf_token %}
+                <input type="hidden" name="chamado_id" id="modalChamadoId">
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Novo Técnico Responsável</label>
+                    <select name="tecnico_id" required class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        <option value="">Selecione um técnico...</option>
+                        {% for tecnico in tecnicos %}
+                            <option value="{{ tecnico.id }}">{{ tecnico.first_name }} {{ tecnico.last_name }} ({{ tecnico.matricula }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeReassignModal()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors shadow-md">
+                        Confirmar Reatribuição
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openReassignModal(id, protocol, currentTechId) {
+        document.getElementById('modalChamadoId').value = id;
+        document.getElementById('modalProtocol').innerText = '#' + protocol;
+        const select = document.querySelector('#reassignForm select');
+
+        select.value = "";
+
+        Array.from(select.options).forEach(option => {
+            option.disabled = (option.value === currentTechId);
+        });
+
+        document.getElementById('reassignModal').classList.remove('hidden');
+    }
+
+    function closeReassignModal() {
+        document.getElementById('reassignModal').classList.add('hidden');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeReassignModal();
+    });
+</script>
+{% endblock %}
