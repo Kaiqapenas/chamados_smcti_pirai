@@ -1,4 +1,5 @@
-{% extends "base.html" %}
+{% extends 'main/mainlayout.html' %}
+
 {% load static %}
 
 {% block titulo %}SIGEC - Sistema de Chamados{% endblock %}
@@ -7,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
 {% endblock head %}
 
-{% block main %}
+{% block conteudo %}
     <div class="tickets-page">
         <!-- Header -->
         <header class="tickets-header">
@@ -17,7 +18,7 @@
                 </div>
                 <div class="header-right">
                     <input type="text" placeholder="Buscar" class="search-input">
-                    <a href="{% url 'chamados:novo_cadastro' %}" class="btn-new-ticket">+ Novo Chamado</a>
+                    <a href="{% url 'chamados:adicionar' %}" class="btn-new-ticket">+ Novo Chamado</a>
                 </div>
             </div>
         </header>
@@ -31,108 +32,176 @@
                 </div>
 
                 <!-- Filters -->
-                <div class="filters">
-                    <div class="filter-group">
-                        <label>Período:</label>
-                        <select class="filter-select">
-                            <option value="daily">Diário</option>
-                            <option value="monthly">Mensal</option>
-                            <option value="annual">Anual</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Status:</label>
-                        <select class="filter-select">
-                            <option value="all">Todos os status</option>
-                            <option value="Pendente">Pendente</option>
-                            <option value="Em andamento">Em andamento</option>
-                            <option value="Concluído">Concluído</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label>Urgência:</label>
-                        <select class="filter-select">
-                            <option value="all">Todos os status</option>
-                            <option value="Padrão">Padrão</option>
-                            <option value="Urgente">Urgente</option>
-                        </select>
-                    </div>
-                </div>
+                <form method="GET">
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Protocolo:</label>
 
+                            <input
+                                type="text"
+                                name="protocolo"
+                                value="{{ protocolo_atual }}"
+                                class="filter-select"
+                                placeholder="Buscar protocolo"
+                            >
+                        </div>
+                        <div class="filter-group">
+                            <label>Status:</label>
+
+                            <select name="status" class="filter-select">
+
+                                <option value="all">Todos os status</option>
+
+                                {% for value, label in status_choices %}
+                                    <option
+                                        value="{{ value }}"
+                                        {% if status_atual == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Urgência:</label>
+
+                            <select name="urgencia" class="filter-select">
+
+                                <option value="all">Todas</option>
+
+                                {% for value, label in urgencia_choices %}
+                                    <option
+                                        value="{{ value }}"
+                                        {% if urgencia_atual == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <button type="submit" class="btn-new-ticket">
+                                Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </form>
                 <!-- Tickets List -->
                 <div class="tickets-list">
-                    <!-- Exemplo de Card de Chamado - Pendente -->
-                    <div class="ticket-card">
-                        <div class="ticket-header">
-                            <div class="ticket-info">
-                                <h3 class="ticket-protocol">PROT-2024-001</h3>
-                                <p class="ticket-title">Carlos Tarará</p>
-                                <p class="ticket-meta">Setor: Técnico</p>
-                            </div>
-                            <div class="ticket-badges">
-                                <span class="badge status status-pendente">Pendente</span>
-                                <span class="badge urgency urgency-padrao">Padrão</span>
-                            </div>
-                        </div>
-                        <div class="ticket-progress">
-                            <div class="progress-bar status-pendente"></div>
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="ticket-date">Aberto em 28/04/2026</span>
-                            <span class="ticket-due">Prazo: 30/04/2026</span>
-                        </div>
-                    </div>
+                    
+                    {% for chamado in chamados %}
 
-                    <!-- Exemplo de Card de Chamado - Em andamento -->
-                    <div class="ticket-card">
-                        <div class="ticket-header">
-                            <div class="ticket-info">
-                                <h3 class="ticket-protocol">PROT-2024-002</h3>
-                                <p class="ticket-title">Maria Silva</p>
-                                <p class="ticket-meta">Setor: Administrativo</p>
-                            </div>
-                            <div class="ticket-badges">
-                                <span class="badge status status-em-andamento">Em andamento</span>
-                                <span class="badge urgency urgency-urgente">Urgente</span>
-                            </div>
-                        </div>
-                        <div class="ticket-progress">
-                            <div class="progress-bar status-em-andamento"></div>
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="ticket-date">Aberto em 27/04/2026</span>
-                            <span class="ticket-due">Prazo: 29/04/2026</span>
-                        </div>
-                    </div>
+                        <a href="{% url 'chamados:editar' chamado.id %}">
 
-                    <!-- Exemplo de Card de Chamado - Concluído -->
-                    <div class="ticket-card">
-                        <div class="ticket-header">
-                            <div class="ticket-info">
-                                <h3 class="ticket-protocol">PROT-2024-003</h3>
-                                <p class="ticket-title">João Santos</p>
-                                <p class="ticket-meta">Setor: TI</p>
+                            <div class="ticket-card">
+
+                                <div class="ticket-header">
+
+                                    <div class="ticket-info">
+
+                                        <h3 class="ticket-protocol">
+                                            PROT-{{ chamado.numero_protocolo }}
+                                        </h3>
+
+                                        <p class="ticket-title">
+                                            {{ chamado.titulo }}
+                                        </p>
+
+                                        <p class="ticket-meta">
+                                            Setor: {{ chamado.get_setor_display|default:"Sem setor" }}
+                                        </p>
+
+                                    </div>
+
+                                    <div class="ticket-badges">
+
+                                        <span class="badge status
+                                            {% if chamado.status == 'AB' %}
+                                                status-aberto
+                                            {% elif chamado.status == 'PE' %}
+                                                status-pendente
+                                            {% elif chamado.status == 'EA' %}
+                                                status-em-andamento
+                                            {% elif chamado.status == 'FI' %}
+                                                status-concluido
+                                            {% endif %}
+                                        ">
+                                            {{ chamado.get_status_display  }}
+                                        </span>
+
+                                        <span class="badge urgency
+                                            {% if chamado.urgencia == 'UR' %}
+                                                urgency-urgente
+                                            {% else %}
+                                                urgency-padrao
+                                            {% endif %}
+                                        ">
+                                            {{ chamado.get_urgencia_display  }}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="ticket-progress">
+
+                                    <div class="progress-bar
+                                        {% if chamado.status == 'AB' %}
+                                            status-aberto
+                                        {% elif chamado.status == 'PE' %}
+                                            status-pendente
+                                        {% elif chamado.status == 'EA' %}
+                                            status-em-andamento
+                                        {% elif chamado.status == 'FI' %}
+                                            status-concluido
+                                        {% endif %}
+                                    "></div>
+
+                                </div>
+
+                                <div class="ticket-footer">
+
+                                    <span class="ticket-date">
+                                        Aberto em
+                                        {{ chamado.data_criacao|date:"d/m/Y" }}
+                                    </span>
+
+                                    {% if chamado.data_prevista %}
+                                        <span class="ticket-due">
+                                            Prazo:
+                                            {{ chamado.data_prevista|date:"d/m/Y" }}
+                                        </span>
+                                    {% endif %}
+
+                                    <!-- 🗑️ EXCLUIR -->
+                                    <form method="POST" action="{% url 'chamados:remover' chamado.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-new-ticket" onclick="return confirm('Deseja excluir este chamado?')">
+                                            🗑️ Excluir
+                                        </button>
+                                    </form>
+
+                                </div>
+
                             </div>
-                            <div class="ticket-badges">
-                                <span class="badge status status-concluido">Concluído</span>
-                                <span class="badge urgency urgency-padrao">Padrão</span>
-                            </div>
-                        </div>
-                        <div class="ticket-progress">
-                            <div class="progress-bar status-concluido"></div>
-                        </div>
-                        <div class="ticket-footer">
-                            <span class="ticket-date">Aberto em 25/04/2026</span>
-                            <span class="ticket-due">Prazo: 28/04/2026</span>
-                        </div>
-                    </div>
-                </div>
+
+                        </a>
+
+                    {% empty %}
+
+                        <p>Nenhum chamado encontrado.</p>
+
+                    {% endfor %}
+
+                </div> 
             </main>
         </div>
     </div>
-{% endblock main %}
+{% endblock conteudo %}
 
 {% block scripts %}
-    <script src="{% static 'chamados/js/buttonselect.js' %}"></script>
-    <script src="{% static 'chamados/js/modal.js' %}"></script>
+    <script src="{% static 'js/buttonselect.js' %}"></script>
+    <!-- <script src="{% static 'js/modal.js' %}"></script> -->
 {% endblock scripts %}

@@ -23,6 +23,7 @@ def gerar_protocolo():
 class Chamado(models.Model):
     class Status(models.TextChoices):
         ABERTO = "AB", "Aberto"
+        PENDENTE = "PE", "Pendente"
         EM_ANDAMENTO = "EA", "Em andamento"
         FINALIZADO = "FI", "Finalizado"
 

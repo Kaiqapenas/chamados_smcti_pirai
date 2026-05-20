@@ -247,7 +247,7 @@ body {
 }
 
 /* Estilo para o botão Padrão (Verde do MVP) quando selecionado */
-.urgency-btn[data-value="padrao"].active {
+.urgency-btn[data-value="NO"].active {
     background-color: var(--color-success);
     border-color: var(--color-success);
     color: white;
@@ -361,6 +361,13 @@ body {
   height: auto;      
   min-height: unset;  
 }
+
+.badge.status-aberto {
+  background-color: #e8f5e9;
+  color: var(--color-success);
+  border: 1px solid var(--color-success-light);
+}
+
 .badge.status-pendente {
   background-color: #e3f2fd;
   color: var(--color-primary);
@@ -404,6 +411,11 @@ body {
 .progress-bar {
   height: 100%;
   border-radius: 2px;
+}
+
+.progress-bar.status-aberto {
+  background-color: var(--color-success);
+  width: 5%;
 }
 
 .progress-bar.status-pendente {

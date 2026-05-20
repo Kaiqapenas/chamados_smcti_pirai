@@ -117,7 +117,7 @@ class EstoqueDeleteView(LoginRequiredMixin, View):
         item = get_object_or_404(ItemEstoque, pk=pk)
         item.delete()
         messages.success(request, "Item excluído com sucesso.")
-        return redirect("estoque:lista")
+        return redirect("estoque:index")
     
 # 🔹 LISTVIEW CATEGORIA
 class CategoriaEstoqueListView(LoginRequiredMixin, ListView):

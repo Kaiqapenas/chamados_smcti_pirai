@@ -1,14 +1,270 @@
-{% extends "base.html" %}
+__{% extends "main/mainlayout.html" %}
+{% load static %}
 
-{% block titulo %}Formulário de chamados{% endblock %}
+{% block titulo %}Novo Chamado{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
+{% endblock head %}
 
 {% block conteudo %}
-    <h2>Chamados</h2>
+    <div class="tickets-page">
+        <!-- Header -->
+        <header class="tickets-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>{% if modo_edicao %}
+                            Editar Chamado
+                        {% else %}
+                            Novo Chamado
+                        {% endif %}
+                    </h1>
+                </div>
+                <div class="header-right">
+                    <a href="{% url 'chamados:index' %}" class="btn-voltar">← Voltar</a>
+                </div>
+            </div>
+        </header>
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Salvar</button>
-    </form>
+        <div class="tickets-container">
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Form Container -->
+                <div class="form-container">
+                    {% if form.errors %}
 
-{% endblock %}
+                        <div class="alert alert-danger">
+
+                            {{ form.errors }}
+
+                        </div>
+
+                    {% endif %}
+                    <form 
+                        class="ticket-form" 
+                        method="post" 
+                        enctype="multipart/form-data" 
+                        action="
+                            {% if chamado %}
+                                {% url 'chamados:editar' chamado.id %}
+                            {% else %}
+                                {% url 'chamados:adicionar' %}
+                            {% endif %}
+                        "
+                    >
+                        {% csrf_token %}
+                        <!-- Primeira Linha: Solicitante e Setor/Localização -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="requester">Solicitante *</label>
+                                <input 
+                                    type="text" 
+                                    id="requester"
+                                    name="solicitante"
+                                    placeholder="Nome do solicitante"
+                                    class="input-field"
+                                    value="{{ form.solicitante.value|default:'' }}"
+                                    required
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="destination">Endereço *</label>
+                                <input 
+                                    type="text" 
+                                    id="destination"
+                                    name="para_onde_solicitou"
+                                    placeholder="Secretaria — Sala 101"
+                                    class="input-field"
+                                    value="{{ form.para_onde_solicitou.value|default:'' }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Segunda Linha: Tipo de Manutenção e Prioridade -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="maintenance_type">Tipo de manutenção *</label>
+                                <input 
+                                    type="text" 
+                                    id="maintenance_type"
+                                    name="titulo"
+                                    placeholder="Preencher qual manutenção"
+                                    class="input-field"
+                                    value="{{ form.titulo.value|default:'' }}"
+                                    required
+                                >
+                            </div>
+                            {% if modo_edicao %}
+                                <div class="form-group">
+                                    <label for="technician">Status *</label>
+                               
+                                    {% with valor=form.status.value|default:form.initial.status %}
+
+                                        <select
+                                            name="status"
+                                            class="input-field"
+                                        >
+
+                                            <option
+                                                value=""
+                                                disabled
+
+                                                {% if not valor %}
+                                                    selected
+                                                {% endif %}
+                                            >
+                                                Selecione
+                                            </option>
+
+                                            {% for value, label in form.fields.status.choices %}
+
+                                                <option
+                                                    value="{{ value }}"
+
+                                                    {% if valor|stringformat:'s' == value|stringformat:'s' %}
+                                                        selected
+                                                    {% endif %}
+                                                >
+                                                    {{ label }}
+                                                </option>
+
+                                            {% endfor %}
+
+                                        </select>
+
+                                    {% endwith %}
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    <label for="technician">Status *</label>
+                                    <select name="status" class="input-field">
+                                        <option value="AB" selected>
+                                            Aberto
+                                        </option>
+                                    </select>
+                                </div>
+                            {% endif %}
+                            <div class="form-group">
+                                <label>Prioridade {{ form.urgencia.value }}*</label>
+                                <input type="hidden" name="urgencia" id="prioridade" value="{{ form.urgencia.value|default:'NO' }}">
+                                <div class="urgency-buttons">
+                                    <button 
+                                        type="button" 
+                                        class="urgency-btn {% if form.urgencia.value == 'NO' or not form.urgencia.value %}active{% endif %}"
+                                        data-value="NO"
+                                        value="NO"
+                                    >
+                                        Normal
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        class="urgency-btn urgent {% if form.urgencia.value == 'UR' %}active{% endif %}"
+                                        data-value="UR"
+                                        value="UR"
+                                    >
+                                        Urgente
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terceira Linha: Técnico, Data da Solicitação e Prazo -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="technician">Técnico responsável *</label>
+                                {% with valor=form.tecnico.value|default_if_none:'' %}
+                                    <select
+                                        name="tecnico"
+                                        class="input-field"
+                                        required
+                                    >
+
+                                        <option
+                                            value=""
+                                            disabled
+
+                                            {% if not valor %}
+                                                selected
+                                            {% endif %}
+                                        >
+                                            Selecione
+                                        </option>
+
+                                        {% for usuario in usuarios %}
+
+                                            <option
+                                                value="{{ usuario.id }}"
+
+                                                {% if valor|stringformat:'s' == usuario.id|stringformat:'s' %}
+                                                    selected
+                                                {% endif %}
+                                            >
+
+                                                {{ usuario.first_name }}
+
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+                                {% endwith %}
+                            </div>
+                            <div class="form-group">
+                                <label for="due_date">Data da solicitação *</label>
+                                <input 
+                                    type="date" 
+                                    id="due_date"
+                                    name="data_criacao"
+                                    class="input-field"
+                                    value="{{ chamado.data_criacao|date:'Y-m-d' }}"
+                                >
+                            </div>
+                            <div class="form-group">
+                                <label for="desired_deadline">Prazo desejado *</label>
+                                <input 
+                                    type="date" 
+                                    id="desired_deadline"
+                                    name="data_prevista"
+                                    class="input-field"
+                                    value="{{ form.data_prevista.value|date:'Y-m-d' }}"
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Descrição do Problema -->
+                        <div class="form-group full-width">
+                            <label for="description">Descrição do problema *</label>
+                            <textarea 
+                                id="description"
+                                name="descricao"
+                                placeholder="Descrição do problema"
+                                class="input-field textarea-field"
+                                rows="6"
+                                required
+                            >{{ form.descricao.value|default:'' }}</textarea>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">
+                                {% if modo_edicao %}
+                                    Atualizar
+                                {% else %}
+                                    Salvar
+                                {% endif %}
+                            </button>
+                            <a href="{% url 'chamados:index' %}" class="btn-cancel">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </div>
+{% endblock conteudo %}
+
+{% block scripts %}
+    <script src="{% static 'js/buttonselect.js' %}"></script>
+    <script src="{% static 'js/modal.js' %}"></script>
+{% endblock scripts %}

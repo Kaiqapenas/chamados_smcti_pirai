@@ -11,7 +11,7 @@ class UserForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['matricula', 'telefone', 'password', 'is_active', 'is_staff', 'is_superuser'] 
+        fields = ['matricula', 'first_name', 'last_name', 'email', 'telefone', 'password', 'is_active', 'is_staff', 'is_superuser'] 
         widgets = {
             'is_active': forms.CheckboxInput(),
             'is_staff': forms.CheckboxInput(),

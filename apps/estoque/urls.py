@@ -4,7 +4,7 @@ from .views import CategoriaEstoqueListView, EstoqueListView, EstoqueCreateView,
 app_name = "estoque"
 
 urlpatterns = [
-    path("", EstoqueListView.as_view(), name="lista"),
+    path("", EstoqueListView.as_view(), name="index"),
 
     path("adicionar/", EstoqueCreateView.as_view(), name="adicionar"),
     path("<int:pk>/editar/", EstoqueUpdateView.as_view(), name="editar"),

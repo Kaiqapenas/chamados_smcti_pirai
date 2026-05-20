@@ -14,7 +14,10 @@
     
     {% block head %}{% endblock head %}
     <style>
-      {% block style %}{% endblock style %}
+      {% block style %}
+        
+
+      {% endblock style %}
     </style>
   </head>
   <body>
@@ -65,13 +68,18 @@
                 </svg>
               </div>
               <div class="user-info">
-                <div class="name">{% block nome_usuario_top %}Nome do Func.{% endblock %}</div>
+                <div class="name">{{ user.first_name }}</div>
                 <div class="role">{% block cargo_usuario_top %}Cargo{% endblock %}</div>
               </div>
             </div>
             <div class="dropdown-divider"></div>
-            <a href="#" class="dropdown-item">Alterar senha</a>
-            <a href="#" class="dropdown-item">Sair</a>
+            <a href="{% url 'core:editar' user.id %}" class="dropdown-item">Editar perfil</a>
+            <a href="{% url 'core:editar_senha' user.id %}" class="dropdown-item">Alterar senha</a>
+            <form action="{% url 'core:sair' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="dropdown-item btn-link">Sair</button>
+            </form>
+            <!-- <a href="{% url 'core:sair'%}" class="dropdown-item">Sair</a> -->
           </div>
         </div>
       </div>
@@ -98,7 +106,7 @@
             </svg>
           </div>
           <div class="user-info">
-            <div class="name">{% block nome_usuario_side %}Nome do Func.{% endblock %}</div>
+            <div class="name">{{ user.first_name }}</div>
             <div class="role">{% block cargo_usuario_side %}Cargo{% endblock %}</div>
           </div>
         </div>
@@ -114,7 +122,77 @@
                 </g>
               </svg>
             </span>
-            <span class="nav-text">Título do Módulo</span>
+            <a href="{% url 'chamados:index' %}"class="nav-text">Chamados</a>
+          </div>
+          <div class="nav-item " onclick="setActive(this)">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M11.25 17.25a6 6 0 1 0 12 0a6 6 0 0 0-12 0m6-3v6m-3-3h6" />
+                  <path d="M8.25 20.25h-6a1.5 1.5 0 0 1-1.5-1.5V2.25a1.5 1.5 0 0 1 1.5-1.5h10.629a1.5 1.5 0 0 1 1.06.439l2.872 2.872a1.5 1.5 0 0 1 .439 1.06V8.25" />
+                </g>
+              </svg>
+            </span>
+            <a href="{% url 'estoque:index' %}" class="nav-text">Estoque</a>
+          </div>
+          <div class="nav-item " onclick="setActive(this)">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M11.25 17.25a6 6 0 1 0 12 0a6 6 0 0 0-12 0m6-3v6m-3-3h6" />
+                  <path d="M8.25 20.25h-6a1.5 1.5 0 0 1-1.5-1.5V2.25a1.5 1.5 0 0 1 1.5-1.5h10.629a1.5 1.5 0 0 1 1.06.439l2.872 2.872a1.5 1.5 0 0 1 .439 1.06V8.25" />
+                </g>
+              </svg>
+            </span>
+            <a href="{% url 'estoque:categoria_lista' %}" class="nav-text">Categorias</a>
+          </div>
+          <div class="nav-item " onclick="setActive(this)">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M11.25 17.25a6 6 0 1 0 12 0a6 6 0 0 0-12 0m6-3v6m-3-3h6" />
+                  <path d="M8.25 20.25h-6a1.5 1.5 0 0 1-1.5-1.5V2.25a1.5 1.5 0 0 1 1.5-1.5h10.629a1.5 1.5 0 0 1 1.06.439l2.872 2.872a1.5 1.5 0 0 1 .439 1.06V8.25" />
+                </g>
+              </svg>
+            </span>
+            <a href="{% url 'estoque:movimentacao_lista' %}" class="nav-text">Movimentações</a>
+          </div>
+          <div class="nav-item " onclick="setActive(this)">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M11.25 17.25a6 6 0 1 0 12 0a6 6 0 0 0-12 0m6-3v6m-3-3h6" />
+                  <path d="M8.25 20.25h-6a1.5 1.5 0 0 1-1.5-1.5V2.25a1.5 1.5 0 0 1 1.5-1.5h10.629a1.5 1.5 0 0 1 1.06.439l2.872 2.872a1.5 1.5 0 0 1 .439 1.06V8.25" />
+                </g>
+              </svg>
+            </span>
+            <a href="{% url 'admin:index' %}" class="nav-text">Administração</a>
+          </div>
+          <div class="nav-item" onclick="setActive(this)">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M10.5.156c-3.017 0-5.438 2.072-5.438 6.032c0 2.586 1.03 5.22 2.594 
+                6.843c.61 1.623-.49 2.227-.718 2.313C3.781 16.502.093 18.602.093 20.688v.78c0 2.843 5.414 3.5 10.437 
+                3.5a46 46 0 0 0 3.281-.124a7.75 7.75 0 0 1-2.124-5.344c0-1.791.61-3.432 1.624-4.75c-.15-.352-.21-.907.063-1.75c1.555-1.625
+                2.563-4.236 2.563-6.813c0-3.959-2.424-6.03-5.438-6.03zm9 13.031a6.312 6.312 0 1 0 0 12.625a6.312 6.312 0 0 0 0-12.625M18.625 
+                16h1.75v2.594h2.594v1.812h-2.594V23h-1.75v-2.594H16v-1.812h2.625z"/>
+              </svg>
+            </span>
+            <!-- <a class="nav-text" style="white-space: normal; line-height: 1.2; text-align: left;"> -->
+            <a href="{% url 'core:index' %}" class="nav-text">Adm Funcionários</a>
+              
+            </a>
+          </div>
+          <div class="nav-item" onclick="setActive(this)">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M11.25 17.25a6 6 0 1 0 12 0a6 6 0 0 0-12 0m6-3v6m-3-3h6" />
+                  <path d="M8.25 20.25h-6a1.5 1.5 0 0 1-1.5-1.5V2.25a1.5 1.5 0 0 1 1.5-1.5h10.629a1.5 1.5 0 0 1 1.06.439l2.872 2.872a1.5 1.5 0 0 1 .439 1.06V8.25" />
+                </g>
+              </svg>
+            </span>
+            <a href="{% url 'chamados:atribuidos' %}" class="nav-text">Meus Chamados</a>
           </div>
           {% endblock menu_navegacao %}
         </nav>

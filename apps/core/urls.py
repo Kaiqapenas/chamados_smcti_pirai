@@ -10,6 +10,7 @@ urlpatterns = [
     path("<int:pk>/", UserDetailView.as_view(), name="detalhe"),
     path("<int:pk>/editar/", UserUpdateView.as_view(), name="editar"),
     path("<int:pk>/remover/", UserDeleteView.as_view(), name="excluir"),
+    path("<int:pk>/editar-senha/", UserUpdateView.as_view(), name="editar_senha"),
     path("login/", UserLoginView.as_view(), name="login"),  # Placeholder para login 
     path("sair/", UserLogoutView.as_view(), name="sair"),
     #path("administracao-funcionarios/", AdminFuncionariosView.as_view(), name="admin_funcionarios")

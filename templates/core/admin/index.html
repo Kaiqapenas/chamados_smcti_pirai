@@ -2,21 +2,6 @@
 
 {% block titulo %}Administração de Funcionários{% endblock %}
 
-{% block menu_navegacao %}
-  <div class="nav-item active" onclick="setActive(this)">
-    <span class="nav-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">
-        <path fill="currentColor" d="M10.5.156c-3.017 0-5.438 2.072-5.438 6.032c0 2.586 1.03 5.22 2.594 
-        6.843c.61 1.623-.49 2.227-.718 2.313C3.781 16.502.093 18.602.093 20.688v.78c0 2.843 5.414 3.5 10.437 
-        3.5a46 46 0 0 0 3.281-.124a7.75 7.75 0 0 1-2.124-5.344c0-1.791.61-3.432 1.624-4.75c-.15-.352-.21-.907.063-1.75c1.555-1.625
-        2.563-4.236 2.563-6.813c0-3.959-2.424-6.03-5.438-6.03zm9 13.031a6.312 6.312 0 1 0 0 12.625a6.312 6.312 0 0 0 0-12.625M18.625 
-        16h1.75v2.594h2.594v1.812h-2.594V23h-1.75v-2.594H16v-1.812h2.625z"/></svg>
-    </span>
-    <span class="nav-text" style="white-space: normal; line-height: 1.2; text-align: left;">
-  Administração de Funcionários
-</span>
-  </div>
-{% endblock menu_navegacao %}
 
 {% block style %}
 :root {
@@ -330,7 +315,9 @@ th {
     </div>
   </div>
 
+  
   <div class="table-container">
+    <p>Total: {{ usuarios|length }}</p>
     <table>
       <thead>
         <tr>
@@ -338,13 +325,32 @@ th {
           <th>Matrícula<div class="resizer"></div></th>
           <th>E-mail<div class="resizer"></div></th>
           <th>Telefone<div class="resizer"></div></th>
-          <th>Setor<div class="resizer"></div></th>
+          <th>Editar<div class="resizer"></div></th>
+          <th>Apagar<div class="resizer"></div></th>
         </tr>
       </thead>
-      <tbody id="tBody"></tbody>
+      <tbody id="tBody">
+          <!-- foreach dos funcionarios cadastrados -->
+          {% for usuario in usuarios %}
+            <tr>
+              <td>{{ usuario.first_name|default:""}}</td>
+              <td>{{ usuario.matricula|default:""}}</td>
+              <td>{{ usuario.email|default:"" }}</td>
+              <td>{{ usuario.telefone|default:"" }}</td>
+              <td>
+                <a class="btn btn-sm btn-outline-primary" a href="{% url 'core:editar' usuario.id %}">Editar</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4">Nenhum usuário encontrado.</td>
+            </tr>
+              
+          {% endfor %}
+      </tbody>
     </table>
   </div>
-
+  
 </div>
 
 <div class="mb" id="modal">
@@ -383,11 +389,18 @@ th {
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div id="usuarios-data">{{ usuarios_json|json_script:"usuarios-data" }}</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-let funcionarios = [];
+
+const urlEditarBase = "{% url 'core:index' %}";
+
+const funcionarios = JSON.parse(
+        document.getElementById("usuarios-data").textContent
+    );
 
 function iniciarRedimensionamento() {
   const table = document.querySelector('table');
@@ -436,7 +449,7 @@ function filtrar() {
 
   const filtrados = funcionarios.filter(f => {
     const matchSearch = !q || 
-      f.nome.toLowerCase().includes(q) || 
+      f.first_name.toLowerCase().includes(q) || 
       f.email.toLowerCase().includes(q) || 
       f.matricula.includes(q);
 
@@ -454,21 +467,36 @@ function render(lista = funcionarios) {
   lista.forEach(f => {
     tbody.innerHTML += `
       <tr>
-        <td>${f.nome}</td>
-        <td>${f.matricula}</td>
-        <td>${f.email}</td>
-        <td>${f.telefone}</td>
-        <td>${f.setor}</td>
+        <td>${f.first_name ?? ""}</td>
+        <td>${f.matricula ?? ""}</td>
+        <td>${f.email ?? ""}</td>
+        <td>${f.telefone ?? ""}</td>
+        <td>
+          <a 
+            class="btn-link"
+            href="${f.editar_url}"
+          >
+            ✏️ Editar
+          </a>
+        </td>
+        <td>
+          <form method="POST" action="${f.excluir_url}" style="display:inline;">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            <button type="submit" onclick="return confirm('Deseja excluir este usuário?')">
+              🗑️ Excluir
+            </button>
+          </form>
+          </td>
       </tr>
     `;
   });
 }
 
 function limparErros() {
-  ['nome', 'matricula', 'telefone', 'email', 'setor', 'senha'].forEach(id => {
+  ['first_name', 'matricula', 'telefone', 'email', 'setor', 'senha'].forEach(id => {
     document.getElementById(id).classList.remove('campo-erro');
   });
-  document.getElementById('nomeHint').textContent = '';
+  // document.getElementById('nomeHint').textContent = '';
 }
 
 function marcarErro(id) {
@@ -503,7 +531,7 @@ function toast(msg) {
 }
 
 function salvar() {
-  const nome = document.getElementById('nome').value.trim();
+  const first_name = document.getElementById('nome').value.trim();
   const matricula = document.getElementById('matricula').value.trim();
   const telefone = document.getElementById('telefone').value.trim();
   const email = document.getElementById('email').value.trim();
@@ -512,7 +540,7 @@ function salvar() {
 
   let valido = true;
 
-  if (!nome) { marcarErro('nome'); valido = false; }
+  if (!first_name) { marcarErro('nome'); valido = false; }
   if (!matricula)                     { marcarErro('matricula'); valido = false; }
   if (!email)                         { marcarErro('email'); valido = false; }
   if (!setor)                         { marcarErro('setor'); valido = false; }
@@ -521,7 +549,7 @@ function salvar() {
   if (!valido) return;
 
   funcionarios.push({
-    nome,
+    first_name,
     matricula,
     telefone,
     email,

@@ -1,10 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar Senha - SIGEC</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}"> 
 </head>
 <body>
     <div class="auth-card">
@@ -47,7 +49,7 @@
             </form>
         </div>
         <div class="auth-footer">
-            <img src="../img/prefeitura-pirai.png" alt="Prefeitura de Piraí">
+            <img src="{% url 'core:recuperar_senha' %}" alt="Prefeitura de Piraí">
         </div>
     </div>
 

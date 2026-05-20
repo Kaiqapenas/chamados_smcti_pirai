@@ -7,95 +7,230 @@ from django.urls import reverse_lazy
 from django.core.exceptions import ValidationError
 
 from apps.chamados.forms import ChamadoForm
+# from apps.core.views import User
 from .models import Chamado, AlteracaoChamado, ItemChamado
 from .forms import ItemChamadoForm
 
 from apps.estoque.models import ItemEstoque
 from django.db import models
-
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 class ChamadoListView(LoginRequiredMixin, ListView):
     model = Chamado
-    template_name = "chamados/lista.html"
+    template_name = "chamados/index.html"
     context_object_name = "chamados"
+    ordering = ["-id"]
 
     def get_queryset(self):
-        #para evitar N queries no template
-        queryset = super().get_queryset().select_related().prefetch_related("itens")
-        #filtro por status
+
+        queryset = (
+            super()
+            .get_queryset()
+            .prefetch_related("itens")
+        )
+
+        # =========================
+        # FILTRO STATUS
+        # =========================
+
         status = self.request.GET.get("status")
-        if status:
+
+        if status and status != "all":
             queryset = queryset.filter(status=status)
-        #filtro por urgencia
-        urgencia = self.request.GET.get("urgencia")        
-        if urgencia:
+
+        # =========================
+        # FILTRO URGÊNCIA
+        # =========================
+
+        urgencia = self.request.GET.get("urgencia")
+
+        if urgencia and urgencia != "all":
             queryset = queryset.filter(urgencia=urgencia)
-        #busca por protocolo
+
+        # =========================
+        # BUSCA PROTOCOLO
+        # =========================
+
         protocolo = self.request.GET.get("protocolo")
+
         if protocolo:
-            queryset = queryset.filter(numero_protocolo__icontains=protocolo)
+            queryset = queryset.filter(
+                numero_protocolo__icontains=protocolo
+            )
+
         return queryset
-    
-    def get_context_data(self,**kwargs):
+
+    def get_context_data(self, **kwargs):
+
         context = super().get_context_data(**kwargs)
-        #passa as opções de filtro pro template
+
+        # opções dos filtros
         context["status_choices"] = Chamado.Status.choices
         context["urgencia_choices"] = Chamado.Urgencia.choices
+
+        # valores atuais selecionados
+        context["status_atual"] = self.request.GET.get("status", "")
+        context["urgencia_atual"] = self.request.GET.get("urgencia", "")
+        context["protocolo_atual"] = self.request.GET.get("protocolo", "")
+
         return context
         
 class ChamadoCreateView(LoginRequiredMixin, View):
     def get(self, request):
+
         form = ChamadoForm()
-        return render(request, "chamados/form.html", {"form": form})
+
+        usuarios = User.objects.all().order_by("first_name")
+                
+        return render(
+            request,
+            "chamados/form.html",
+            {
+                "form": form,
+                "usuarios": usuarios,
+                "modo_edicao": False,
+            }
+        )
 
     def post(self, request):
-        form = ChamadoForm(request.POST, request.FILES)
+        # DEBUG: Imprime os dados recebidos do formulário para verificar o que está chegando
+        print(request.POST)
+        
+        form = ChamadoForm(request.POST)
 
+        # DEBUG: Imprime se o formulário é válido e os erros caso não seja
+        print(form.is_valid())
+        
+        #DEBUG: Imprime os erros do formulário para entender o que está falhando na validação
+        print(form.errors)
+        
         if form.is_valid():
-            chamado = form.save(commit=False)
-            chamado.usuario = request.user
-            chamado.save()
-            messages.success(request, "Chamado criado com sucesso")
-            return redirect("chamados:lista")
 
-        return render(request, "chamados/form.html", {"form": form})
-    
+            chamado = form.save(commit=False)
+
+            chamado.usuario = request.user
+
+            chamado.save()
+
+            messages.success(
+                request,
+                "Chamado criado com sucesso."
+            )
+
+            return redirect(
+                "chamados:detalhe",
+                pk=chamado.pk
+            )
+
+        return render(
+            request,
+            "chamados/form.html",
+            {
+                "form": form,
+                "modo_edicao": False,
+            }
+        )
+
 class ChamadoDetailView(LoginRequiredMixin, DetailView):
     model = Chamado
     template_name = "chamados/detalhe.html"
     context_object_name = "chamado"
     
 class ChamadoUpdateView(LoginRequiredMixin, View):
+    
     def get(self, request, pk):
-        chamado = get_object_or_404(Chamado, pk=pk)
+
+        chamado = get_object_or_404(
+            Chamado,
+            pk=pk
+        )
+        
+        usuarios = User.objects.all().order_by("first_name")
+
         if chamado.status == Chamado.Status.FINALIZADO:
-            messages.error(request, "Não é possível editar um chamado finalizado.")
-            return redirect("chamados:detalhe", pk=pk)
+
+            messages.error(
+                request,
+                "Não é possível editar um chamado finalizado."
+            )
+
+            return redirect(
+                "chamados:detalhe",
+                pk=pk
+            )
+
         form = ChamadoForm(instance=chamado)
-        return render(request, "chamados/form.html", {"form": form, "chamado": chamado})
+
+        return render(
+            request,
+            "chamados/form.html",
+            {
+                "form": form,
+                "chamado": chamado,
+                "usuarios": usuarios,
+                "modo_edicao": True,
+            }
+        )
 
     def post(self, request, pk):
-        chamado = get_object_or_404(Chamado, pk=pk)
+
+        chamado = get_object_or_404(
+            Chamado,
+            pk=pk
+        )
+
         if chamado.status == Chamado.Status.FINALIZADO:
-            messages.error(request, "Não é possível editar um chamado finalizado.")
-            return redirect("chamados:detalhe", pk=pk)
-        form = ChamadoForm(request.POST, instance=chamado)
+
+            messages.error(
+                request,
+                "Não é possível editar um chamado finalizado."
+            )
+
+            return redirect(
+                "chamados:detalhe",
+                pk=pk
+            )
+
+        form = ChamadoForm(
+            request.POST,
+            instance=chamado
+        )
 
         if form.is_valid():
-            chamado = form.save(commit=False)
-            chamado.usuario = request.user
-            chamado.save()
-            messages.success(request, "Chamado atualizado com sucesso.")
-            return redirect("chamados:detalhe", pk=pk)
 
-        return render(request, "chamados/form.html", {"form": form, "chamado": chamado})
+            chamado = form.save(commit=False)
+
+            chamado.usuario = request.user
+
+            chamado.save()
+
+            messages.success(
+                request,
+                "Chamado atualizado com sucesso."
+            )
+
+            return redirect(
+                "chamados:detalhe",
+                pk=pk
+            )
+
+        return render(
+            request,
+            "chamados/form.html",
+            {
+                "form": form,
+                "chamado": chamado,
+                "modo_edicao": True,
+            }
+        )
 
 class ChamadoDeleteView(LoginRequiredMixin, View):
     model = Chamado
     def post(self, request, pk):
         chamado = get_object_or_404(Chamado, pk=pk)
         chamado.delete()
-        return redirect("chamados:lista")
+        return redirect("chamados:index")
 
 class ChamadoMudarStatusView(View):
     def post(self, request, pk):
@@ -157,13 +292,6 @@ class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self):
         return reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk})
 
-from django.views.generic import TemplateView
-
-class IndexPageView(TemplateView):
-    template_name = "chamados/index.html"
-
-class CadastroPageView(TemplateView):
-    template_name = "chamados/cadastro.html"
 
 class ChamadosAtribuidosView(LoginRequiredMixin, ListView):
     model = Chamado

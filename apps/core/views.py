@@ -6,7 +6,7 @@ from django.views.generic import DetailView, ListView, CreateView, UpdateView, D
 
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 
 from apps.core.forms import UserForm
 
@@ -18,14 +18,45 @@ User = get_user_model()
 
 class UserListView(LoginRequiredMixin, ListView):
     model = User
-    template_name = "core/lista.html"
+    template_name = "core/admin/index.html"
+    # template_name = "core/lista.html"
     context_object_name = "usuarios"
+    
+    queryset = User.objects.all().order_by("first_name")
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        usuarios_json  = list(
+            User.objects.values(
+                "id",
+                "first_name",
+                "matricula",
+                "email",
+                "telefone"
+            )
+        )
+    
+        # adiciona a url de edição para cada usuário
+        for usuario in usuarios_json:
+            usuario["editar_url"] = reverse(
+                "core:editar",
+                args=[usuario["id"]]
+            )
+            usuario["excluir_url"] = reverse(
+                "core:excluir",
+                args=[usuario["id"]]
+            )
+            
+        context["usuarios_json"] = usuarios_json
+
+        return context
     
 class UserLoginView(View):
     def get(self, request):
         if request.user.is_authenticated:
             return redirect("estoque:lista")
-        return render(request, "auth/login.html")
+        return render(request, "core/auth/login.html")
 
     def post(self, request):
         matricula = request.POST.get("matricula", "").strip()
@@ -35,14 +66,14 @@ class UserLoginView(View):
 
         if user is not None:
             if not user.ativo:
-                return render(request, "auth/login.html", {
+                return render(request, "core/auth/login.html", {
                     "erro": "Usuário inativo. Contate o administrador."
                 })
             login(request,user)
             next_url = request.GET.get("next") or "estoque:lista"
             return redirect(next_url)
 
-        return render(request, "auth/login.html", {
+        return render(request, "core/auth/login.html", {
             "erro": "Matrícula ou senha inválidas."
         })
     
@@ -50,6 +81,12 @@ class UserLogoutView(LoginRequiredMixin, View):
     def post(self, request):
         logout(request)
         return redirect("core:login")
+    
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    form_class = UserForm
+    template_name = "core/auth/nova_senha.html"
+    success_url = reverse_lazy("core:index")
     
 class UserCreateView(LoginRequiredMixin, CreateView):
     form_class = UserForm
@@ -89,13 +126,13 @@ class RecuperarSenhaView(View):
     a resposta é sempre a mesma para não revelar se a matrícula existe.
     """
     def get(self, request):
-        return render(request, "auth/recuperar_senha.html")
+        return render(request, "core/auth/recuperar_senha.html")
     
     def post(self, request):
         email = request.POST.get("email", "").strip()
 
         if not email or not "@" in email:
-            return render(request, "auth/recuperar_senha.html",{
+            return render(request, "core/auth/recuperar_senha.html",{
                 "erro": "Informe um e-mail válido."
             })
         
@@ -116,7 +153,7 @@ class EmailEnviadoView(View):
     def get(self, request):
         # Recupera o e-mail salvo na sessão (pode estar vazio se acessado direto)
         email = request.session.pop("recuperacao_email", "seu e-mail cadastrado")
-        return render(request, "auth/email_enviado.html", {"email": email})
+        return render(request, "core/auth/email_enviado.html", {"email": email})
 
 class NovaSenhaView(View):
     """
@@ -127,19 +164,19 @@ class NovaSenhaView(View):
     """
  
     def get(self, request):
-        return render(request, "auth/nova_senha.html")
+        return render(request, "core/auth/nova_senha.html")
  
     def post(self, request):
         senha1 = request.POST.get("password1", "")
         senha2 = request.POST.get("password2", "")
  
         if not senha1 or senha1 != senha2:
-            return render(request, "auth/nova_senha.html", {
+            return render(request, "core/auth/nova_senha.html", {
                 "erro": "As senhas não coincidem ou estão vazias."
             })
  
         if len(senha1) < 6:
-            return render(request, "auth/nova_senha.html", {
+            return render(request, "core/auth/nova_senha.html", {
                 "erro": "A senha deve ter pelo menos 6 caracteres."
             })
  
@@ -147,7 +184,7 @@ class NovaSenhaView(View):
         #   user.set_password(senha1)
         #   user.save()
  
-        return render(request, "auth/nova_senha.html", {"sucesso": True})
+        return render(request, "core/auth/nova_senha.html", {"sucesso": True})
 
 
 def index(request):

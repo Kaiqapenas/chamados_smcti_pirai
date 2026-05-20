@@ -28,6 +28,11 @@ body {
   flex-direction: column;
 }
 
+a{
+  text-decoration: none;
+  color: inherit;
+}
+
 /* ============================================================
    HEADER (Topbar)
 ============================================================ */
@@ -252,6 +257,8 @@ body {
 
 .nav-text {
   transition: opacity 0.2s;
+  text-decoration: none;
+  color: inherit;
 }
 
 /* ============================================================
@@ -443,4 +450,18 @@ body.collapsed .sidebar-toggle-btn {
 .dropdown-item:last-child {
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
+}
+
+/* ============================================================
+   EM USO NO DROPDOWN DE USUÁRIO => SAIR
+============================================================ */
+.btn-link {
+  background: none;
+  border: none;
+  display: block;
+  width: 100%;
+  /* text-align: left; */
+  text-decoration: none;
+  font: inherit;
+  cursor: pointer;
 }
