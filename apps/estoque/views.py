@@ -6,9 +6,10 @@ from django.db.models import Max, ProtectedError
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.contrib import messages
+from django.urls import reverse_lazy
 
-from .models import ItemEstoque, CategoriaItem, ItemImagem, MovimentacaoEstoque
-from .forms import ItemEstoqueForm, CategoriaItemForm, MovimentacaoEstoqueForm
+from .models import ItemEstoque, CategoriaItem, ItemImagem, MovimentacaoEstoque, RequisicaoPeca
+from .forms import ItemEstoqueForm, CategoriaItemForm, MovimentacaoEstoqueForm, RequisicaoPecaForm
 
 # 🔹 LISTVIEW ESTOQUE
 class EstoqueListView(LoginRequiredMixin, ListView):
@@ -277,3 +278,19 @@ class MovimentacaoEstoqueDeleteView(View):
         except ValidationError as e:
             messages.error(request, str(e.message))
         return redirect("estoque:movimentacao_lista")
+
+# 🔹 REQUISIÇÃO DE PEÇAS
+class RequisicaoPecaCreateView(LoginRequiredMixin, View):
+    def get(self, request):
+        form = RequisicaoPecaForm()
+        return render(request, "estoque/requisitar_peca.html", {"form": form})
+
+    def post(self, request):
+        form = RequisicaoPecaForm(request.POST)
+        if form.is_valid():
+            requisicao = form.save(commit=False)
+            requisicao.usuario = request.user
+            requisicao.save()
+            messages.success(request, "Requisição de peça enviada com sucesso.")
+            return redirect("estoque:lista")
+        return render(request, "estoque/requisitar_peca.html", {"form": form})
