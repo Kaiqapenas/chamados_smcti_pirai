@@ -16,9 +16,9 @@
         <ul>
             {% for usuario in usuarios %}
                 <li>
-                    <strong>{{ usuario.nome }}</strong>
+                    <strong>{{ usuario.first_name }} {{ usuario.last_name }}</strong>
                     — Matrícula: {{ usuario.matricula }}
-                    <small>({{ usuario.data_criacao|date:"d/m/Y H:i" }})</small>
+                    <small>({{ usuario.date_joined|date:"d/m/Y H:i" }})</small>
                     <!-- ✏️ EDITAR -->
                     <a href="{% url 'core:editar' usuario.id %}">
                         <button>✏️ Editar</button>
