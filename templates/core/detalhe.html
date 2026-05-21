@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block titulo %}Detalhes do usuário{% endblock %}
+
+{% block conteudo %}
+    <h2>{{ usuario.nome }}</h2>
+    <p><strong>Matrícula:</strong> {{ usuario.matricula }}</p>
+    <p><strong>Criado em:</strong> {{ usuario.data_criacao|date:"d/m/Y H:i" }}</p>
+    <p><strong>Última edição:</strong> {{ usuario.ultima_edicao|date:"d/m/Y H:i" }}</p>
+
+    <!-- ✏️ EDITAR -->
+    <a href="{% url 'usuario:editar' usuario.id %}">
+        <button>✏️ Editar</button>
+    </a>
+
+    <!-- 🗑️ EXCLUIR -->
+    <form method="POST" action="{% url 'usuario:excluir' usuario.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('Deseja excluir este usuário?')">
+            🗑️ Excluir
+        </button>
+    </form>
+
+    <br><br>
+    <a href="{% url 'usuario:lista' %}">← Voltar para a lista de usuários</a>
+{% endblock %}

@@ -24,7 +24,7 @@
                         <button>✏️ Editar</button>
                     </a>
                     <!-- 🗑️ EXCLUIR -->
-                    <form method="POST" action="{% url 'estoque:excluir_categoria' categoria.id %}" style="display:inline;">
+                    <form method="POST" action="{% url 'estoque:remover_categoria' categoria.id %}" style="display:inline;">
                         {% csrf_token %}
                         <button type="submit" onclick="return confirm('Deseja excluir esta categoria?')">
                             🗑️ Excluir

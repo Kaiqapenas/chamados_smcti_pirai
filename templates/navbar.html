@@ -1,0 +1,23 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom mb-3">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:index' %}">
+            <img src="{% static 'image/logo-pirai.png' %}" alt="Logo de Pirai" height="36">
+            <span class="fw-semibold">SIGEC</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPrincipal" aria-controls="navbarPrincipal" aria-expanded="false" aria-label="Alternar navegacao">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarPrincipal">
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{% url 'chamados:lista' %}">Chamados</a>
+                <a class="nav-link" href="{% url 'estoque:lista' %}">Estoque</a>
+                <a class="nav-link" href="{% url 'estoque:categoria_lista' %}">Categorias</a>
+                <a class="nav-link" href="{% url 'estoque:movimentacao_lista' %}">Movimentacoes</a>
+                <a class="nav-link" href="{% url 'admin:index' %}">Administracao</a>
+            </div>
+        </div>
+    </div>
+</nav>

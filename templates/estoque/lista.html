@@ -33,7 +33,7 @@
                     </a>
 
                     <!-- 🗑️ EXCLUIR -->
-                    <form method="POST" action="{% url 'estoque:excluir' estoque.id %}" style="display:inline;">
+                    <form method="POST" action="{% url 'estoque:remover' estoque.id %}" style="display:inline;">
                         {% csrf_token %}
                         <button type="submit" onclick="return confirm('Deseja excluir este item?')">
                             🗑️ Excluir

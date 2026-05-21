@@ -1,0 +1,16 @@
+{% block conteudo %}
+    <h2>Login</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <input type="text" name="matricula" placeholder="Matrícula">
+        <input type="password" name="password" placeholder="Senha">
+
+        <button type="submit">Entrar</button>
+    </form>
+
+    {% if erro %}
+        <p>{{ erro }}</p>
+    {% endif %}
+{% endblock %}

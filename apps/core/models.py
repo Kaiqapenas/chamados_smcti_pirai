@@ -31,11 +31,17 @@ class User(AbstractUser):
     username = None
     matricula = models.CharField(max_length=30, unique=True)
     telefone = models.CharField(max_length=30, blank=True, null=True)
+    setor = models.CharField("Setor", max_length=100, blank=True, null=True)
+    ativo = models.BooleanField("Ativo", default=True)
 
     USERNAME_FIELD = "matricula"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
 
+    class Meta:
+        verbose_name = "Usuário"
+        verbose_name_plural = "Usuários"
+
     def __str__(self):
-        return self.matricula
+        return f"{self.matricula} - {self.first_name}"

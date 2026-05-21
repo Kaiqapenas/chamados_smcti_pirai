@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block titulo %}Lista de usuários{% endblock %}
+
+{% block conteudo %}
+    <h2>Usuários</h2>
+
+    <!-- 🔹 BOTÃO ADICIONAR -->
+    <a href="{% url 'core:adicionar' %}">
+        <button>➕ Adicionar Usuário</button>
+    </a>
+
+    <br><br>
+
+    {% if usuarios %}
+        <ul>
+            {% for usuario in usuarios %}
+                <li>
+                    <strong>{{ usuario.nome }}</strong>
+                    — Matrícula: {{ usuario.matricula }}
+                    <small>({{ usuario.data_criacao|date:"d/m/Y H:i" }})</small>
+                    <!-- ✏️ EDITAR -->
+                    <a href="{% url 'core:editar' usuario.id %}">
+                        <button>✏️ Editar</button>
+                    </a>
+
+                    <!-- 🗑️ EXCLUIR -->
+                    <form method="POST" action="{% url 'core:excluir' usuario.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Deseja excluir este usuário?')">
+                            🗑️ Excluir
+                        </button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhum usuário encontrado.</p>
+    {% endif %}
+{% endblock %}
+                    
