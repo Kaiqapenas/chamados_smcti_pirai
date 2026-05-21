@@ -14,7 +14,7 @@ from .forms import ItemEstoqueForm, CategoriaItemForm, MovimentacaoEstoqueForm, 
 # 🔹 LISTVIEW ESTOQUE
 class EstoqueListView(LoginRequiredMixin, ListView):
     model = ItemEstoque
-    template_name = "estoque/lista.html"
+    template_name = "estoque/almoxarife.html"
     context_object_name = "estoques"
 
     def get_queryset(self):
