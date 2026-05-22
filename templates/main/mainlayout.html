@@ -104,24 +104,32 @@
         </div>
 
         <nav class="nav">
-        {% block menu_navegacao %}
-        <!-- Link para Requisitar Peças -->
-        <a href="{% url 'estoque:requisitar_peca' %}" class="nav-item" style="text-decoration: none; color: inherit;">
-          <span class="nav-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-              <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                <path d="M11.25 17.25a6 6 0 1 0 12 0a6 6 0 0 0-12 0m6-3v6m-3-3h6" />
-                <path d="M8.25 20.25h-6a1.5 1.5 0 0 1-1.5-1.5V2.25a1.5 1.5 0 0 1 1.5-1.5h10.629a1.5 1.5 0 0 1 1.06.439l2.872 2.872a1.5 1.5 0 0 1 .439 1.06V8.25" />
-              </g>
-            </svg>
-          </span>
-          <span class="nav-text">Requisitar Peças</span>
-        </a>
-        {% endblock menu_navegacao %}
-      </nav>
-
+          {% block menu_navegacao %}
+          <!-- Link para Requisitar Peças -->
+          <a href="{% url 'estoque:requisitar_peca' %}" class="nav-item" style="text-decoration: none; color: inherit;">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M11.25 17.25a6 6 0 1 0 12 0a6 6 0 0 0-12 0m6-3v6m-3-3h6" />
+                  <path d="M8.25 20.25h-6a1.5 1.5 0 0 1-1.5-1.5V2.25a1.5 1.5 0 0 1 1.5-1.5h10.629a1.5 1.5 0 0 1 1.06.439l2.872 2.872a1.5 1.5 0 0 1 .439 1.06V8.25" />
+                </g>
+              </svg>
+            </span>
+            <span class="nav-text">Requisitar Peças</span>
+          </a>
+          {% endblock menu_navegacao %}
+          <a href="{% url 'chamados:reatribuir_tecnico' %}" class="nav-item" style="text-decoration: none; color: inherit;">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </g>
+              </svg>
+            </span>
+            <span class="nav-text">Reatribuição de Técnico</span>
+          </a>
+        </nav>
       </aside>
-
       <main class="main">
         {% block conteudo %}
         {% endblock conteudo %}
