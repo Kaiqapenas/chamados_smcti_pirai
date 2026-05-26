@@ -27,17 +27,47 @@ class UserManager(BaseUserManager):
 
         return self.create_user(matricula=matricula, password=password, **extra_fields)
 
+class PerfilUsuario(models.Model):
+    """Tabela dos 4 perfis do MVP """
 
+    class Tipo(models.TextChoices):
+        SOLICITANTE   = "SO", "Solicitante"
+        ALMOXARIFE    = "AL", "Almoxarife"
+        TECNICO       = "TE", "Técnico"
+        ADMINISTRADOR = "AD", "Administrador"
+
+    tipo = models.CharField(
+        "Tipo",
+        max_length=2,
+        choices=Tipo.choices,
+        unique=True,
+    )
+
+    class Meta:
+        verbose_name = "Perfil"
+        verbose_name_plural = "Perfis"
+
+    def __str__(self):
+        return self.get_tipo_display()
 class User(AbstractUser):
+
     username = None
     matricula = models.CharField(max_length=30, unique=True)
     telefone = models.CharField(max_length=30, blank=True, null=True)
     setor = models.CharField("Setor", max_length=100, blank=True, null=True)
     ativo = models.BooleanField("Ativo", default=True)
 
+    # um usuário pode ter multiplos perfis (Carlos = Almoxarife + Solicitante)
+
+    perfis = models.ManyToManyField(
+        "PerfilUsuario",
+        blank=True,
+        related_name="usuarios",
+        verbose_name="Perfis"
+    )
+
     USERNAME_FIELD = "matricula"
     REQUIRED_FIELDS = []
-
     objects = UserManager()
 
     class Meta:
@@ -46,6 +76,20 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.matricula} - {self.first_name}"
+    
+        # Helpers de permissão — usados nas views e templates
+    def is_admin(self):
+        return self.perfis.filter(tipo=User.Perfil.ADMINISTRADOR).exists()
+
+    def is_tecnico(self):
+        return self.perfis.filter(tipo=User.Perfil.TECNICO).exists()
+
+    def is_almoxarife(self):
+        return self.perfis.filter(tipo=User.Perfil.ALMOXARIFE).exists()
+
+    def is_solicitante(self):
+        return self.has_perfil(PerfilUsuario.Tipo.SOLICITANTE)
+
 
 
 class TipoEvento(models.TextChoices):
