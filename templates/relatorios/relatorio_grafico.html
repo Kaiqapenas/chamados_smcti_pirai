@@ -1,0 +1,267 @@
+{% extends "main/mainlayout.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/relatorio_grafico.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock head %}
+
+{% block menu_navegacao %}
+
+<a href="#" class="nav-item active">
+  <span class="nav-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+      <path d="M0 0h48v48H0z" fill="none" />
+      <path fill="currentColor" fill-rule="evenodd" d="M34.376 2.155a33.2 33.2 0 0 1 7.795-.63a2.4 2.4 0 0 1 2.305 2.305c.06 1.416.067 4.399-.63 7.795c-.41 2.003-2.819 2.546-4.147 1.217l-1.917-1.916a116 116 0 0 0-2.213 2.055c-1.891 1.801-4.263 4.182-6.264 6.559c-1.702 2.022-4.967 2.008-6.565-.23a94 94 0 0 0-3.148-4.17c-2.234 1.529-6.872 5.048-12.086 11.01q-.486.555-.976 1.138a2 2 0 0 1-3.06-2.577q.516-.61 1.024-1.193c5.59-6.392 10.587-10.152 12.993-11.784c1.683-1.141 3.891-.748 5.126.78a97 97 0 0 1 3.381 4.471a.1.1 0 0 0 .026.023a.2.2 0 0 0 .073.016a.19.19 0 0 0 .152-.06c2.136-2.537 4.626-5.032 6.564-6.879c.833-.793 1.57-1.473 2.141-1.99l-1.79-1.794c-1.329-1.328-.786-3.736 1.217-4.147m-.612 40.57c-.132-1.81-.264-5.039-.264-10.725s.132-8.914.264-10.726c.146-2.01 1.614-3.578 3.702-3.706c.664-.04 1.497-.068 2.534-.068s1.87.028 2.534.068c2.088.128 3.556 1.696 3.702 3.706c.132 1.812.264 5.04.264 10.726s-.132 8.914-.264 10.726c-.146 2.01-1.614 3.578-3.702 3.706c-.664.04-1.497.068-2.534.068s-1.87-.028-2.534-.068c-2.088-.128-3.556-1.696-3.702-3.706M1.67 43.27c-.097-.944-.17-2.304-.17-4.27s.073-3.326.169-4.27c.201-1.99 1.798-3.131 3.547-3.19A84 84 0 0 1 8 31.5c1.187 0 2.097.017 2.784.04c1.749.059 3.346 1.2 3.547 3.19c.096.944.169 2.304.169 4.27s-.073 3.326-.168 4.27c-.202 1.99-1.8 3.131-3.548 3.19c-.687.023-1.597.04-2.784.04s-2.097-.017-2.784-.04c-1.749-.059-3.346-1.2-3.547-3.19M17.5 36c0 3.411.099 5.564.213 6.917c.172 2.048 1.74 3.447 3.72 3.534c.664.029 1.506.049 2.567.049s1.903-.02 2.567-.05c1.98-.086 3.548-1.485 3.72-3.533c.114-1.353.213-3.506.213-6.917s-.099-5.564-.212-6.917c-.173-2.048-1.74-3.447-3.721-3.534c-.664-.029-1.506-.049-2.567-.049s-1.903.02-2.566.05c-1.981.086-3.55 1.485-3.722 3.533C17.6 30.436 17.5 32.589 17.5 36" clip-rule="evenodd" />
+    </svg>
+  </span>
+  <span class="nav-text">Relatório gráfico</span>
+</a>
+{% endblock menu_navegacao %}
+
+{% block conteudo %}
+<div class="report-container">
+  <div class="page-header" style="margin-bottom: 24px; border-bottom: 2px solid #f0f2f7; padding-bottom: 16px;">
+    <h1 style="font-size: 24px; font-weight: 700; color: #3d65b6ff; margin: 0;">Relatório Gráfico</h1>
+  </div>
+  <div class="stats-header">
+    <div class="stat-card">
+      <div class="stat-label">Chamados abertos</div>
+      <div class="stat-value">{{ chamados_abertos|default:"00" }}</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-label">Itens no Estoque</div>
+      <div class="stat-value">{{ itens_estoque|default:"000" }}</div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-label">Técnicos Ativos</div>
+      <div class="stat-value">{{ tecnicos_ativos|default:"000" }}</div>
+    </div>
+
+    <button class="btn-pdf" onclick="gerarPDF()" data-html2canvas-ignore="true">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+      Baixar PDF
+    </button>
+  </div>
+
+  <div class="charts-section">
+    <div class="chart-card chart-large">
+      <div class="chart-header">
+        <h3 class="chart-title">Consumo de itens — {{ mes_referencia|default:"Abril/2025" }}</h3>
+      </div>
+      <div class="chart-body">
+        <canvas id="consumoChart"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card chart-small">
+      <div class="chart-header">
+        <h3 class="chart-title">Movimentações</h3>
+      </div>
+      <div class="chart-body">
+        <canvas id="pizzaChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <div class="table-header">
+      <h3 class="table-title">Últimas modificações no estoque</h3>
+      <input type="text" class="search-input" placeholder="Buscar por usuário...">
+    </div>
+    
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ITEM</th>
+            <th>AÇÃO</th>
+            <th>USUÁRIO</th>
+            <th>DATA/HORA</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for modificacao in modificacoes %}
+          <tr>
+            <td>{{ modificacao.item }}</td>
+            <td>
+              <span class="badge badge-{{ modificacao.tipo }}">
+                {{ modificacao.acao }}
+              </span>
+            </td>
+            <td>{{ modificacao.usuario }}</td>
+            <td>{{ modificacao.data_hora }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" style="text-align: center; color: #718096; padding: 30px;">
+              Nenhuma movimentação registrada no estoque.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock conteudo %}
+
+{% block scripts %}
+<script>
+  const consumoData = {
+    labels: {{ consumo_labels|safe }},
+    datasets: [{
+      label: 'Saídas',
+      data: {{ consumo_valores|safe }},
+      backgroundColor: [
+        '#4C6EF5',
+        '#52956eff',
+        '#F2C94C',
+        '#EB5757',
+        '#9B84F4'
+      ],
+      borderRadius: 6,
+      barThickness: 32
+    }]
+  };
+
+  const consumoConfig = {
+    type: 'bar',
+    data: consumoData,
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: 12,
+          titleFont: { size: 13, weight: '600' },
+          bodyFont: { size: 12 },
+          cornerRadius: 6
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          grid: {
+            display: true,
+            color: '#f0f0f0'
+          },
+          ticks: {
+            font: { size: 11 }
+          }
+        },
+        y: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            font: { size: 12, weight: '500' },
+            color: '#666'
+          }
+        }
+      }
+    }
+  };
+
+  const pizzaData = {
+    labels: {{ pizza_labels|safe }},
+    datasets: [{
+      data: {{ pizza_valores|safe }},
+      backgroundColor: [
+        '#7BC67E', 
+        '#E74C3C'  
+      ],
+      borderWidth: 0
+    }]
+  };
+
+  const pizzaConfig = {
+    type: 'pie',
+    data: pizzaData,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            padding: 15,
+            font: { size: 12 },
+            usePointStyle: true,
+            pointStyle: 'circle'
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: 12,
+          titleFont: { size: 13, weight: '600' },
+          bodyFont: { size: 12 },
+          cornerRadius: 6,
+          callbacks: {
+            label: function(context) {
+              let label = context.label || '';
+              let value = context.parsed || 0;
+              return label + ': ' + value + '%';
+            }
+          }
+        }
+      }
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const consumoCtx = document.getElementById('consumoChart');
+    const pizzaCtx = document.getElementById('pizzaChart');
+    
+    if (consumoCtx) {
+      new Chart(consumoCtx, consumoConfig);
+    }
+    
+    if (pizzaCtx) {
+      new Chart(pizzaCtx, pizzaConfig);
+    }
+  });
+
+  function gerarPDF() {
+    const element = document.querySelector('.report-container');
+    
+    const opt = {
+      margin:       10,
+      filename:     'relatorio_grafico.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'], avoid: ['.stat-card', '.chart-card', '.table-section', 'tr'] }
+    };
+    
+    const btn = document.querySelector('.btn-pdf');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = 'Gerando PDF...';
+    btn.disabled = true;
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+    }).catch(err => {
+      console.error('Erro ao gerar PDF:', err);
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+      alert('Ocorreu um erro ao gerar o PDF.');
+    });
+  }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{% endblock scripts %}

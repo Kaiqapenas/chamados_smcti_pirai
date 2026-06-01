@@ -113,7 +113,8 @@
 
         <nav class="nav">
           {% block menu_navegacao %}
-          <div class="nav-item active" onclick="setActive(this)">
+          <!-- Link para Requisitar Peças -->
+          <a href="{% url 'estoque:requisitar_peca' %}" class="nav-item" style="text-decoration: none; color: inherit;">
             <span class="nav-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
                 <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
@@ -195,9 +196,18 @@
             <a href="{% url 'chamados:atribuidos' %}" class="nav-text">Meus Chamados</a>
           </div>
           {% endblock menu_navegacao %}
+          <a href="{% url 'chamados:reatribuir_tecnico' %}" class="nav-item" style="text-decoration: none; color: inherit;">
+            <span class="nav-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </g>
+              </svg>
+            </span>
+            <span class="nav-text">Reatribuição de Técnico</span>
+          </a>
         </nav>
       </aside>
-
       <main class="main">
         {% block conteudo %}
         {% endblock conteudo %}

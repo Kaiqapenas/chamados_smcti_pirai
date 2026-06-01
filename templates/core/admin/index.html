@@ -582,7 +582,6 @@ document.getElementById('nome').addEventListener('input', function () {
   this.setSelectionRange(pos - removidos, pos - removidos);
 });
 
-// ── Máscara de telefone ──────────────────────────────────────
 document.getElementById('telefone').addEventListener('input', function () {
   let v = this.value.replace(/\D/g, '').slice(0, 11);
   if (v.length > 7) {

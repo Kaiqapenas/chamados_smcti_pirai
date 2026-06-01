@@ -1,7 +1,13 @@
 {% extends "main/mainlayout.html" %}
 {% load static %}
+{% extends "main/mainlayout.html" %}
+{% load static %}
 
 {% block titulo %}Detalhes do Chamado{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
+{% endblock head %}
 
 {% block head %}
     <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">

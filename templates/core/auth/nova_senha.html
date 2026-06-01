@@ -24,7 +24,8 @@
             <h2 id="pageTitle">Criar nova senha</h2>
             <p class="subtitle" id="pageSubtitle">Digite sua nova senha abaixo e confirme-a para redefinir seu acesso.</p>
             
-            <form id="newPasswordForm">
+            <form method="POST" action="{% url 'core:nova_senha' %}">
+                {% csrf_token %}
                 <div class="auth-input-group" id="pwdGroup1">
                     <input type="password" name="password1" id="newPwd" placeholder="Nova senha" required minlength="6">
                     
@@ -44,7 +45,6 @@
 
     <script>
         document.getElementById('newPasswordForm').addEventListener('submit', function(e) {
-            e.preventDefault();
             
             const btn = document.getElementById('actionBtn');
             
