@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-mail Enviado - SIGEC</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{% static 'auth/style.css' %}">
 </head>
 <body>
     <div class="auth-card">
@@ -35,16 +36,8 @@
             <a href="{% url 'core:nova_senha' %}" style="color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 20px; text-decoration: none;">[Acessar página de Nova Senha]</a>
         </div>
         <div class="auth-footer">
-            <img src="../img/prefeitura-pirai.png" alt="Prefeitura de Piraí">
+            <img src="{% static 'image/prefeitura-pirai.png' %}" alt="Prefeitura de Piraí">
         </div>
     </div>
-    <!-- retirar depois -->
-    <script>
-        // Recupera o e-mail digitado na tela anterior, se houver
-        const savedEmail = sessionStorage.getItem('recoveryEmail');
-        if(savedEmail) {
-            document.getElementById('displayEmail').innerText = savedEmail;
-        }
-    </script>
 </body>
 </html>

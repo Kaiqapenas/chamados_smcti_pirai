@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar Senha - SIGEC</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{% static 'auth/style.css' %}">
 </head>
 <body>
     <div class="auth-card">
@@ -28,7 +29,7 @@
             <h2>Esqueceu sua senha?</h2>
             <p class="subtitle">Informe o e-mail cadastrado na sua matrícula.<br>Enviaremos um link para redefinir sua senha.</p>
             
-            <form action="{% url 'core:recuperar_senha' %}" method="POST">
+            <form action="{% url 'core:recuperar_senha' %}" method="POST" id="recoveryForm">
                 {% csrf_token %}
                 <div class="auth-input-group has-icon" id="emailGroup">
                     <div class="icon">
@@ -47,33 +48,9 @@
             </form>
         </div>
         <div class="auth-footer">
-            <img src="../img/prefeitura-pirai.png" alt="Prefeitura de Piraí">
+            <img src="{% static 'image/prefeitura-pirai.png' %}" alt="Prefeitura de Piraí">
         </div>
     </div>
 
-            {# ── isso é falso, dps retiramos ── #}
-    <script>
-        document.getElementById('recoveryForm').addEventListener('submit', function(e) {
-            const email = document.getElementById('emailInput').value;
-            
-            // Simulação de e-mail inválido para demonstração do erro
-            if(email === 'erro@erro.com' || email.indexOf('@') === -1) {
-                document.getElementById('emailGroup').classList.add('input-error');
-                document.getElementById('errorMsg').style.display = 'block';
-            } else {
-                document.getElementById('emailGroup').classList.remove('input-error');
-                document.getElementById('errorMsg').style.display = 'none';
-                
-                // Salvar o e-mail no sessionStorage para mostrar na próxima página
-                sessionStorage.setItem('recoveryEmail', email);
-                window.location.href = 'email_enviado.html';
-            }
-        });
-        
-        document.getElementById('emailInput').addEventListener('input', function() {
-            document.getElementById('emailGroup').classList.remove('input-error');
-            document.getElementById('errorMsg').style.display = 'none';
-        });
-    </script>
 </body>
 </html>
