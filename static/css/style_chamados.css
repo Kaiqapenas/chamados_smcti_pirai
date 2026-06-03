@@ -103,6 +103,24 @@ body {
   background-color: var(--color-primary-dark);
 }
 
+.btn-voltar {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-voltar:hover {
+  background-color: var(--color-primary-dark);
+}
+
 /* ========== CONTAINER PRINCIPAL ========== */
 .tickets-container {
   display: flex;

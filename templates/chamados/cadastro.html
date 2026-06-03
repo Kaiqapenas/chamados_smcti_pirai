@@ -1,4 +1,4 @@
-__{% extends "base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block titulo %}Novo Chamado{% endblock %}
@@ -7,16 +7,13 @@ __{% extends "base.html" %}
     <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
 {% endblock head %}
 
-{% block main %}
+{% block conteudo %}
     <div class="tickets-page">
         <!-- Header -->
         <header class="tickets-header">
             <div class="header-content">
                 <div class="header-left">
                     <h1>Novo chamado de manutenção</h1>
-                </div>
-                <div class="header-right">
-                    <a href="{% url 'chamados:index' %}" class="btn-voltar">← Voltar</a>
                 </div>
             </div>
         </header>
@@ -139,14 +136,14 @@ __{% extends "base.html" %}
                         <!-- Botões de Ação -->
                         <div class="form-actions">
                             <button type="submit" class="btn-submit">Abrir chamado</button>
-                            <a href="{% url 'chamados:index' %}" class="btn-cancel">Cancelar</a>
+                            <button type="button" onclick="window.location.href='{% url 'chamados:lista' %}'" class="btn-cancel">Cancelar</button>
                         </div>
                     </form>
                 </div>
             </main>
         </div>
     </div>
-{% endblock main %}
+{% endblock conteudo %}
 
 {% block scripts %}
     <script src="{% static 'js/buttonselect.js' %}"></script>

@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING, Any
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
@@ -12,6 +14,15 @@ from .forms import ItemChamadoForm
 
 from apps.estoque.models import ItemEstoque
 from django.db import models
+
+if TYPE_CHECKING:
+    from django.db.models import Manager
+    
+    # Type hints for Django model managers
+    Chamado.objects: Manager[Chamado]  # type: ignore[misc]
+    AlteracaoChamado.objects: Manager[AlteracaoChamado]  # type: ignore[misc]
+    ItemChamado.objects: Manager[ItemChamado]  # type: ignore[misc]
+    ItemEstoque.objects: Manager[ItemEstoque]  # type: ignore[misc]
 
 class ChamadoListView(LoginRequiredMixin, ListView):
     model = Chamado
@@ -45,7 +56,7 @@ class ChamadoListView(LoginRequiredMixin, ListView):
 class ChamadoCreateView(LoginRequiredMixin, View):
     def get(self, request):
         form = ChamadoForm()
-        return render(request, "chamados/form.html", {"form": form})
+        return render(request, "chamados/cadastro.html", {"form": form})
 
     def post(self, request):
         form = ChamadoForm(request.POST, request.FILES)
@@ -57,7 +68,7 @@ class ChamadoCreateView(LoginRequiredMixin, View):
             messages.success(request, "Chamado criado com sucesso")
             return redirect("chamados:lista")
 
-        return render(request, "chamados/form.html", {"form": form})
+        return render(request, "chamados/cadastro.html", {"form": form})
     
 class ChamadoDetailView(LoginRequiredMixin, DetailView):
     model = Chamado
@@ -125,16 +136,16 @@ class ItemChamadoCreateView(LoginRequiredMixin, CreateView):
         form.instance.usuario = self.request.user
         return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse_lazy("chamados:detalhe", kwargs={"pk": self.kwargs["chamado_pk"]})
+    def get_success_url(self) -> str:
+        return str(reverse_lazy("chamados:detalhe", kwargs={"pk": self.kwargs["chamado_pk"]}))
 
 class ItemChamadoUpdateView(LoginRequiredMixin, UpdateView):
     model = ItemChamado
     form_class = ItemChamadoForm
     template_name = "chamados/item_form.html"
 
-    def get_success_url(self):
-        return reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk})
+    def get_success_url(self) -> str:
+        return str(reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk}))
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
@@ -153,8 +164,8 @@ class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
             messages.error(request, e.message)
         return redirect(self.get_success_url())
 
-    def get_success_url(self):
-        return reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk})
+    def get_success_url(self) -> str:  # type: ignore[override]
+        return str(reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk}))
 
 from django.views.generic import TemplateView
 
@@ -170,14 +181,14 @@ class ChamadosAtribuidosView(LoginRequiredMixin, ListView):
     context_object_name = "chamados"
 
     def get_queryset(self):
-        return Chamado.objects.filter(tecnico=self.request.user).select_related('usuario')
+        return Chamado.objects.filter(tecnico=self.request.user).select_related('usuario')  # type: ignore[attr-defined]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["chamados_abertos_count"] = self.get_queryset().filter(status__in=['AB', 'EA']).count()
         context["status_choices"] = Chamado.Status.choices
         # Pega o primeiro item com estoque baixo para o alerta
-        context["estoque_baixo"] = ItemEstoque.objects.filter(quantidade__lte=models.F('quantidade_minima')).first()
+        context["estoque_baixo"] = ItemEstoque.objects.filter(quantidade__lte=models.F('quantidade_minima')).first()  # type: ignore[attr-defined]
         return context
     
 from django.contrib.auth import get_user_model
@@ -189,13 +200,13 @@ class ReatribuicaoTecnicoView(LoginRequiredMixin, ListView):
     context_object_name = "chamados"
 
     def get_queryset(self):
-        return Chamado.objects.filter(status__in=['AB', 'EA']).select_related('tecnico', 'usuario')
+        return Chamado.objects.filter(status__in=['AB', 'EA']).select_related('tecnico', 'usuario')  # type: ignore[attr-defined]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tecnicos"] = User.objects.filter(is_active=True)
+        context["tecnicos"] = User.objects.filter(is_active=True)  # type: ignore[attr-defined]
         # Busca as últimas 10 reatribuições para o histórico
-        context["historico"] = AlteracaoChamado.objects.filter(
+        context["historico"] = AlteracaoChamado.objects.filter(  # type: ignore[attr-defined]
             descricao__icontains="Reatribuído"
         ).select_related('chamado', 'usuario')[:10]
         return context
@@ -212,7 +223,7 @@ class ReatribuicaoTecnicoView(LoginRequiredMixin, ListView):
         chamado.save()
         
         nome_anterior = tecnico_anterior.first_name if tecnico_anterior else 'Ninguém'
-        AlteracaoChamado.objects.create(
+        AlteracaoChamado.objects.create(  # type: ignore[attr-defined]
             chamado=chamado,
             status_anterior=chamado.status,
             status_novo=chamado.status,

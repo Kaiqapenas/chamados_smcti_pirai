@@ -428,14 +428,14 @@
 <div class="almoxarife-header">
     <h2>Almoxarifado</h2>
     <div class="search-bar">
-        <select>
-            <option>Mais Solicitados</option>
-            <option>Alfa Crescente</option>
-            <option>Alfa Decrescente</option>
-            <option>Maior Estoque</option>
-            <option>Menor Estoque</option>
+        <select id="sort-select" onchange="ordenarProdutos()">
+            <option value="solicitados">Mais Solicitados</option>
+            <option value="alfa-asc">Alfa Crescente</option>
+            <option value="alfa-desc">Alfa Decrescente</option>
+            <option value="estoque-maior">Maior Estoque</option>
+            <option value="estoque-menor">Menor Estoque</option>
         </select>
-        <input type="text" class="search-input" placeholder="Buscar...">
+        <input type="text" class="search-input" id="search-input" placeholder="Buscar..." oninput="filtrarProdutos()">
         <button class="btn-cadastrar" onclick="abrirPopup()">Cadastrar Novo Item</button>
     </div>
 </div>
@@ -604,13 +604,33 @@
 
 {% block scripts %}
 <script>
-    const PRODUTOS_POR_PAGINA = 12; 
+    const PRODUTOS_POR_PAGINA = 12;
     let paginaAtual = 1;
-    let totalProdutos = 50; 
+    let totalProdutos = 0;
+    let todosProdutos = []; // Array para armazenar todos os produtos
     
     document.addEventListener('DOMContentLoaded', function() {
+        // Contar produtos reais no DOM
+        todosProdutos = Array.from(document.querySelectorAll('.product-card'));
+        totalProdutos = todosProdutos.length;
+        
+        // Mostrar apenas os produtos da primeira página
+        mostrarProdutosPagina(1);
         atualizarPaginacao();
     });
+    
+    function mostrarProdutosPagina(pagina) {
+        const inicio = (pagina - 1) * PRODUTOS_POR_PAGINA;
+        const fim = inicio + PRODUTOS_POR_PAGINA;
+        
+        todosProdutos.forEach((produto, index) => {
+            if (index >= inicio && index < fim) {
+                produto.style.display = 'flex';
+            } else {
+                produto.style.display = 'none';
+            }
+        });
+    }
     
     function atualizarPaginacao() {
         const totalPaginas = Math.ceil(totalProdutos / PRODUTOS_POR_PAGINA);
@@ -716,6 +736,7 @@
         }
         
         paginaAtual = novaPagina;
+        mostrarProdutosPagina(paginaAtual);
         atualizarPaginacao();
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -804,6 +825,83 @@
                 nomeImagem.textContent = input.files[0].name;
             }
         }
+    }
+
+    // Função de busca/filtro de produtos
+    function filtrarProdutos() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        let visibleCount = 0;
+
+        // Se não há termo de busca, restaurar paginação normal
+        if (!searchTerm) {
+            todosProdutos = Array.from(document.querySelectorAll('.product-card'));
+            totalProdutos = todosProdutos.length;
+            paginaAtual = 1;
+            mostrarProdutosPagina(1);
+            atualizarPaginacao();
+            return;
+        }
+
+        // Filtrar produtos
+        todosProdutos.forEach(card => {
+            const productName = card.querySelector('.product-name').textContent.toLowerCase();
+            
+            if (productName.includes(searchTerm)) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Atualizar mensagem de "nenhum produto encontrado"
+        const noProductsMsg = document.getElementById('no-products-message');
+        const productsGrid = document.querySelector('.products-grid');
+        const paginationDiv = document.getElementById('pagination');
+
+        if (visibleCount === 0) {
+            productsGrid.style.display = 'none';
+            paginationDiv.style.display = 'none';
+            noProductsMsg.style.display = 'block';
+        } else {
+            productsGrid.style.display = 'grid';
+            noProductsMsg.style.display = 'none';
+            // Esconder paginação durante busca
+            paginationDiv.style.display = 'none';
+        }
+    }
+
+    // Função de ordenação de produtos
+    function ordenarProdutos() {
+        const sortValue = document.getElementById('sort-select').value;
+        const productsGrid = document.querySelector('.products-grid');
+        const productCards = Array.from(document.querySelectorAll('.product-card'));
+
+        productCards.sort((a, b) => {
+            const nameA = a.querySelector('.product-name').textContent.toLowerCase();
+            const nameB = b.querySelector('.product-name').textContent.toLowerCase();
+            const stockA = parseInt(a.querySelector('.product-stock').textContent) || 0;
+            const stockB = parseInt(b.querySelector('.product-stock').textContent) || 0;
+
+            switch(sortValue) {
+                case 'alfa-asc':
+                    return nameA.localeCompare(nameB);
+                case 'alfa-desc':
+                    return nameB.localeCompare(nameA);
+                case 'estoque-maior':
+                    return stockB - stockA;
+                case 'estoque-menor':
+                    return stockA - stockB;
+                case 'solicitados':
+                default:
+                    return 0; // Mantém ordem original
+            }
+        });
+
+        // Reordenar os cards no DOM
+        productCards.forEach(card => {
+            productsGrid.appendChild(card);
+        });
     }
 </script>
 {% endblock scripts %}

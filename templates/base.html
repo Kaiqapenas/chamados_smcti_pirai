@@ -321,14 +321,20 @@
         });
 
         // Marca o item ativo baseado na URL atual
-        // Marca o item ativo baseado na URL atual
 const currentPath = window.location.pathname;
 navItems.forEach(item => {
   const itemHref = item.getAttribute('href');
-  // Trocado de .includes() para ===
+  // Marca como ativo se a URL corresponde exatamente
   if (itemHref && currentPath === itemHref && itemHref !== '/') {
     item.classList.add('active');
   }
+  // Marca "Consulta Chamados" como ativo quando estiver na página de cadastro
+  // Marca "Consulta Chamados" como ativo nas páginas de lista, adicionar e novo cadastro
+        if (itemHref && itemHref.includes('/chamados/lista/')) {
+          if (currentPath.includes('/chamados/novo-cadastro/') || currentPath.includes('/chamados/adicionar/')) {
+            item.classList.add('active');
+          }
+        }
 });
       });
     </script>
