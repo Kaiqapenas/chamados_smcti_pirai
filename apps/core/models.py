@@ -32,12 +32,13 @@ class PerfilUsuario(models.Model):
     """Tabela dos 4 perfis do MVP """
 
     class Tipo(models.TextChoices):
-        SOLICITANTE   = "SO", "Solicitante"
-        ALMOXARIFE    = "AL", "Almoxarife"
-        TECNICO       = "TE", "Técnico"
-        ADMINISTRADOR = "AD", "Administrador"
+        SOLICITANTE   = "SO", "Solicitante"  # type: ignore[assignment]
+        SECRETARIO    = "SE", "Secretário"  # type: ignore[assignment]
+        ALMOXARIFE    = "AL", "Almoxarife"  # type: ignore[assignment]
+        TECNICO       = "TE", "Técnico"  # type: ignore[assignment]
+        ADMINISTRADOR = "AD", "Administrador"  # type: ignore[assignment]
 
-    tipo = models.CharField(
+    tipo = models.CharField(  # cspell:ignore tipo
         "Tipo",
         max_length=2,
         choices=Tipo.choices,
@@ -48,8 +49,8 @@ class PerfilUsuario(models.Model):
         verbose_name = "Perfil"
         verbose_name_plural = "Perfis"
 
-    def __str__(self):
-        return self.get_tipo_display()
+    def __str__(self) -> str:
+        return self.get_tipo_display()  # type: ignore[attr-defined]
 class User(AbstractUser):
 
     username = None
@@ -85,18 +86,26 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.matricula} - {self.first_name}"
     
-        # Helpers de permissão — usados nas views e templates
+    # Helpers de permissão — usados nas views e templates
     def is_admin(self):
-        return self.perfis.filter(tipo=User.Perfil.ADMINISTRADOR).exists()
+        """Verifica se o usuário é administrador"""
+        return self.is_administrador
 
-    def is_tecnico(self):
-        return self.perfis.filter(tipo=User.Perfil.TECNICO).exists()
+    def has_perfil_almoxarife(self):
+        """Verifica se o usuário tem perfil de almoxarife via ManyToMany"""
+        return self.perfis.filter(tipo=PerfilUsuario.Tipo.ALMOXARIFE).exists()  # type: ignore[attr-defined]
 
-    def is_almoxarife(self):
-        return self.perfis.filter(tipo=User.Perfil.ALMOXARIFE).exists()
+    def has_perfil_tecnico(self):
+        """Verifica se o usuário tem perfil de técnico via ManyToMany"""
+        return self.perfis.filter(tipo=PerfilUsuario.Tipo.TECNICO).exists()  # type: ignore[attr-defined]
 
-    def is_solicitante(self):
-        return self.has_perfil(PerfilUsuario.Tipo.SOLICITANTE)
+    def has_perfil_solicitante(self):
+        """Verifica se o usuário tem perfil de solicitante via ManyToMany"""
+        return self.perfis.filter(tipo=PerfilUsuario.Tipo.SOLICITANTE).exists()  # type: ignore[attr-defined]
+
+    def has_perfil_administrador(self):
+        """Verifica se o usuário tem perfil de administrador via ManyToMany"""
+        return self.perfis.filter(tipo=PerfilUsuario.Tipo.ADMINISTRADOR).exists()  # type: ignore[attr-defined]
 
     
     def get_grupos(self):

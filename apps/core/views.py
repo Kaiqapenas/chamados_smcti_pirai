@@ -104,19 +104,20 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("core:index")
 
 
-class AdminFuncionariosView(LoginRequiredMixin, View):
+class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+    """View para administração de funcionários - requer permissão de administrador"""
     def get(self, request):
         return render(request, "admin/administracao_funcionarios.html")
 
 
-# class RegistroauditoriaView(LoginRequiredMixin, View):
-class RegistroauditoriaView(View):
+class RegistroauditoriaView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+    """View para visualização de registros de auditoria - requer permissão de administrador"""
     def get(self, request):
         return render(request, "admin/registro_auditoria.html")
 
 
-# class RegistroauditoriaKPIView(LoginRequiredMixin, View):
-class RegistroauditoriaKPIView(View):
+class RegistroauditoriaKPIView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+    """View para KPIs de auditoria - requer permissão de administrador"""
     def get(self, request):
         hoje = timezone.now().date()
         total_eventos = AuditoriaLog.objects.filter(data__date=hoje).count()

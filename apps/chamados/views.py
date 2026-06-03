@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
@@ -16,13 +16,7 @@ from apps.estoque.models import ItemEstoque
 from django.db import models
 
 if TYPE_CHECKING:
-    from django.db.models import Manager
-    
-    # Type hints for Django model managers
-    Chamado.objects: Manager[Chamado]  # type: ignore[misc]
-    AlteracaoChamado.objects: Manager[AlteracaoChamado]  # type: ignore[misc]
-    ItemChamado.objects: Manager[ItemChamado]  # type: ignore[misc]
-    ItemEstoque.objects: Manager[ItemEstoque]  # type: ignore[misc]
+    from django.db.models.manager import Manager
 
 class ChamadoListView(LoginRequiredMixin, ListView):
     model = Chamado
@@ -175,7 +169,7 @@ class IndexPageView(LoginRequiredMixin, ListView):
     context_object_name = "chamados"
 
     def get_queryset(self):
-        return Chamado.objects.select_related("tecnico", "usuario").prefetch_related("itens")[:10]
+        return Chamado.objects.select_related("tecnico", "usuario").prefetch_related("itens")[:10]  # type: ignore[attr-defined]
 
 class CadastroPageView(TemplateView):
     template_name = "chamados/cadastro.html"
@@ -238,3 +232,5 @@ class ReatribuicaoTecnicoView(LoginRequiredMixin, ListView):
         
         messages.success(request, f"Chamado {chamado.numero_protocolo} reatribuído com sucesso.")
         return redirect("chamados:reatribuir_tecnico")
+
+# Made with Bob
