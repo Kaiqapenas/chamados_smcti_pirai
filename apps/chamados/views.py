@@ -158,8 +158,13 @@ class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
 
 from django.views.generic import TemplateView
 
-class IndexPageView(TemplateView):
+class IndexPageView(LoginRequiredMixin, ListView):
+    model = Chamado
     template_name = "chamados/index.html"
+    context_object_name = "chamados"
+
+    def get_queryset(self):
+        return Chamado.objects.select_related("tecnico", "usuario").prefetch_related("itens")[:10]
 
 class CadastroPageView(TemplateView):
     template_name = "chamados/cadastro.html"
