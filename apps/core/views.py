@@ -32,7 +32,7 @@ def get_client_ip(request):
     return request.META.get('REMOTE_ADDR')
 
 
-#CRUD DE USUARIOS:
+# CRUD DE USUARIOS:
 
 class UserListView(LoginRequiredMixin, ListView):
     model = User
@@ -58,7 +58,7 @@ class UserLoginView(View):
                 return render(request, "auth/login.html", {
                     "erro": "Usuário inativo. Contate o administrador."
                 })
-            login(request,user)
+            login(request, user)
             next_url = request.GET.get("next") or "chamados:lista"
             return redirect(next_url)
 
@@ -133,7 +133,7 @@ class RegistroauditoriaKPIView(View):
         })
 
 
-#auth de senha
+# auth de senha
 
 class RecuperarSenhaView(View):
     """
@@ -141,17 +141,18 @@ class RecuperarSenhaView(View):
     não faz nada de verdade, o envio de e-mail será implementado depois.
     a resposta é sempre a mesma para não revelar se a matrícula existe.
     """
+
     def get(self, request):
         return render(request, "auth/recuperar_senha.html")
-    
+
     def post(self, request):
         email = request.POST.get("email", "").strip()
 
         if not email or not "@" in email:
-            return render(request, "auth/recuperar_senha.html",{
+            return render(request, "auth/recuperar_senha.html", {
                 "erro": "Informe um e-mail válido."
             })
-        
+
         # TODO: quando o backend de e-mail estiver pronto:
         #   1. Buscar User.objects.filter(email=email).first()
         #   2. Gerar token com django.contrib.auth.tokens.default_token_generator
@@ -163,13 +164,16 @@ class RecuperarSenhaView(View):
         request.session["recuperacao_email"] = email
         return redirect("core:email_enviado")
 
+
 class EmailEnviadoView(View):
     """Tela de confirmação exibida após solicitar recuperação de senha."""
- 
+
     def get(self, request):
         # Recupera o e-mail salvo na sessão (pode estar vazio se acessado direto)
-        email = request.session.pop("recuperacao_email", "seu e-mail cadastrado")
+        email = request.session.pop(
+            "recuperacao_email", "seu e-mail cadastrado")
         return render(request, "auth/email_enviado.html", {"email": email})
+
 
 class NovaSenhaView(View):
     """
@@ -178,28 +182,28 @@ class NovaSenhaView(View):
     Quando estiver pronto: validar token via PasswordResetConfirmView ou implementação própria,
     identificar o usuário e chamar user.set_password(senha).
     """
- 
+
     def get(self, request):
         return render(request, "auth/nova_senha.html")
- 
+
     def post(self, request):
         senha1 = request.POST.get("password1", "")
         senha2 = request.POST.get("password2", "")
- 
+
         if not senha1 or senha1 != senha2:
             return render(request, "auth/nova_senha.html", {
                 "erro": "As senhas não coincidem ou estão vazias."
             })
- 
+
         if len(senha1) < 6:
             return render(request, "auth/nova_senha.html", {
                 "erro": "A senha deve ter pelo menos 6 caracteres."
             })
- 
+
         # TODO: identificar usuário pelo token e aplicar:
         #   user.set_password(senha1)
         #   user.save()
- 
+
         return render(request, "auth/nova_senha.html", {"sucesso": True})
 
 
@@ -221,7 +225,7 @@ TIPO_COR_MAP = {
 
 FILTRO_TIPO_MAP = {
     'login':      [TipoEvento.LOGIN, TipoEvento.LOGOUT, TipoEvento.ACESSO],
-    'modificacao':[TipoEvento.EDICAO, TipoEvento.CRIACAO, TipoEvento.EXCLUSAO],
+    'modificacao': [TipoEvento.EDICAO, TipoEvento.CRIACAO, TipoEvento.EXCLUSAO],
     'negado':     [TipoEvento.LOGIN_FALHA],
 }
 
@@ -251,7 +255,8 @@ def _build_log_queryset(request):
 def _serialize_log(log):
     """Serializa um AuditoriaLog para dicionário JSON."""
     local_dt = timezone.localtime(log.data)
-    ator = log.usuario.matricula if log.usuario else (log.matricula_tentativa or 'Desconhecido')
+    ator = log.usuario.matricula if log.usuario else (
+        log.matricula_tentativa or 'Desconhecido')
     nome = ''
     if log.usuario:
         nome = f"{log.usuario.first_name} {log.usuario.last_name}".strip()
@@ -278,7 +283,7 @@ class RegistroauditoriaListAPIView(View):
         qs = _build_log_queryset(request)
         page_num = max(1, int(request.GET.get('page', 1) or 1))
         paginator = Paginator(qs, self.PAGE_SIZE)
-        page_obj  = paginator.get_page(page_num)
+        page_obj = paginator.get_page(page_num)
 
         return JsonResponse({
             'results':      [_serialize_log(log) for log in page_obj.object_list],
@@ -301,11 +306,13 @@ class RegistroauditoriaExportCSVView(View):
         response.write('\ufeff')  # BOM para compatibilidade com Excel
 
         writer = csv.writer(response)
-        writer.writerow(['ID', 'Tipo', 'Evento', 'Nome', 'Matrícula/Ator', 'IP', 'Descrição', 'Data', 'Hora'])
+        writer.writerow(['ID', 'Tipo', 'Evento', 'Nome',
+                        'Matrícula/Ator', 'IP', 'Descrição', 'Data', 'Hora'])
 
         for log in qs:
             local_dt = timezone.localtime(log.data)
-            ator = log.usuario.matricula if log.usuario else (log.matricula_tentativa or 'Desconhecido')
+            ator = log.usuario.matricula if log.usuario else (
+                log.matricula_tentativa or 'Desconhecido')
             nome = ''
             if log.usuario:
                 nome = f"{log.usuario.first_name} {log.usuario.last_name}".strip()
