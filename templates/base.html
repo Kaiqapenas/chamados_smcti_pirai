@@ -112,12 +112,20 @@
           
           {# Menu para Administrador - Acesso Total #}
           {% if user.is_administrador %}
+            <a href="{% url 'core:admin_funcionarios' %}" class="nav-item" style="text-decoration: none; color: inherit;">
+              <span class="nav-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 26 26">
+                  <path fill="currentColor" d="M10.5.156c-3.017 0-5.438 2.072-5.438 6.032c0 2.586 1.03 5.22 2.594 6.843c.61 1.623-.49 2.227-.718 2.313C3.781 16.502.093 18.602.093 20.688v.78c0 2.843 5.414 3.5 10.437 3.5a46 46 0 0 0 3.281-.124a7.75 7.75 0 0 1-2.124-5.344c0-1.791.61-3.432 1.624-4.75c-.15-.352-.21-.907.063-1.75c1.555-1.625 2.563-4.236 2.563-6.813c0-3.959-2.424-6.03-5.438-6.03zm9 13.031a6.312 6.312 0 1 0 0 12.625a6.312 6.312 0 0 0 0-12.625M18.625 16h1.75v2.594h2.594v1.812h-2.594V23h-1.75v-2.594H16v-1.812h2.625z"/>
+                </svg>
+              </span>
+              <span class="nav-text">Administração de Funcionários</span>
+            </a>
+            
             <a href="{% url 'core:registro_auditoria' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9l2 2l4-4" />
-                  </g>
+                  <path d="M0 0h24v24H0z" fill="none" />
+                  <path fill="currentColor" d="M12 20H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5v3a3 3 0 0 0 3 3h3v1a1 1 0 0 0 2 0V8.94a1.3 1.3 0 0 0-.06-.27v-.09a1 1 0 0 0-.19-.28l-6-6a1 1 0 0 0-.28-.19a.3.3 0 0 0-.09 0a.9.9 0 0 0-.33-.11H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h7a1 1 0 0 0 0-2m0-14.59L14.59 8H13a1 1 0 0 1-1-1ZM7 8a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2Zm14.71 12.29l-1.17-1.16A3.44 3.44 0 0 0 20 15a3.49 3.49 0 0 0-6 2.49a3.46 3.46 0 0 0 5.13 3.05l1.16 1.17a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.42m-3.17-1.75a1.54 1.54 0 0 1-2.11 0a1.5 1.5 0 0 1-.43-1.05a1.46 1.46 0 0 1 .44-1.06a1.48 1.48 0 0 1 1-.43A1.47 1.47 0 0 1 19 17.49a1.5 1.5 0 0 1-.46 1.05M13 12H7a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2m-2 6a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2Z" />
                 </svg>
               </span>
               <span class="nav-text">Auditoria</span>
@@ -125,9 +133,11 @@
             
             <a href="{% url 'chamados:lista' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                  <path d="M0 0h48v48H0z" fill="none" />
+                  <g fill="currentColor" stroke="currentColor" stroke-width="1">
+                    <path d="M20.404 22.202a1.8 1.8 0 1 0 0-3.601a1.8 1.8 0 0 0 0 3.601" />
+                    <path fill-rule="evenodd" d="M11.41 30.008V42h17.112v-6.512h4.293c.268 0 .524-.053.757-.148l-2.38-1.852h-4.67V40H13.409V29.202l-.56-.581C11.209 26.916 8 22.931 8 17.975c0-1.63.615-4.126 2.466-6.19c1.633-1.821 4.373-3.465 8.937-3.743v7.05a5.4 5.4 0 1 0 4.058 9.76l14.07 10.923a2.25 2.25 0 1 0 1.183-1.614L24.88 23.42a5.402 5.402 0 0 0-3.477-8.329V8.006c2.543.047 4.305.388 5.638.888c1.412.53 2.459 1.28 3.514 2.257l.142.132c1.034.958 1.342 1.244 1.517 1.71l4.233 11.27h-3.632v2.888l2 1.555v-2.443h1.632a1.998 1.998 0 0 0 1.873-2.701l-4.234-11.273c-.349-.93-1.024-1.55-1.874-2.33l-.297-.274C29.55 7.492 26.859 6 20.798 6C9.006 6 6 13.875 6 17.975c0 5.767 3.683 10.241 5.41 12.033m8.993-6.207a3.4 3.4 0 1 0 .001-6.802a3.4 3.4 0 0 0 0 6.802" clip-rule="evenodd" />
                   </g>
                 </svg>
               </span>
@@ -137,7 +147,7 @@
             <a href="{% url 'chamados:reatribuir_tecnico' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"   stroke-width="2"">
                     <path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                   </g>
                 </svg>
@@ -148,8 +158,9 @@
             <a href="{% url 'estoque:lista' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                    <path d="M20 7h-9M14 17H5m5-10V3m0 4L8 5m2 2l2-2m-2 8v4m0-4l-2 2m2-2l2 2" />
+                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"   stroke-width="2"">
+                    <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/>
+                    <path d="M3 9V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3M7 13h10M7 17h6"/>
                   </g>
                 </svg>
               </span>
@@ -159,7 +170,7 @@
             <a href="{% url 'estoque:requisitar_peca' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"   stroke-width="2"">
                     <path d="M11.25 17.25a6 6 0 1 0 12 0a6 6 0 0 0-12 0m6-3v6m-3-3h6" />
                     <path d="M8.25 20.25h-6a1.5 1.5 0 0 1-1.5-1.5V2.25a1.5 1.5 0 0 1 1.5-1.5h10.629a1.5 1.5 0 0 1 1.06.439l2.872 2.872a1.5 1.5 0 0 1 .439 1.06V8.25" />
                   </g>
@@ -170,13 +181,12 @@
             
             <a href="{% url 'relatorios:relatorio_grafico' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                    <path d="M3 3v18h18M7 16l4-4l4 4l5-5" />
-                  </g>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                  <path d="M0 0h48v48H0z" fill="none" />
+                  <path fill="currentColor" fill-rule="evenodd" d="M34.376 2.155a33.2 33.2 0 0 1 7.795-.63a2.4 2.4 0 0 1 2.305 2.305c.06 1.416.067 4.399-.63 7.795c-.41 2.003-2.819 2.546-4.147 1.217l-1.917-1.916a116 116 0 0 0-2.213 2.055c-1.891 1.801-4.263 4.182-6.264 6.559c-1.702 2.022-4.967 2.008-6.565-.23a94 94 0 0 0-3.148-4.17c-2.234 1.529-6.872 5.048-12.086 11.01q-.486.555-.976 1.138a2 2 0 0 1-3.06-2.577q.516-.61 1.024-1.193c5.59-6.392 10.587-10.152 12.993-11.784c1.683-1.141 3.891-.748 5.126.78a97 97 0 0 1 3.381 4.471a.1.1 0 0 0 .026.023a.2.2 0 0 0 .073.016a.19.19 0 0 0 .152-.06c2.136-2.537 4.626-5.032 6.564-6.879c.833-.793 1.57-1.473 2.141-1.99l-1.79-1.794c-1.329-1.328-.786-3.736 1.217-4.147m-.612 40.57c-.132-1.81-.264-5.039-.264-10.725s.132-8.914.264-10.726c.146-2.01 1.614-3.578 3.702-3.706c.664-.04 1.497-.068 2.534-.068s1.87.028 2.534.068c2.088.128 3.556 1.696 3.702 3.706c.132 1.812.264 5.04.264 10.726s-.132 8.914-.264 10.726c-.146 2.01-1.614 3.578-3.702 3.706c-.664.04-1.497.068-2.534.068s-1.87-.028-2.534-.068c-2.088-.128-3.556-1.696-3.702-3.706M1.67 43.27c-.097-.944-.17-2.304-.17-4.27s.073-3.326.169-4.27c.201-1.99 1.798-3.131 3.547-3.19A84 84 0 0 1 8 31.5c1.187 0 2.097.017 2.784.04c1.749.059 3.346 1.2 3.547 3.19c.096.944.169 2.304.169 4.27s-.073 3.326-.168 4.27c-.202 1.99-1.8 3.131-3.548 3.19c-.687.023-1.597.04-2.784.04s-2.097-.017-2.784-.04c-1.749-.059-3.346-1.2-3.547-3.19M17.5 36c0 3.411.099 5.564.213 6.917c.172 2.048 1.74 3.447 3.72 3.534c.664.029 1.506.049 2.567.049s1.903-.02 2.567-.05c1.98-.086 3.548-1.485 3.72-3.533c.114-1.353.213-3.506.213-6.917s-.099-5.564-.212-6.917c-.173-2.048-1.74-3.447-3.721-3.534c-.664-.029-1.506-.049-2.567-.049s-1.903.02-2.566.05c-1.981.086-3.55 1.485-3.722 3.533C17.6 30.436 17.5 32.589 17.5 36" clip-rule="evenodd" />
                 </svg>
               </span>
-              <span class="nav-text">Relatórios</span>
+              <span class="nav-text">Relatórios Gráficos</span>
             </a>
           {% endif %}
           
@@ -185,7 +195,7 @@
             <a href="{% url 'chamados:atribuidos' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"   stroke-width="2">
                     <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9l2 2l4-4" />
                   </g>
                 </svg>
@@ -196,7 +206,7 @@
             <a href="{% url 'estoque:requisitar_peca' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"   stroke-width="2">
                     <path d="M11.25 17.25a6 6 0 1 0 12 0a6 6 0 0 0-12 0m6-3v6m-3-3h6" />
                     <path d="M8.25 20.25h-6a1.5 1.5 0 0 1-1.5-1.5V2.25a1.5 1.5 0 0 1 1.5-1.5h10.629a1.5 1.5 0 0 1 1.06.439l2.872 2.872a1.5 1.5 0 0 1 .439 1.06V8.25" />
                   </g>
@@ -211,8 +221,9 @@
             <a href="{% url 'estoque:lista' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                    <path d="M20 7h-9M14 17H5m5-10V3m0 4L8 5m2 2l2-2m-2 8v4m0-4l-2 2m2-2l2 2" />
+                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"   stroke-width="2">
+                    <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/>
+                    <path d="M3 9V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3M7 13h10M7 17h6"/>
                   </g>
                 </svg>
               </span>
@@ -224,9 +235,11 @@
           {% if user.is_solicitante and not user.is_administrador %}
             <a href="{% url 'chamados:lista' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                  <path d="M0 0h48v48H0z" fill="none" />
+                  <g fill="currentColor">
+                    <path d="M20.404 22.202a1.8 1.8 0 1 0 0-3.601a1.8 1.8 0 0 0 0 3.601" />
+                    <path fill-rule="evenodd" d="M11.41 30.008V42h17.112v-6.512h4.293c.268 0 .524-.053.757-.148l-2.38-1.852h-4.67V40H13.409V29.202l-.56-.581C11.209 26.916 8 22.931 8 17.975c0-1.63.615-4.126 2.466-6.19c1.633-1.821 4.373-3.465 8.937-3.743v7.05a5.4 5.4 0 1 0 4.058 9.76l14.07 10.923a2.25 2.25 0 1 0 1.183-1.614L24.88 23.42a5.402 5.402 0 0 0-3.477-8.329V8.006c2.543.047 4.305.388 5.638.888c1.412.53 2.459 1.28 3.514 2.257l.142.132c1.034.958 1.342 1.244 1.517 1.71l4.233 11.27h-3.632v2.888l2 1.555v-2.443h1.632a1.998 1.998 0 0 0 1.873-2.701l-4.234-11.273c-.349-.93-1.024-1.55-1.874-2.33l-.297-.274C29.55 7.492 26.859 6 20.798 6C9.006 6 6 13.875 6 17.975c0 5.767 3.683 10.241 5.41 12.033m8.993-6.207a3.4 3.4 0 1 0 .001-6.802a3.4 3.4 0 0 0 0 6.802" clip-rule="evenodd" />
                   </g>
                 </svg>
               </span>
@@ -239,9 +252,8 @@
             <a href="{% url 'core:registro_auditoria' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                    <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2m-6 9l2 2l4-4" />
-                  </g>
+                  <path d="M0 0h24v24H0z" fill="none" />
+                  <path fill="currentColor" d="M12 20H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5v3a3 3 0 0 0 3 3h3v1a1 1 0 0 0 2 0V8.94a1.3 1.3 0 0 0-.06-.27v-.09a1 1 0 0 0-.19-.28l-6-6a1 1 0 0 0-.28-.19a.3.3 0 0 0-.09 0a.9.9 0 0 0-.33-.11H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h7a1 1 0 0 0 0-2m0-14.59L14.59 8H13a1 1 0 0 1-1-1ZM7 8a1 1 0 0 0 0 2h1a1 1 0 0 0 0-2Zm14.71 12.29l-1.17-1.16A3.44 3.44 0 0 0 20 15a3.49 3.49 0 0 0-6 2.49a3.46 3.46 0 0 0 5.13 3.05l1.16 1.17a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.42m-3.17-1.75a1.54 1.54 0 0 1-2.11 0a1.5 1.5 0 0 1-.43-1.05a1.46 1.46 0 0 1 .44-1.06a1.48 1.48 0 0 1 1-.43A1.47 1.47 0 0 1 19 17.49a1.5 1.5 0 0 1-.46 1.05M13 12H7a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2m-2 6a1 1 0 0 0 0-2H7a1 1 0 0 0 0 2Z" />
                 </svg>
               </span>
               <span class="nav-text">Auditoria</span>
@@ -249,10 +261,9 @@
             
             <a href="{% url 'relatorios:relatorio_grafico' %}" class="nav-item" style="text-decoration: none; color: inherit;">
               <span class="nav-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                    <path d="M3 3v18h18M7 16l4-4l4 4l5-5" />
-                  </g>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+                  <path d="M0 0h48v48H0z" fill="none" />
+                  <path fill="currentColor" fill-rule="evenodd" d="M34.376 2.155a33.2 33.2 0 0 1 7.795-.63a2.4 2.4 0 0 1 2.305 2.305c.06 1.416.067 4.399-.63 7.795c-.41 2.003-2.819 2.546-4.147 1.217l-1.917-1.916a116 116 0 0 0-2.213 2.055c-1.891 1.801-4.263 4.182-6.264 6.559c-1.702 2.022-4.967 2.008-6.565-.23a94 94 0 0 0-3.148-4.17c-2.234 1.529-6.872 5.048-12.086 11.01q-.486.555-.976 1.138a2 2 0 0 1-3.06-2.577q.516-.61 1.024-1.193c5.59-6.392 10.587-10.152 12.993-11.784c1.683-1.141 3.891-.748 5.126.78a97 97 0 0 1 3.381 4.471a.1.1 0 0 0 .026.023a.2.2 0 0 0 .073.016a.19.19 0 0 0 .152-.06c2.136-2.537 4.626-5.032 6.564-6.879c.833-.793 1.57-1.473 2.141-1.99l-1.79-1.794c-1.329-1.328-.786-3.736 1.217-4.147m-.612 40.57c-.132-1.81-.264-5.039-.264-10.725s.132-8.914.264-10.726c.146-2.01 1.614-3.578 3.702-3.706c.664-.04 1.497-.068 2.534-.068s1.87.028 2.534.068c2.088.128 3.556 1.696 3.702 3.706c.132 1.812.264 5.04.264 10.726s-.132 8.914-.264 10.726c-.146 2.01-1.614 3.578-3.702 3.706c-.664.04-1.497.068-2.534.068s-1.87-.028-2.534-.068c-2.088-.128-3.556-1.696-3.702-3.706M1.67 43.27c-.097-.944-.17-2.304-.17-4.27s.073-3.326.169-4.27c.201-1.99 1.798-3.131 3.547-3.19A84 84 0 0 1 8 31.5c1.187 0 2.097.017 2.784.04c1.749.059 3.346 1.2 3.547 3.19c.096.944.169 2.304.169 4.27s-.073 3.326-.168 4.27c-.202 1.99-1.8 3.131-3.548 3.19c-.687.023-1.597.04-2.784.04s-2.097-.017-2.784-.04c-1.749-.059-3.346-1.2-3.547-3.19M17.5 36c0 3.411.099 5.564.213 6.917c.172 2.048 1.74 3.447 3.72 3.534c.664.029 1.506.049 2.567.049s1.903-.02 2.567-.05c1.98-.086 3.548-1.485 3.72-3.533c.114-1.353.213-3.506.213-6.917s-.099-5.564-.212-6.917c-.173-2.048-1.74-3.447-3.721-3.534c-.664-.029-1.506-.049-2.567-.049s-1.903.02-2.566.05c-1.981.086-3.55 1.485-3.722 3.533C17.6 30.436 17.5 32.589 17.5 36" clip-rule="evenodd" />
                 </svg>
               </span>
               <span class="nav-text">Relatório Gráfico</span>
@@ -292,6 +303,34 @@
       function toggleSidebar() {
         document.body.classList.toggle('collapsed');
       }
+
+      // Adiciona efeito de clique nos itens do menu
+      document.addEventListener('DOMContentLoaded', function() {
+        const navItems = document.querySelectorAll('.nav-item');
+        
+        navItems.forEach(item => {
+          item.addEventListener('click', function(e) {
+            // Adiciona classe de animação
+            this.classList.add('clicked');
+            
+            // Remove a classe após a animação
+            setTimeout(() => {
+              this.classList.remove('clicked');
+            }, 400);
+          });
+        });
+
+        // Marca o item ativo baseado na URL atual
+        // Marca o item ativo baseado na URL atual
+const currentPath = window.location.pathname;
+navItems.forEach(item => {
+  const itemHref = item.getAttribute('href');
+  // Trocado de .includes() para ===
+  if (itemHref && currentPath === itemHref && itemHref !== '/') {
+    item.classList.add('active');
+  }
+});
+      });
     </script>
     
     {% block scripts %}{% endblock scripts %}

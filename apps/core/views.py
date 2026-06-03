@@ -1,4 +1,6 @@
 import csv
+from functools import reduce
+from operator import or_
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -16,6 +18,7 @@ from django.core.paginator import Paginator
 
 from apps.core.forms import UserForm
 from apps.core.models import AuditoriaLog, TipoEvento
+from apps.core.mixins import AdministradorRequiredMixin
 
 from django.contrib.auth import get_user_model
 
@@ -40,7 +43,7 @@ class UserListView(LoginRequiredMixin, ListView):
 class UserLoginView(View):
     def get(self, request):
         if request.user.is_authenticated:
-            return redirect("estoque:lista")
+            return redirect("chamados:lista")
         return render(request, "auth/login.html")
 
     def post(self, request):
@@ -56,7 +59,7 @@ class UserLoginView(View):
                     "erro": "Usuário inativo. Contate o administrador."
                 })
             login(request,user)
-            next_url = request.GET.get("next") or "estoque:lista"
+            next_url = request.GET.get("next") or "chamados:lista"
             return redirect(next_url)
 
         return render(request, "auth/login.html", {
@@ -229,12 +232,14 @@ def _build_log_queryset(request):
 
     q = request.GET.get('q', '').strip()
     if q:
-        qs = qs.filter(
-            Q(descricao__icontains=q) |
-            Q(ip__icontains=q) |
-            Q(usuario__matricula__icontains=q) |
+        q_objects = [
+            Q(descricao__icontains=q),
+            Q(ip__icontains=q),
+            Q(usuario__matricula__icontains=q),
             Q(matricula_tentativa__icontains=q)
-        )
+        ]
+        query = reduce(or_, q_objects)
+        qs = qs.filter(query)
 
     tipo_filtro = request.GET.get('tipo', '').strip()
     if tipo_filtro in FILTRO_TIPO_MAP:

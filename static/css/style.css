@@ -16,3 +16,27 @@ main {
 footer {
     margin-top: auto;
 }
+
+/* Estilos para navbar - módulo ativo */
+.nav-item.dropdown .nav-link.active,
+.nav-item.dropdown .nav-link.show {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 0.375rem;
+}
+
+/* Hover nos links do navbar */
+.navbar-nav .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.075);
+    border-radius: 0.375rem;
+}
+
+/* Item ativo no dropdown */
+.dropdown-item.active {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+/* Hover nos itens do dropdown */
+.dropdown-item:hover {
+    background-color: rgba(0, 0, 0, 0.075);
+}

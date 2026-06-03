@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.conf import settings
+from typing import ClassVar
 
 
 class UserManager(BaseUserManager):
@@ -33,32 +34,56 @@ class User(AbstractUser):
     matricula = models.CharField(max_length=30, unique=True)
     telefone = models.CharField(max_length=30, blank=True, null=True)
     setor = models.CharField("Setor", max_length=100, blank=True, null=True)
-    ativo = models.BooleanField("Ativo", default=True)
+    ativo = models.BooleanField("Ativo", default=True)  # type: ignore[arg-type]
+    
+    # Grupos de permissão
+    is_administrador = models.BooleanField("Administrador", default=False)  # type: ignore[arg-type]
+    is_secretario = models.BooleanField("Secretário", default=False)  # type: ignore[arg-type]
+    is_solicitante = models.BooleanField("Solicitante", default=False)  # type: ignore[arg-type]
+    is_tecnico = models.BooleanField("Técnico", default=False)  # type: ignore[arg-type]
+    is_almoxarife = models.BooleanField("Almoxarife", default=False)  # type: ignore[arg-type]
 
     USERNAME_FIELD = "matricula"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
 
-    class Meta:
+    class Meta(AbstractUser.Meta):
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
 
     def __str__(self):
         return f"{self.matricula} - {self.first_name}"
+    
+    def get_grupos(self):
+        """Retorna lista de grupos do usuário"""
+        grupos = []
+        if self.is_administrador:
+            grupos.append("Administrador")
+        if self.is_secretario:
+            grupos.append("Secretário")
+        if self.is_solicitante:
+            grupos.append("Solicitante")
+        if self.is_tecnico:
+            grupos.append("Técnico")
+        if self.is_almoxarife:
+            grupos.append("Almoxarife")
+        return grupos
 
 
 class TipoEvento(models.TextChoices):
-    LOGIN = 'LOGIN', 'Login realizado'
-    LOGIN_FALHA = 'LOGIN_FALHA', 'Falha de login'
-    LOGOUT = 'LOGOUT', 'Logout realizado'
-    ACESSO = 'ACESSO', 'Acesso a página'
-    CRIACAO = 'CRIACAO', 'Criação de registro'
-    EDICAO = 'EDICAO', 'Edição de registro'
-    EXCLUSAO = 'EXCLUSAO', 'Exclusão de registro'
+    LOGIN = 'LOGIN', 'Login realizado'  # type: ignore  # Login performed
+    LOGIN_FALHA = 'LOGIN_FALHA', 'Falha de login'  # type: ignore
+    LOGOUT = 'LOGOUT', 'Logout realizado'  # type: ignore
+    ACESSO = 'ACESSO', 'Acesso a página'  # type: ignore
+    CRIACAO = 'CRIACAO', 'Criação de registro'  # type: ignore
+    EDICAO = 'EDICAO', 'Edição de registro'  # type: ignore
+    EXCLUSAO = 'EXCLUSAO', 'Exclusão de registro'  # type: ignore
 
 
 class AuditoriaLog(models.Model):
+    objects: ClassVar[models.Manager]
+    
     tipo = models.CharField(
         max_length=20,
         choices=TipoEvento.choices,
