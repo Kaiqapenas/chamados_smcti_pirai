@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.conf import settings
+from typing import ClassVar
 
 
 class UserManager(BaseUserManager):
@@ -31,12 +32,13 @@ class PerfilUsuario(models.Model):
     """Tabela dos 4 perfis do MVP """
 
     class Tipo(models.TextChoices):
-        SOLICITANTE   = "SO", "Solicitante"
-        ALMOXARIFE    = "AL", "Almoxarife"
-        TECNICO       = "TE", "Técnico"
-        ADMINISTRADOR = "AD", "Administrador"
+        SOLICITANTE   = "SO", "Solicitante"  # type: ignore[assignment]
+        SECRETARIO    = "SE", "Secretário"  # type: ignore[assignment]
+        ALMOXARIFE    = "AL", "Almoxarife"  # type: ignore[assignment]
+        TECNICO       = "TE", "Técnico"  # type: ignore[assignment]
+        ADMINISTRADOR = "AD", "Administrador"  # type: ignore[assignment]
 
-    tipo = models.CharField(
+    tipo = models.CharField(  # cspell:ignore tipo
         "Tipo",
         max_length=2,
         choices=Tipo.choices,
@@ -47,15 +49,22 @@ class PerfilUsuario(models.Model):
         verbose_name = "Perfil"
         verbose_name_plural = "Perfis"
 
-    def __str__(self):
-        return self.get_tipo_display()
+    def __str__(self) -> str:
+        return self.get_tipo_display()  # type: ignore[attr-defined]
 class User(AbstractUser):
 
     username = None
     matricula = models.CharField(max_length=30, unique=True)
     telefone = models.CharField(max_length=30, blank=True, null=True)
     setor = models.CharField("Setor", max_length=100, blank=True, null=True)
-    ativo = models.BooleanField("Ativo", default=True)
+    ativo = models.BooleanField("Ativo", default=True)  # type: ignore[arg-type]
+    
+    # Grupos de permissão
+    is_administrador = models.BooleanField("Administrador", default=False)  # type: ignore[arg-type]
+    is_secretario = models.BooleanField("Secretário", default=False)  # type: ignore[arg-type]
+    is_solicitante = models.BooleanField("Solicitante", default=False)  # type: ignore[arg-type]
+    is_tecnico = models.BooleanField("Técnico", default=False)  # type: ignore[arg-type]
+    is_almoxarife = models.BooleanField("Almoxarife", default=False)  # type: ignore[arg-type]
 
     # um usuário pode ter multiplos perfis (Carlos = Almoxarife + Solicitante)
 
@@ -70,39 +79,64 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
     objects = UserManager()
 
-    class Meta:
+    class Meta(AbstractUser.Meta):
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
 
     def __str__(self):
         return f"{self.matricula} - {self.first_name}"
     
-        # Helpers de permissão — usados nas views e templates
+    # Helpers de permissão — usados nas views e templates
     def is_admin(self):
-        return self.perfis.filter(tipo=User.Perfil.ADMINISTRADOR).exists()
+        """Verifica se o usuário é administrador"""
+        return self.is_administrador
 
-    def is_tecnico(self):
-        return self.perfis.filter(tipo=User.Perfil.TECNICO).exists()
+    def has_perfil_almoxarife(self):
+        """Verifica se o usuário tem perfil de almoxarife via ManyToMany"""
+        return self.perfis.filter(tipo=PerfilUsuario.Tipo.ALMOXARIFE).exists()  # type: ignore[attr-defined]
 
-    def is_almoxarife(self):
-        return self.perfis.filter(tipo=User.Perfil.ALMOXARIFE).exists()
+    def has_perfil_tecnico(self):
+        """Verifica se o usuário tem perfil de técnico via ManyToMany"""
+        return self.perfis.filter(tipo=PerfilUsuario.Tipo.TECNICO).exists()  # type: ignore[attr-defined]
 
-    def is_solicitante(self):
-        return self.has_perfil(PerfilUsuario.Tipo.SOLICITANTE)
+    def has_perfil_solicitante(self):
+        """Verifica se o usuário tem perfil de solicitante via ManyToMany"""
+        return self.perfis.filter(tipo=PerfilUsuario.Tipo.SOLICITANTE).exists()  # type: ignore[attr-defined]
 
+    def has_perfil_administrador(self):
+        """Verifica se o usuário tem perfil de administrador via ManyToMany"""
+        return self.perfis.filter(tipo=PerfilUsuario.Tipo.ADMINISTRADOR).exists()  # type: ignore[attr-defined]
+
+    
+    def get_grupos(self):
+        """Retorna lista de grupos do usuário"""
+        grupos = []
+        if self.is_administrador:
+            grupos.append("Administrador")
+        if self.is_secretario:
+            grupos.append("Secretário")
+        if self.is_solicitante:
+            grupos.append("Solicitante")
+        if self.is_tecnico:
+            grupos.append("Técnico")
+        if self.is_almoxarife:
+            grupos.append("Almoxarife")
+        return grupos
 
 
 class TipoEvento(models.TextChoices):
-    LOGIN = 'LOGIN', 'Login realizado'
-    LOGIN_FALHA = 'LOGIN_FALHA', 'Falha de login'
-    LOGOUT = 'LOGOUT', 'Logout realizado'
-    ACESSO = 'ACESSO', 'Acesso a página'
-    CRIACAO = 'CRIACAO', 'Criação de registro'
-    EDICAO = 'EDICAO', 'Edição de registro'
-    EXCLUSAO = 'EXCLUSAO', 'Exclusão de registro'
+    LOGIN = 'LOGIN', 'Login realizado'  # type: ignore  # Login performed
+    LOGIN_FALHA = 'LOGIN_FALHA', 'Falha de login'  # type: ignore
+    LOGOUT = 'LOGOUT', 'Logout realizado'  # type: ignore
+    ACESSO = 'ACESSO', 'Acesso a página'  # type: ignore
+    CRIACAO = 'CRIACAO', 'Criação de registro'  # type: ignore
+    EDICAO = 'EDICAO', 'Edição de registro'  # type: ignore
+    EXCLUSAO = 'EXCLUSAO', 'Exclusão de registro'  # type: ignore
 
 
 class AuditoriaLog(models.Model):
+    objects: ClassVar[models.Manager]
+    
     tipo = models.CharField(
         max_length=20,
         choices=TipoEvento.choices,

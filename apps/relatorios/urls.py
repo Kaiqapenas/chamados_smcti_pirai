@@ -4,6 +4,6 @@ from . import views
 app_name = 'relatorios'
 
 urlpatterns = [
-    path('grafico/', views.RelatorioGraficoView.as_view(), name='grafico'),
+    path('grafico/', views.RelatorioGraficoView.as_view(), name='relatorio_grafico'),
 ]
 
