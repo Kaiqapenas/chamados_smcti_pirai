@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nova Senha - SIGEC</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{% static 'auth/style.css' %}">
 </head>
 <body>
     <div class="auth-card">
@@ -24,11 +25,10 @@
             <h2 id="pageTitle">Criar nova senha</h2>
             <p class="subtitle" id="pageSubtitle">Digite sua nova senha abaixo e confirme-a para redefinir seu acesso.</p>
             
-            <form method="POST" action="{% url 'core:nova_senha' %}">
+            <form method="POST" action="{% url 'core:nova_senha' %}" id="newPasswordForm">
                 {% csrf_token %}
                 <div class="auth-input-group" id="pwdGroup1">
                     <input type="password" name="password1" id="newPwd" placeholder="Nova senha" required minlength="6">
-                    
                 </div>
                 <div class="auth-input-group" id="pwdGroup2">
                     <input type="password" name="password2" id="confirmPwd" placeholder="Confirmar nova senha" required minlength="6">
@@ -39,12 +39,13 @@
             </form>
         </div>
         <div class="auth-footer">
-            <img src="../img/prefeitura-pirai.png" alt="Prefeitura de Piraí">
+            <img src="{% static 'image/prefeitura-pirai.png' %}" alt="Prefeitura de Piraí">
         </div>
     </div>
 
     <script>
         document.getElementById('newPasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
             
             const btn = document.getElementById('actionBtn');
             

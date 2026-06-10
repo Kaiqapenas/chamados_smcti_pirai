@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from .views import (
     UserListView, UserCreateView, UserDetailView,
     UserLoginView, UserLogoutView, UserUpdateView, UserDeleteView,
@@ -9,7 +10,8 @@ from .views import (
 app_name = "core"
 
 urlpatterns = [
-    path("", UserListView.as_view(), name="index"),
+    path("", RedirectView.as_view(pattern_name='core:admin_funcionarios', permanent=False), name="index"),
+    path("usuarios/", UserListView.as_view(), name="lista_usuarios"),
     path("adicionar/", UserCreateView.as_view(), name="adicionar"),
     path("<int:pk>/", UserDetailView.as_view(), name="detalhe"),
     path("<int:pk>/editar/", UserUpdateView.as_view(), name="editar"),

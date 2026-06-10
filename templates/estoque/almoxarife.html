@@ -1,870 +1,907 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIGEC - Almoxarifado</title>
-    <style>
-        :root {
-            --primary-blue: #4a69bd;
-            --secondary-blue: #1e3799;
-            --light-blue: #ebf2ff;
-            --green-btn: #8bc34a;
-            --green-hover: #7cb342;
-            --red-text: #e55039;
-            --blue-text: #4a69bd;
-            --bg-gray: #f5f6fa;
-            --sidebar-width: 60px;
-            --sidebar-expanded: 200px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-gray);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .layout-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: white;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 20px;
-            transition: width 0.3s ease;
-            border-right: 1px solid #ddd;
-            z-index: 10;
-            overflow: hidden;
-        }
-
-        .sidebar:hover {
-            width: var(--sidebar-expanded);
-            align-items: flex-start;
-            padding-left: 10px;
-        }
-
-        .sidebar-item {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            padding: 15px 0;
-            cursor: pointer;
-            color: var(--primary-blue);
-            text-decoration: none;
-        }
-
-        .sidebar-item img {
-            width: 30px;
-            height: 30px;
-            margin: 0 15px;
-        }
-
-        .sidebar-item span:not(.material-symbols-outlined) {
-            display: none;
-            white-space: nowrap;
-            font-weight: bold;
-        }
-
-        .sidebar:hover .sidebar-item span:not(.material-symbols-outlined) {
-            display: inline;
-        }
-
-        .sidebar-item .material-symbols-outlined {
-            margin: 0 15px;
-            font-size: 30px;
-        }
-
-        .sidebar-item.active {
-            background-color: var(--primary-blue);
-            color: white;
-        }
-
-        /* Main Content */
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        /* Navbar */
-        .navbar {
-            background-color: white;
-            padding: 10px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-            position: relative;
-            z-index: 100;
-        }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .nav-left img {
-            height: 40px;
-        }
-
-        .nav-title h1 {
-            font-size: 18px;
-            color: var(--secondary-blue);
-        }
-
-        .nav-title p {
-            font-size: 12px;
-            color: var(--primary-blue);
-        }
-
-        .nav-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .nav-right img {
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-        }
-
-        /* Content Area */
-        .content {
-            padding: 30px;
-        }
-
-        .header-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-
-        .header-actions h2 {
-            color: var(--secondary-blue);
-            font-size: 28px;
-        }
-
-        .search-bar {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .search-input {
-            padding: 10px 20px;
-            border-radius: 25px;
-            border: 1px solid #ddd;
-            width: 300px;
-            outline: none;
-        }
-
-        .btn-cadastrar {
-            background-color: var(--green-btn);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .btn-cadastrar:hover {
-            background-color: var(--green-hover);
-            transform: scale(1.05);
-        }
-
-        /* Grid de Produtos */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 25px;
-        }
-
-        .product-card {
-            background-color: white;
-            border-radius: 20px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        .product-img {
-            width: 150px;
-            height: 150px;
-            object-fit: contain;
-            margin-bottom: 15px;
-            cursor: pointer;
-        }
-
-        #popup-imagem {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 1000;
-            max-width: 90vw;
-            max-height: 90vh;
-        }
-
-        #popup-imagem img {
-            max-width: 100%;
-            max-height: calc(90vh - 60px);
-            object-fit: contain;
-            display: block;
-        }
-        
-        #popup-imagem .fechar-imagem {
-            text-align: right;
-            margin-bottom: 5px;
-        }
-        
-        #popup-imagem .fechar-imagem button {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: var(--secondary-blue);
-        }
-
-        .product-name {
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 10px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .product-name:hover {
-            color: var(--primary-blue);
-            text-decoration: underline;
-        }
-
-        .product-stock {
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 14px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            background-color: var(--light-blue);
-        }
-
-        .stock-above { color: var(--blue-text); }
-        .stock-below { color: var(--red-text); }
-
-        .card-footer {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Invertendo ordem conforme solicitado: Botão Adicionar primeiro, depois Qtd */
-        .btn-adicionar {
-            background-color: var(--green-btn);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 15px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            flex: 1;
-            transition: background 0.3s;
-        }
-
-        .btn-adicionar:hover {
-            background-color: var(--green-hover);
-        }
-
-        .input-qtd {
-            width: 60px;
-            padding: 8px;
-            border-radius: 15px;
-            border: 1px solid #ddd;
-            text-align: center;
-            outline: none;
-            color: #999;
-        }
-
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 40px;
-            padding-bottom: 40px;
-        }
-
-        .page-num {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--secondary-blue);
-            color: var(--secondary-blue);
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 5px;
-        }
-
-        .page-num.active {
-            background-color: var(--secondary-blue);
-            color: white;
-        }
-
-        .btn-avancar {
-            padding: 0 20px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            border: 2px solid var(--secondary-blue);
-            color: var(--secondary-blue);
-            text-decoration: none;
-            font-weight: bold;
-            border-radius: 5px;
-        }
-
-        /* Popup Cadastro Form */
-        #popup-cadastro {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            z-index: 1000;
-            width: 650px;
-            max-width: 95vw;
-        }
-
-        .popup-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-
-        .popup-header h3 {
-            color: var(--secondary-blue);
-            font-size: 24px;
-            margin: 0;
-        }
-
-        .popup-header button {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .form-cadastro {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .image-upload-row {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 10px;
-        }
-
-        .image-preview-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .image-preview-box {
-            width: 120px;
-            height: 120px;
-            border: 2px dashed #ddd;
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            background-color: var(--bg-gray);
-        }
-
-        .image-preview-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-        }
-
-        .image-preview-box span {
-            font-size: 40px;
-            color: #ccc;
-        }
-
-        .btn-upload {
-            background-color: var(--light-blue);
-            color: var(--primary-blue);
-            padding: 8px 15px;
-            border-radius: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-
-        .btn-upload:hover {
-            background-color: #d1e2ff;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            flex: 1;
-        }
-
-        .form-group label {
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--secondary-blue);
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            outline: none;
-            color: #333;
-            font-family: inherit;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-            border-color: var(--primary-blue);
-        }
-
-        .bottom-options {
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 5px;
-        }
-
-        .bottom-options label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--primary-blue);
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .bottom-options input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            margin: 0;
-            padding: 0;
-        }
-
-        .col-6 { flex: 6 !important; }
-        .col-4 { flex: 4 !important; }
-        .col-3 { flex: 3 !important; }
-        .col-2 { flex: 2 !important; }
-        
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .btn-salvar {
-            background-color: var(--green-btn);
-        }
-
-        .btn-salvar:hover {
-            background-color: var(--green-hover);
-        }
-
-        .btn-cancelar {
-            background-color: var(--red-text);
-        }
-
-        .btn-cancelar:hover {
-            background-color: #c0392b;
-        }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar">
-        <div class="nav-left">
-            <img src="{% static 'image/sem_arquivo.png' %}" alt="SIGEC Logo">
-            <div class="nav-title">
-                <h1>SIGEC</h1>
-                <p>Sistema Integrado de Gestão de Estoque e Chamados</p>
-            </div>
-        </div>
-        <div class="nav-right">
-            <img src="{% static 'image/sem_arquivo.png' %}" alt="Notificações">
-            <img src="{% static 'image/sem_arquivo.png' %}" alt="Usuário">
-        </div>
-    </nav>
-
-    <div class="layout-container">
-        <div class="sidebar">
-            <a href="#" class="sidebar-item">
-                <img src="{% static 'image/sem_arquivo.png' %}" alt="User">
-                <span>Perfil</span>
-            </a>
-            <a href="#" class="sidebar-item active">
-                <img src="{% static 'image/sem_arquivo.png' %}" alt="Almoxarifado">
-                <span>Almoxarifado</span>
-            </a>
-            <a href="#" class="sidebar-item">
-                <img src="{% static 'image/sem_arquivo.png' %}" alt="A Desenvolver">
-                <span>A Desenvolver</span>
-            </a>
-            <a href="#" class="sidebar-item">
-                <img src="{% static 'image/sem_arquivo.png' %}" alt="Equipe">
-                <span>Equipe</span>
-            </a>
-        </div>
-
-        <div class="main-container">
-            <div class="content">
-            <div class="header-actions">
-                <h2>Almoxarife</h2>
-                <div class="search-bar">
-                    <select style="padding: 10px; border-radius: 10px; border: 1px solid #ddd;">
-                        <option>Mais Solicitados</option>
-                        <option>Alfa Crescente</option>
-                        <option>Alfa Decrescente</option>
-                        <option>Maior Estoque</option>
-                        <option>Menor Estoque</option>
-                        
-                    </select>
-                    <input type="text" class="search-input" placeholder="Buscar...">
-                    <button class="btn-cadastrar" onclick="abrirPopup()">Cadastrar Novo Item</button>
-                </div>
-            </div>
-
-            <div class="products-grid">
-                <!-- Produto 1: Acima do estoque (Azul) -->
-                <div class="product-card">
-                    <img src="https://m.media-amazon.com/images/I/61vGQNUEsGL._AC_SL1500_.jpg" alt="Processador" class="product-img" onclick="abrirPopupImagem(this.src)">
-                    <div class="product-name" onclick="abrirPopupEditar(this)">Processador Intel i7 8ªger.</div>
-                    <div class="product-stock stock-above">6 unidades</div>
-                    <div class="card-footer">
-                        <button class="btn-adicionar">Adicionar</button>
-                        <input type="text" class="input-qtd" placeholder="Qtd.">
-                    </div>
-                </div>
-
-                <!-- Produto 2: Abaixo do estoque (Vermelho) -->
-                <div class="product-card">
-                    <img src="https://www.shutterstock.com/image-vector/ddr4-computer-ram-memory-vector-600w-2737630045.jpg" alt="Memória" class="product-img" onclick="abrirPopupImagem(this.src)">
-                    <div class="product-name" onclick="abrirPopupEditar(this)">Memória Kingston ddr4 8gb</div>
-                    <div class="product-stock stock-below">1 unidade</div>
-                    <div class="card-footer">
-                        <button class="btn-adicionar">Adicionar</button>
-                        <input type="text" class="input-qtd" placeholder="Qtd.">
-                    </div>
-                </div>
-
-                <!-- Produto 3: Teclado -->
-                <div class="product-card">
-                    <img src="https://www.shutterstock.com/image-photo/black-mechanical-keyboard-on-pink-600w-1395023897.jpg" alt="Teclado" class="product-img" onclick="abrirPopupImagem(this.src)">
-                    <div class="product-name" onclick="abrirPopupEditar(this)">Teclado mecanico HyperX wi-fi</div>
-                    <div class="product-stock stock-below">2 unidades</div>
-                    <div class="card-footer">
-                        <button class="btn-adicionar">Adicionar</button>
-                        <input type="text" class="input-qtd" placeholder="Qtd.">
-                    </div>
-                </div>
-
-                <!-- Produto 4: Fonte -->
-                <div class="product-card">
-                    <img src="https://www.shutterstock.com/image-illustration/computer-ac-power-supply-unit-600w-1988246774.jpg" alt="Fonte" class="product-img" onclick="abrirPopupImagem(this.src)">
-                    <div class="product-name" onclick="abrirPopupEditar(this)">Fonte ATX 400w real bronze</div>
-                    <div class="product-stock stock-above">5 unidades</div>
-                    <div class="card-footer">
-                        <button class="btn-adicionar">Adicionar</button>
-                        <input type="text" class="input-qtd" placeholder="Qtd.">
-                    </div>
-                </div>
-
-                <!-- Produto 5: Cabo de Rede (Metros) -->
-                <div class="product-card">
-                    <img src="https://www.shutterstock.com/image-photo/two-connectors-cable-under-name-600w-18004708.jpg" alt="Cabo" class="product-img" onclick="abrirPopupImagem(this.src)">
-                    <div class="product-name" onclick="abrirPopupEditar(this)">Cabo de Rede Cat6 Lan Giga</div>
-                    <div class="product-stock stock-above">420 metros</div>
-                    <div class="card-footer">
-                        <button class="btn-adicionar">Adicionar</button>
-                        <input type="text" class="input-qtd" placeholder="Qtd.">
-                    </div>
-                </div>
-
-                <!-- Produto 6: Exemplo com ícone temporário -->
-                <div class="product-card">
-                    <img src="https://www.shutterstock.com/image-vector/vector-illustration-desktop-pc-monitor-600w-2620649019.jpg" alt="Temp" class="product-img" onclick="abrirPopupImagem(this.src)">
-                    <div class="product-name">Monitor Genérico</div>
-                    <div class="product-stock stock-below">0 unidades</div>
-                    <div class="card-footer">
-                        <button class="btn-adicionar">Adicionar</button>
-                        <input type="text" class="input-qtd" placeholder="Qtd.">
-                    </div>
-                </div>
-            </div>
-
-            <div class="pagination">
-                <a href="#" class="page-num active">1</a>
-                <a href="#" class="page-num">2</a>
-                <a href="#" class="page-num">3</a>
-                <a href="#" class="page-num">4</a>
-                <a href="#" class="btn-avancar">Avançar &rarr;</a>
-            </div>
+
+{% block titulo %}SIGEC - Almoxarifado{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+{% endblock head %}
+
+{% block style %}
+:root {
+    --green-btn: #8bc34a;
+    --green-hover: #7cb342;
+    --red-text: #e55039;
+    --blue-text: #4a69bd;
+    --light-blue: #ebf2ff;
+}
+
+.almoxarife-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.almoxarife-header h2 {
+    color: var(--blue);
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.search-bar {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.search-bar select {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    outline: none;
+    font-family: inherit;
+    color: var(--text-dark);
+    background: white;
+}
+
+.search-input {
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    width: 300px;
+    outline: none;
+    font-family: inherit;
+}
+
+.btn-cadastrar {
+    background-color: var(--green-btn);
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+}
+
+.btn-cadastrar:hover {
+    background-color: var(--green-hover);
+    transform: scale(1.05);
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.product-card {
+    background-color: white;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+.product-img {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.product-img:hover {
+    transform: scale(1.05);
+}
+
+.product-name {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 10px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: color 0.3s;
+    color: var(--text-dark);
+}
+
+.product-name:hover {
+    color: var(--blue);
+    text-decoration: underline;
+}
+
+.product-stock {
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    background-color: var(--light-blue);
+}
+
+.stock-above { color: var(--blue-text); }
+.stock-below { color: var(--red-text); }
+
+.card-footer {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-adicionar {
+    background-color: var(--green-btn);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 15px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    flex: 1;
+    transition: background 0.3s;
+    font-family: inherit;
+}
+
+.btn-adicionar:hover {
+    background-color: var(--green-hover);
+}
+
+.input-qtd {
+    width: 60px;
+    padding: 8px;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+    outline: none;
+    color: #999;
+    font-family: inherit;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 40px;
+    padding-bottom: 40px;
+}
+
+.page-num {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--blue);
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.page-num:hover {
+    background-color: var(--blue);
+    color: white;
+}
+
+.page-num.active {
+    background-color: var(--blue);
+    color: white;
+}
+
+.btn-avancar {
+    padding: 0 20px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    border: 2px solid var(--blue);
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 5px;
+    transition: all 0.2s;
+}
+
+.btn-avancar:hover {
+    background-color: var(--blue);
+    color: white;
+}
+
+/* Popup Styles */
+#popup-cadastro, #popup-imagem {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 1000;
+}
+
+#popup-cadastro {
+    padding: 30px;
+    width: 650px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+#popup-imagem {
+    padding: 10px;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+#popup-imagem img {
+    max-width: 100%;
+    max-height: calc(90vh - 60px);
+    object-fit: contain;
+    display: block;
+}
+
+#popup-imagem .fechar-imagem {
+    text-align: right;
+    margin-bottom: 5px;
+}
+
+#popup-imagem .fechar-imagem button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--blue);
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.popup-header h3 {
+    color: var(--blue);
+    font-size: 24px;
+    margin: 0;
+}
+
+.popup-header button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+}
+
+.form-cadastro {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--blue);
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    color: #333;
+    font-family: inherit;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--blue);
+}
+
+.col-6 { flex: 6 !important; }
+.col-4 { flex: 4 !important; }
+.col-3 { flex: 3 !important; }
+.col-2 { flex: 2 !important; }
+
+.image-preview-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.image-preview-box {
+    width: 140px;
+    height: 140px;
+    border: 2px dashed #ddd;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-color: #f5f6fa;
+}
+
+.image-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+}
+
+.image-preview-box span {
+    font-size: 40px;
+    color: #ccc;
+}
+
+.btn-upload {
+    background-color: var(--light-blue);
+    color: var(--blue);
+    padding: 8px 15px;
+    border-radius: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+    border: none;
+}
+
+.btn-upload:hover {
+    background-color: #d1e2ff;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.btn-salvar {
+    background-color: var(--green-btn);
+}
+
+.btn-salvar:hover {
+    background-color: var(--green-hover);
+}
+
+.btn-cancelar {
+    background-color: var(--red-text);
+}
+
+.btn-cancelar:hover {
+    background-color: #c0392b;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+{% endblock style %}
+
+{% block conteudo %}
+<div class="almoxarife-header">
+    <h2>Almoxarifado</h2>
+    <div class="search-bar">
+        <select id="sort-select" onchange="ordenarProdutos()">
+            <option value="solicitados">Mais Solicitados</option>
+            <option value="alfa-asc">Alfa Crescente</option>
+            <option value="alfa-desc">Alfa Decrescente</option>
+            <option value="estoque-maior">Maior Estoque</option>
+            <option value="estoque-menor">Menor Estoque</option>
+        </select>
+        <input type="text" class="search-input" id="search-input" placeholder="Buscar..." oninput="filtrarProdutos()">
+        <button class="btn-cadastrar" onclick="abrirPopup()">Cadastrar Novo Item</button>
+    </div>
+</div>
+
+<div class="products-grid">
+    <div class="product-card">
+        <img src="https://m.media-amazon.com/images/I/61vGQNUEsGL._AC_SL1500_.jpg" alt="Processador" class="product-img" onclick="abrirPopupImagem(this.src)">
+        <div class="product-name" onclick="abrirPopupEditar(this)">Processador Intel i7 8ªger.</div>
+        <div class="product-stock stock-above">6 unidades</div>
+        <div class="card-footer">
+            <button class="btn-adicionar">Adicionar</button>
+            <input type="text" class="input-qtd" placeholder="Qtd.">
         </div>
     </div>
+
+    <div class="product-card">
+        <img src="https://www.shutterstock.com/image-vector/ddr4-computer-ram-memory-vector-600w-2737630045.jpg" alt="Memória" class="product-img" onclick="abrirPopupImagem(this.src)">
+        <div class="product-name" onclick="abrirPopupEditar(this)">Memória Kingston ddr4 8gb</div>
+        <div class="product-stock stock-below">1 unidade</div>
+        <div class="card-footer">
+            <button class="btn-adicionar">Adicionar</button>
+            <input type="text" class="input-qtd" placeholder="Qtd.">
+        </div>
     </div>
 
-    <div class="overlay" id="overlay" onclick="fecharPopup()"></div>
+    <div class="product-card">
+        <img src="https://www.shutterstock.com/image-photo/black-mechanical-keyboard-on-pink-600w-1395023897.jpg" alt="Teclado" class="product-img" onclick="abrirPopupImagem(this.src)">
+        <div class="product-name" onclick="abrirPopupEditar(this)">Teclado mecanico HyperX wi-fi</div>
+        <div class="product-stock stock-below">2 unidades</div>
+        <div class="card-footer">
+            <button class="btn-adicionar">Adicionar</button>
+            <input type="text" class="input-qtd" placeholder="Qtd.">
+        </div>
+    </div>
+
+    <div class="product-card">
+        <img src="https://www.shutterstock.com/image-illustration/computer-ac-power-supply-unit-600w-1988246774.jpg" alt="Fonte" class="product-img" onclick="abrirPopupImagem(this.src)">
+        <div class="product-name" onclick="abrirPopupEditar(this)">Fonte ATX 400w real bronze</div>
+        <div class="product-stock stock-above">5 unidades</div>
+        <div class="card-footer">
+            <button class="btn-adicionar">Adicionar</button>
+            <input type="text" class="input-qtd" placeholder="Qtd.">
+        </div>
+    </div>
+
+    <div class="product-card">
+        <img src="https://www.shutterstock.com/image-photo/two-connectors-cable-under-name-600w-18004708.jpg" alt="Cabo" class="product-img" onclick="abrirPopupImagem(this.src)">
+        <div class="product-name" onclick="abrirPopupEditar(this)">Cabo de Rede Cat6 Lan Giga</div>
+        <div class="product-stock stock-above">420 metros</div>
+        <div class="card-footer">
+            <button class="btn-adicionar">Adicionar</button>
+            <input type="text" class="input-qtd" placeholder="Qtd.">
+        </div>
+    </div>
+
+    <div class="product-card">
+        <img src="https://www.shutterstock.com/image-vector/vector-illustration-desktop-pc-monitor-600w-2620649019.jpg" alt="Monitor" class="product-img" onclick="abrirPopupImagem(this.src)">
+        <div class="product-name" onclick="abrirPopupEditar(this)">Monitor Genérico</div>
+        <div class="product-stock stock-below">0 unidades</div>
+        <div class="card-footer">
+            <button class="btn-adicionar">Adicionar</button>
+            <input type="text" class="input-qtd" placeholder="Qtd.">
+        </div>
+    </div>
+</div>
+
+<div class="pagination" id="pagination">
+</div>
+
+<div id="no-products-message" style="display: none; text-align: center; padding: 60px 20px;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" style="opacity: 0.3; margin-bottom: 20px;">
+        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+            <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/>
+            <path d="M3 9V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3M7 13h10M7 17h6"/>
+        </g>
+    </svg>
+    <h3 style="color: var(--text-muted); font-size: 20px; margin-bottom: 10px;">Nenhum produto encontrado</h3>
+    <p style="color: var(--text-muted); font-size: 14px;">Não há produtos cadastrados nesta página ainda.</p>
+</div>
+
+<div class="overlay" id="overlay" onclick="fecharPopup()"></div>
+
+<div id="popup-cadastro">
+    <div class="popup-header">
+        <h3 id="popup-titulo">Cadastro de Novo Item</h3>
+        <button onclick="fecharPopup()">✖</button>
+    </div>
     
-    <div id="popup-cadastro">
-        <div class="popup-header">
-            <h3 id="popup-titulo">Cadastro de Novo Item</h3>
-            <button onclick="fecharPopup()">✖</button>
+    <div class="form-cadastro">
+        <div class="form-row">
+            <div class="form-group col-6">
+                <label>Nome do Item</label>
+                <input type="text" id="input-nome" placeholder="Ex: Teclado Mecânico">
+            </div>
+            <div class="form-group col-6">
+                <label>Modelo</label>
+                <input type="text" id="input-modelo" placeholder="Ex: HyperX Alloy FPS">
+            </div>
         </div>
-        
-        <div class="form-cadastro">
-            <div class="form-row">
-                <div class="form-group col-6">
-                    <label>Nome do Item</label>
-                    <input type="text" id="input-nome" placeholder="Ex: Teclado Mecânico">
-                </div>
-                <div class="form-group col-6">
-                    <label>Modelo</label>
-                    <input type="text" id="input-modelo" placeholder="Ex: HyperX Alloy FPS">
-                </div>
-            </div>
 
-            <div class="form-row">
-                <div class="form-group col-2">
-                    <label>Quantidade</label>
-                    <input type="number" id="input-qtd" placeholder="0">
-                </div>
-                <div class="form-group col-2">
-                    <label>Medida</label>
-                    <select id="input-medida">
-                        <option>Unidade</option>
-                        <option>Metros</option>
-                    </select>
-                </div>
-                <div class="form-group col-2">
-                    <label>Estoque Mín.</label>
-                    <input type="number" id="input-minimo" placeholder="0">
-                </div>
-                <div class="form-group col-3">
-                    <label>Nº de Série</label>
-                    <input type="text" id="input-serie" placeholder="Opcional">
-                </div>
-                <div class="form-group col-3">
-                    <label>Patrimônio</label>
-                    <input type="text" id="input-patrimonio" placeholder="Opcional">
-                </div>
+        <div class="form-row">
+            <div class="form-group col-2">
+                <label>Quantidade</label>
+                <input type="number" id="input-qtd" placeholder="0">
             </div>
+            <div class="form-group col-2">
+                <label>Medida</label>
+                <select id="input-medida">
+                    <option>Unidade</option>
+                    <option>Metros</option>
+                </select>
+            </div>
+            <div class="form-group col-2">
+                <label>Estoque Mín.</label>
+                <input type="number" id="input-minimo" placeholder="0">
+            </div>
+            <div class="form-group col-3">
+                <label>Nº de Série</label>
+                <input type="text" id="input-serie" placeholder="Opcional">
+            </div>
+            <div class="form-group col-3">
+                <label>Patrimônio</label>
+                <input type="text" id="input-patrimonio" placeholder="Opcional">
+            </div>
+        </div>
 
-            <div class="form-row" style="align-items: stretch; margin-top: 10px;">
-                <div class="form-group" style="flex: 4; align-items: center; justify-content: flex-start; gap: 10px;">
-                    <div class="image-preview-container">
-                        <div class="image-preview-box" style="width: 140px; height: 140px;">
-                            <span id="preview-icon" class="material-symbols-outlined">add_photo_alternate</span>
-                            <img id="preview-img" src="" alt="Prévia">
-                        </div>
-                        <label for="imagem-upload" class="btn-upload" style="text-align: center; width: 100%; box-sizing: border-box;">Carregar Foto</label>
-                        <input type="file" id="imagem-upload" accept="image/*" onchange="previewImage(event)" style="display: none;">
-                        <span id="nome-imagem" style="font-size: 12px; color: #666; text-align: center; word-break: break-all; width: 140px;"></span>
+        <div class="form-row" style="align-items: stretch; margin-top: 10px;">
+            <div class="form-group" style="flex: 4; align-items: center; justify-content: flex-start; gap: 10px;">
+                <div class="image-preview-container">
+                    <div class="image-preview-box">
+                        <span id="preview-icon" class="material-symbols-outlined">add_photo_alternate</span>
+                        <img id="preview-img" src="" alt="Prévia">
                     </div>
-                </div>
-                <div class="form-group" style="flex: 8;">
-                    <label>Descrição</label>
-                    <textarea placeholder="" style="height: 100%; min-height: 160px; resize: none;"></textarea>
-                </div>
-            </div>
-
-            <div class="form-row bottom-options" style="justify-content: flex-start; margin-top: 15px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="item-inativo">
-                    <label for="item-inativo" style="color: var(--secondary-blue); font-size: 14px;">Definir este item como inativo.</label>
+                    <label for="imagem-upload" class="btn-upload" style="text-align: center; width: 100%; box-sizing: border-box;">Carregar Foto</label>
+                    <input type="file" id="imagem-upload" accept="image/*" onchange="previewImage(event)" style="display: none;">
+                    <span id="nome-imagem" style="font-size: 12px; color: #666; text-align: center; word-break: break-all; width: 140px;"></span>
                 </div>
             </div>
-
-            <div class="form-actions">
-                <button class="btn-cadastrar btn-cancelar" onclick="fecharPopup()">Cancelar</button>
-                <button class="btn-cadastrar btn-salvar">Salvar Item</button>
+            <div class="form-group" style="flex: 8;">
+                <label>Descrição</label>
+                <textarea placeholder="" style="height: 100%; min-height: 160px; resize: none;"></textarea>
             </div>
         </div>
-    </div>
 
-    <div id="popup-imagem">
-        <div class="fechar-imagem">
-            <button onclick="fecharPopup()">✖</button>
+        <div class="form-row" style="justify-content: flex-start; margin-top: 15px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="item-inativo" style="width: 20px; height: 20px; cursor: pointer;">
+                <label for="item-inativo" style="color: var(--blue); font-size: 14px; cursor: pointer; margin: 0;">Definir este item como inativo.</label>
+            </div>
         </div>
-        <img id="img-ampliada" src="" alt="Imagem Ampliada">
+
+        <div class="form-actions">
+            <button class="btn-cadastrar btn-cancelar" onclick="fecharPopup()">Cancelar</button>
+            <button class="btn-cadastrar btn-salvar">Salvar Item</button>
+        </div>
     </div>
+</div>
 
-    <script>
-        function abrirPopup() {
-            document.getElementById('popup-titulo').innerText = 'Cadastro de Novo Item';
-            
-            // Clear fields for new item
-            document.getElementById('input-nome').value = '';
-            document.getElementById('input-modelo').value = '';
-            document.getElementById('input-qtd').value = '';
-            document.getElementById('input-medida').value = 'Unidade';
-            document.getElementById('input-minimo').value = '';
-            document.getElementById('input-serie').value = '';
-            document.getElementById('input-patrimonio').value = '';
-            
-            document.getElementById('preview-img').src = '';
-            document.getElementById('preview-img').style.display = 'none';
-            document.getElementById('preview-icon').style.display = 'block';
-            document.getElementById('nome-imagem').textContent = '';
-            
-            document.getElementById('popup-cadastro').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
+<div id="popup-imagem">
+    <div class="fechar-imagem">
+        <button onclick="fecharPopup()">✖</button>
+    </div>
+    <img id="img-ampliada" src="" alt="Imagem Ampliada">
+</div>
+{% endblock conteudo %}
+
+{% block scripts %}
+<script>
+    const PRODUTOS_POR_PAGINA = 12;
+    let paginaAtual = 1;
+    let totalProdutos = 0;
+    let todosProdutos = []; // Array para armazenar todos os produtos
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Contar produtos reais no DOM
+        todosProdutos = Array.from(document.querySelectorAll('.product-card'));
+        totalProdutos = todosProdutos.length;
+        
+        // Mostrar apenas os produtos da primeira página
+        mostrarProdutosPagina(1);
+        atualizarPaginacao();
+    });
+    
+    function mostrarProdutosPagina(pagina) {
+        const inicio = (pagina - 1) * PRODUTOS_POR_PAGINA;
+        const fim = inicio + PRODUTOS_POR_PAGINA;
+        
+        todosProdutos.forEach((produto, index) => {
+            if (index >= inicio && index < fim) {
+                produto.style.display = 'flex';
+            } else {
+                produto.style.display = 'none';
+            }
+        });
+    }
+    
+    function atualizarPaginacao() {
+        const totalPaginas = Math.ceil(totalProdutos / PRODUTOS_POR_PAGINA);
+        const paginationDiv = document.getElementById('pagination');
+        const noProductsMsg = document.getElementById('no-products-message');
+        const productsGrid = document.querySelector('.products-grid');
+        
+        if (totalProdutos === 0) {
+            productsGrid.style.display = 'none';
+            paginationDiv.style.display = 'none';
+            noProductsMsg.style.display = 'block';
+            return;
+        } else {
+            productsGrid.style.display = 'grid';
+            noProductsMsg.style.display = 'none';
         }
         
-        function abrirPopupEditar(element) {
-            document.getElementById('popup-titulo').innerText = 'Editar Item de Estoque';
-            
-            // Extract data from the clicked card
-            const card = element.closest('.product-card');
-            const nome = element.innerText;
-            const imgSrc = card.querySelector('.product-img').src;
-            const stockText = card.querySelector('.product-stock').innerText;
-            
-            // Parse stock text
-            const qtd = parseInt(stockText) || 0;
-            const medida = stockText.toLowerCase().includes('metro') ? 'Metros' : 'Unidade';
-            
-            // Mock min stock based on color class
-            const isBelow = card.querySelector('.product-stock').classList.contains('stock-below');
-            const estoqueMinimo = isBelow ? qtd + 5 : (qtd > 2 ? qtd - 2 : 1);
-
-            // Fill fields
-            document.getElementById('input-nome').value = nome;
-            document.getElementById('input-modelo').value = '';
-            document.getElementById('input-qtd').value = qtd;
-            document.getElementById('input-medida').value = medida;
-            document.getElementById('input-minimo').value = estoqueMinimo;
-            document.getElementById('input-serie').value = '';
-            document.getElementById('input-patrimonio').value = '';
-            
-            // Load image preview
-            document.getElementById('preview-img').src = imgSrc;
-            document.getElementById('preview-img').style.display = 'block';
-            document.getElementById('preview-icon').style.display = 'none';
-            document.getElementById('nome-imagem').textContent = 'imagem_atual.jpg';
-            
-            document.getElementById('popup-cadastro').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
+        if (totalPaginas <= 1) {
+            paginationDiv.style.display = 'none';
+            return;
         }
         
-        function abrirPopupImagem(src) {
-            document.getElementById('img-ampliada').src = src;
-            document.getElementById('popup-imagem').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
+        paginationDiv.style.display = 'flex';
+        paginationDiv.innerHTML = '';
+        
+        if (paginaAtual > 1) {
+            const btnAnterior = document.createElement('a');
+            btnAnterior.href = '#';
+            btnAnterior.className = 'btn-avancar';
+            btnAnterior.innerHTML = '&larr; Anterior';
+            btnAnterior.onclick = (e) => {
+                e.preventDefault();
+                mudarPagina(paginaAtual - 1);
+            };
+            paginationDiv.appendChild(btnAnterior);
         }
         
-        function fecharPopup() {
-            document.getElementById('popup-cadastro').style.display = 'none';
-            document.getElementById('popup-imagem').style.display = 'none';
-            document.getElementById('overlay').style.display = 'none';
+        const maxBotoes = 5;
+        let inicio = Math.max(1, paginaAtual - Math.floor(maxBotoes / 2));
+        let fim = Math.min(totalPaginas, inicio + maxBotoes - 1);
+        
+        if (fim - inicio < maxBotoes - 1) {
+            inicio = Math.max(1, fim - maxBotoes + 1);
         }
-
-        function previewImage(event) {
-            const input = event.target;
-            const previewIcon = document.getElementById('preview-icon');
-            const previewImg = document.getElementById('preview-img');
-            const nomeImagem = document.getElementById('nome-imagem');
-
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    previewImg.style.display = 'block';
-                    previewIcon.style.display = 'none';
-                };
-                reader.readAsDataURL(input.files[0]);
-                if (nomeImagem) {
-                    nomeImagem.textContent = input.files[0].name;
-                }
+        
+        if (inicio > 1) {
+            adicionarBotaoPagina(1);
+            if (inicio > 2) {
+                const ellipsis = document.createElement('span');
+                ellipsis.textContent = '...';
+                ellipsis.style.padding = '0 10px';
+                ellipsis.style.color = 'var(--text-muted)';
+                paginationDiv.appendChild(ellipsis);
             }
         }
-    </script>
-</body>
-</html>
+        
+        for (let i = inicio; i <= fim; i++) {
+            adicionarBotaoPagina(i);
+        }
+        
+        if (fim < totalPaginas) {
+            if (fim < totalPaginas - 1) {
+                const ellipsis = document.createElement('span');
+                ellipsis.textContent = '...';
+                ellipsis.style.padding = '0 10px';
+                ellipsis.style.color = 'var(--text-muted)';
+                paginationDiv.appendChild(ellipsis);
+            }
+            adicionarBotaoPagina(totalPaginas);
+        }
+        
+        if (paginaAtual < totalPaginas) {
+            const btnAvancar = document.createElement('a');
+            btnAvancar.href = '#';
+            btnAvancar.className = 'btn-avancar';
+            btnAvancar.innerHTML = 'Avançar &rarr;';
+            btnAvancar.onclick = (e) => {
+                e.preventDefault();
+                mudarPagina(paginaAtual + 1);
+            };
+            paginationDiv.appendChild(btnAvancar);
+        }
+    }
+    
+    function adicionarBotaoPagina(numero) {
+        const paginationDiv = document.getElementById('pagination');
+        const btn = document.createElement('a');
+        btn.href = '#';
+        btn.className = 'page-num' + (numero === paginaAtual ? ' active' : '');
+        btn.textContent = numero;
+        btn.onclick = (e) => {
+            e.preventDefault();
+            mudarPagina(numero);
+        };
+        paginationDiv.appendChild(btn);
+    }
+    
+    function mudarPagina(novaPagina) {
+        const totalPaginas = Math.ceil(totalProdutos / PRODUTOS_POR_PAGINA);
+        
+        if (novaPagina < 1 || novaPagina > totalPaginas) {
+            return;
+        }
+        
+        paginaAtual = novaPagina;
+        mostrarProdutosPagina(paginaAtual);
+        atualizarPaginacao();
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        console.log(`Carregando página ${paginaAtual} (produtos ${(paginaAtual-1)*PRODUTOS_POR_PAGINA + 1} a ${Math.min(paginaAtual*PRODUTOS_POR_PAGINA, totalProdutos)})`);
+    }
+
+    function abrirPopup() {
+        document.getElementById('popup-titulo').innerText = 'Cadastro de Novo Item';
+        
+        document.getElementById('input-nome').value = '';
+        document.getElementById('input-modelo').value = '';
+        document.getElementById('input-qtd').value = '';
+        document.getElementById('input-medida').value = 'Unidade';
+        document.getElementById('input-minimo').value = '';
+        document.getElementById('input-serie').value = '';
+        document.getElementById('input-patrimonio').value = '';
+        
+        document.getElementById('preview-img').src = '';
+        document.getElementById('preview-img').style.display = 'none';
+        document.getElementById('preview-icon').style.display = 'block';
+        document.getElementById('nome-imagem').textContent = '';
+        
+        document.getElementById('popup-cadastro').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+    
+    function abrirPopupEditar(element) {
+        document.getElementById('popup-titulo').innerText = 'Editar Item de Estoque';
+        
+        const card = element.closest('.product-card');
+        const nome = element.innerText;
+        const imgSrc = card.querySelector('.product-img').src;
+        const stockText = card.querySelector('.product-stock').innerText;
+        
+        const qtd = parseInt(stockText) || 0;
+        const medida = stockText.toLowerCase().includes('metro') ? 'Metros' : 'Unidade';
+        
+        const isBelow = card.querySelector('.product-stock').classList.contains('stock-below');
+        const estoqueMinimo = isBelow ? qtd + 5 : (qtd > 2 ? qtd - 2 : 1);
+
+        document.getElementById('input-nome').value = nome;
+        document.getElementById('input-modelo').value = '';
+        document.getElementById('input-qtd').value = qtd;
+        document.getElementById('input-medida').value = medida;
+        document.getElementById('input-minimo').value = estoqueMinimo;
+        document.getElementById('input-serie').value = '';
+        document.getElementById('input-patrimonio').value = '';
+        
+        document.getElementById('preview-img').src = imgSrc;
+        document.getElementById('preview-img').style.display = 'block';
+        document.getElementById('preview-icon').style.display = 'none';
+        document.getElementById('nome-imagem').textContent = 'imagem_atual.jpg';
+        
+        document.getElementById('popup-cadastro').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+    
+    function abrirPopupImagem(src) {
+        document.getElementById('img-ampliada').src = src;
+        document.getElementById('popup-imagem').style.display = 'block';
+        document.getElementById('overlay').style.display = 'block';
+    }
+    
+    function fecharPopup() {
+        document.getElementById('popup-cadastro').style.display = 'none';
+        document.getElementById('popup-imagem').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+    }
+
+    function previewImage(event) {
+        const input = event.target;
+        const previewIcon = document.getElementById('preview-icon');
+        const previewImg = document.getElementById('preview-img');
+        const nomeImagem = document.getElementById('nome-imagem');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+                previewIcon.style.display = 'none';
+            };
+            reader.readAsDataURL(input.files[0]);
+            if (nomeImagem) {
+                nomeImagem.textContent = input.files[0].name;
+            }
+        }
+    }
+
+    // Função de busca/filtro de produtos
+    function filtrarProdutos() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        let visibleCount = 0;
+
+        // Se não há termo de busca, restaurar paginação normal
+        if (!searchTerm) {
+            todosProdutos = Array.from(document.querySelectorAll('.product-card'));
+            totalProdutos = todosProdutos.length;
+            paginaAtual = 1;
+            mostrarProdutosPagina(1);
+            atualizarPaginacao();
+            return;
+        }
+
+        // Filtrar produtos
+        todosProdutos.forEach(card => {
+            const productName = card.querySelector('.product-name').textContent.toLowerCase();
+            
+            if (productName.includes(searchTerm)) {
+                card.style.display = 'flex';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Atualizar mensagem de "nenhum produto encontrado"
+        const noProductsMsg = document.getElementById('no-products-message');
+        const productsGrid = document.querySelector('.products-grid');
+        const paginationDiv = document.getElementById('pagination');
+
+        if (visibleCount === 0) {
+            productsGrid.style.display = 'none';
+            paginationDiv.style.display = 'none';
+            noProductsMsg.style.display = 'block';
+        } else {
+            productsGrid.style.display = 'grid';
+            noProductsMsg.style.display = 'none';
+            // Esconder paginação durante busca
+            paginationDiv.style.display = 'none';
+        }
+    }
+
+    // Função de ordenação de produtos
+    function ordenarProdutos() {
+        const sortValue = document.getElementById('sort-select').value;
+        const productsGrid = document.querySelector('.products-grid');
+        const productCards = Array.from(document.querySelectorAll('.product-card'));
+
+        productCards.sort((a, b) => {
+            const nameA = a.querySelector('.product-name').textContent.toLowerCase();
+            const nameB = b.querySelector('.product-name').textContent.toLowerCase();
+            const stockA = parseInt(a.querySelector('.product-stock').textContent) || 0;
+            const stockB = parseInt(b.querySelector('.product-stock').textContent) || 0;
+
+            switch(sortValue) {
+                case 'alfa-asc':
+                    return nameA.localeCompare(nameB);
+                case 'alfa-desc':
+                    return nameB.localeCompare(nameA);
+                case 'estoque-maior':
+                    return stockB - stockA;
+                case 'estoque-menor':
+                    return stockA - stockB;
+                case 'solicitados':
+                default:
+                    return 0; // Mantém ordem original
+            }
+        });
+
+        // Reordenar os cards no DOM
+        productCards.forEach(card => {
+            productsGrid.appendChild(card);
+        });
+    }
+</script>
+{% endblock scripts %}

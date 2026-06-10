@@ -12,12 +12,118 @@
 
         <div class="collapse navbar-collapse" id="navbarPrincipal">
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="{% url 'chamados:lista' %}">Chamados</a>
-                <a class="nav-link" href="{% url 'estoque:lista' %}">Estoque</a>
-                <a class="nav-link" href="{% url 'estoque:categoria_lista' %}">Categorias</a>
-                <a class="nav-link" href="{% url 'estoque:movimentacao_lista' %}">Movimentacoes</a>
-                <a class="nav-link" href="{% url 'admin:index' %}">Administracao</a>
-                <a class="nav-link" href="{% url 'chamados:atribuidos' %}">Meus Chamados</a>
+                {% if user.is_authenticated %}
+                    
+                    {# Links para Administrador - Acesso Total #}
+                    {% if user.is_administrador %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.resolver_match.namespace == 'core' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 20px;">admin_panel_settings</span>
+                                Administração
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><h6 class="dropdown-header">Usuários</h6></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'core:index' %}">Lista de Usuários</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'adicionar' %}active{% endif %}" href="{% url 'core:adicionar' %}">Adicionar Usuário</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><h6 class="dropdown-header">Auditoria</h6></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'registro_auditoria' %}active{% endif %}" href="{% url 'core:registro_auditoria' %}">Registro de Auditoria</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'admin_funcionarios' %}active{% endif %}" href="{% url 'core:admin_funcionarios' %}">Admin Funcionários</a></li>
+                            </ul>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.resolver_match.namespace == 'chamados' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 20px;">support_agent</span>
+                                Chamados
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'index' and request.resolver_match.namespace == 'chamados' %}active{% endif %}" href="{% url 'chamados:index' %}">Dashboard Chamados</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'lista' %}active{% endif %}" href="{% url 'chamados:lista' %}">Lista de Chamados</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'adicionar' and request.resolver_match.namespace == 'chamados' %}active{% endif %}" href="{% url 'chamados:adicionar' %}">Novo Chamado</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'novo_cadastro' %}active{% endif %}" href="{% url 'chamados:novo_cadastro' %}">Cadastro Chamado</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'atribuidos' %}active{% endif %}" href="{% url 'chamados:atribuidos' %}">Chamados Atribuídos</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'reatribuir_tecnico' %}active{% endif %}" href="{% url 'chamados:reatribuir_tecnico' %}">Reatribuir Técnico</a></li>
+                            </ul>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.resolver_match.namespace == 'estoque' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 20px;">inventory_2</span>
+                                Estoque
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'lista' and request.resolver_match.namespace == 'estoque' %}active{% endif %}" href="{% url 'estoque:lista' %}">Lista de Itens</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'adicionar' and request.resolver_match.namespace == 'estoque' %}active{% endif %}" href="{% url 'estoque:adicionar' %}">Adicionar Item</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'categoria_lista' %}active{% endif %}" href="{% url 'estoque:categoria_lista' %}">Categorias</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'adicionar_categoria' %}active{% endif %}" href="{% url 'estoque:adicionar_categoria' %}">Nova Categoria</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'movimentacao_lista' %}active{% endif %}" href="{% url 'estoque:movimentacao_lista' %}">Movimentações</a></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'adicionar_movimentacao' %}active{% endif %}" href="{% url 'estoque:adicionar_movimentacao' %}">Nova Movimentação</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'requisitar_peca' %}active{% endif %}" href="{% url 'estoque:requisitar_peca' %}">Requisitar Peça</a></li>
+                            </ul>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.resolver_match.namespace == 'relatorios' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 20px;">assessment</span>
+                                Relatórios Gráficos
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'relatorio_grafico' %}active{% endif %}" href="{% url 'relatorios:relatorio_grafico' %}">Relatório Gráfico</a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                    
+                    {# Links para Técnico #}
+                    {% if user.is_tecnico %}
+                        <a class="nav-link" href="{% url 'chamados:atribuidos' %}">Meus Chamados</a>
+                        <a class="nav-link" href="{% url 'estoque:requisitar_peca' %}">Requisitar Peça</a>
+                    {% endif %}
+                    
+                    {# Links para Almoxarife #}
+                    {% if user.is_almoxarife %}
+                        <a class="nav-link" href="{% url 'estoque:lista' %}">Estoque</a>
+                        <a class="nav-link" href="{% url 'estoque:movimentacao_lista' %}">Movimentações</a>
+                    {% endif %}
+                    
+                    {# Links para Secretário #}
+                    {% if user.is_secretario %}
+                        <a class="nav-link" href="{% url 'chamados:lista' %}">Chamados</a>
+                    {% endif %}
+                    
+                    {# Links para Solicitante #}
+                    {% if user.is_solicitante %}
+                        <a class="nav-link" href="{% url 'chamados:adicionar' %}">Novo Chamado</a>
+                    {% endif %}
+                    
+                    {# Perfil do usuário #}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 20px;">account_circle</span>
+                            {{ user.first_name|default:user.matricula }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">{{ user.first_name }} {{ user.last_name }}</h6></li>
+                            <li><small class="dropdown-item-text text-muted">{{ user.matricula }}</small></li>
+                            {% if user.get_grupos %}
+                                <li><small class="dropdown-item-text text-muted">{{ user.get_grupos|join:", " }}</small></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="post" action="{% url 'core:sair' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">
+                                        <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px;">logout</span>
+                                        Sair
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                {% endif %}
             </div>
         </div>
     </div>
