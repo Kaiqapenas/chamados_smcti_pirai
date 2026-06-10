@@ -81,6 +81,9 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "core.User"
+AUTHENTICATION_BACKENDS = [
+    "apps.core.backends.MatriculaBackend",
+]
 LOGIN_URL = 'core:login'
 LOGIN_REDIRECT_URL = 'estoque:lista'
 LOGOUT_REDIRECT_URL = 'core:login'
