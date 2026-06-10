@@ -4,12 +4,10 @@ from django.shortcuts import redirect
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponseRedirect
 
-# Type stub for request with user attribute
-if False:  # TYPE_CHECKING equivalent
-    from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
-    
-    class AuthenticatedHttpRequest(HttpRequest):
-        user: AbstractBaseUser | AnonymousUser
+from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
+
+class AuthenticatedHttpRequest(HttpRequest):
+    user: AbstractBaseUser | AnonymousUser
 
 
 class AdministradorRequiredMixin(UserPassesTestMixin):
