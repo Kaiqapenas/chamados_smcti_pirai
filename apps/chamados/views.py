@@ -13,7 +13,6 @@ from .forms import ItemChamadoForm
 from apps.estoque.models import ItemEstoque
 from django.db import models
 
-
 class ChamadoListView(LoginRequiredMixin, ListView):
     model = Chamado
     template_name = "chamados/lista.html"
@@ -185,3 +184,46 @@ class ChamadosAtribuidosView(LoginRequiredMixin, ListView):
         # Pega o primeiro item com estoque baixo para o alerta
         context["estoque_baixo"] = ItemEstoque.objects.filter(quantidade__lte=models.F('quantidade_minima')).first()
         return context
+    
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+class ReatribuicaoTecnicoView(LoginRequiredMixin, ListView):
+    model = Chamado
+    template_name = "estoque/reatribuir_tecnico.html" 
+    context_object_name = "chamados"
+
+    def get_queryset(self):
+        return Chamado.objects.filter(status__in=['AB', 'EA']).select_related('tecnico', 'usuario')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["tecnicos"] = User.objects.filter(is_active=True)
+        # Busca as últimas 10 reatribuições para o histórico
+        context["historico"] = AlteracaoChamado.objects.filter(
+            descricao__icontains="Reatribuído"
+        ).select_related('chamado', 'usuario')[:10]
+        return context
+
+    def post(self, request, *args, **kwargs):
+        chamado_id = request.POST.get("chamado_id")
+        tecnico_id = request.POST.get("tecnico_id")
+        
+        chamado = get_object_or_404(Chamado, id=chamado_id)
+        novo_tecnico = get_object_or_404(User, id=tecnico_id)
+        
+        tecnico_anterior = chamado.tecnico
+        chamado.tecnico = novo_tecnico
+        chamado.save()
+        
+        nome_anterior = tecnico_anterior.first_name if tecnico_anterior else 'Ninguém'
+        AlteracaoChamado.objects.create(
+            chamado=chamado,
+            status_anterior=chamado.status,
+            status_novo=chamado.status,
+            descricao=f"Reatribuído: de {nome_anterior} para {novo_tecnico.first_name}",
+            usuario=request.user
+        )
+        
+        messages.success(request, f"Chamado {chamado.numero_protocolo} reatribuído com sucesso.")
+        return redirect("chamados:reatribuir_tecnico")
