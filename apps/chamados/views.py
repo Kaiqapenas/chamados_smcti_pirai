@@ -14,6 +14,7 @@ from .forms import ItemChamadoForm
 
 from apps.estoque.models import ItemEstoque
 from django.db import models
+from django.db.models import Q
 
 if TYPE_CHECKING:
     from django.db.models.manager import Manager
@@ -199,7 +200,21 @@ class ReatribuicaoTecnicoView(LoginRequiredMixin, ListView):
     context_object_name = "chamados"
 
     def get_queryset(self):
-        return Chamado.objects.filter(status__in=['AB', 'EA']).select_related('tecnico', 'usuario')  # type: ignore[attr-defined]
+        qs = Chamado.objects.filter(status__in=['AB', 'EA']).select_related('tecnico', 'usuario')
+    
+        status = self.request.GET.get('status')
+        if status:
+            qs = qs.filter(status=status)
+    
+        q = self.request.GET.get('q', '').strip()
+        if q:
+            qs = qs.filter(
+                Q(numero_protocolo__icontains=q) |
+                Q(tecnico__first_name__icontains=q) |
+                Q(tecnico__last_name__icontains=q)
+            )
+    
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

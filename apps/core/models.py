@@ -2,7 +2,9 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.conf import settings
 from typing import ClassVar
-
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
