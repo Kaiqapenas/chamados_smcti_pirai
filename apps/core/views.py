@@ -1,4 +1,5 @@
 import csv
+import json
 from functools import reduce
 from operator import or_
 
@@ -59,9 +60,22 @@ class UserLoginView(View):
                     "erro": "Usuário inativo. Contate o administrador."
                 })
             login(request, user)
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.LOGIN,
+                usuario=user,
+                descricao=f"Login realizado pela matrícula {user.matricula}.",
+                ip=ip,
+            )
             next_url = request.GET.get("next") or "chamados:lista"
             return redirect(next_url)
 
+        AuditoriaLog.objects.create(
+            tipo=TipoEvento.LOGIN_FALHA,
+            usuario=None,
+            matricula_tentativa=matricula,
+            descricao=f"Tentativa de login falha para a matrícula {matricula}.",
+            ip=ip,
+        )
         return render(request, "auth/login.html", {
             "erro": "Matrícula ou senha inválidas."
         })
@@ -105,19 +119,44 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View):
-    """View para administração de funcionários - requer permissão de administrador"""
+    # View para gerenciamento de funcionarios - requer permsisao de administrador
     def get(self, request):
-        return render(request, "admin/administracao_funcionarios.html")
+        usuarios = list(User.objects.all().values(
+            'id', 'first_name', 'last_name', 'matricula', 'email', 'telefone', 'setor'
+        ))
+        return render(request, "admin/administracao_funcionarios.html", {
+            "funcionarios_json": json.dumps(usuarios)
+        })
+
+    def post(self, request):
+        data = json.loads(request.body)
+
+        if User.objects.filter(matricula=data.get('matricula')).exists():
+            return JsonResponse({'erro': 'Matrícula já cadastrada.'}, status=400)
+
+        nomes = data.get('nome', '').strip().split(' ', 1)
+        user = User.objects.create_user(
+            matricula=data.get('matricula'),
+            password=data.get('senha'),
+            first_name=nomes[0],
+            last_name=nomes[1] if len(nomes) > 1 else '',
+            email=data.get('email', ''),
+            telefone=data.get('telefone', ''),
+            setor=data.get('setor', ''),
+        )
+        return JsonResponse({'ok': True, 'id': user.id})
 
 
 class RegistroauditoriaView(AdministradorRequiredMixin, LoginRequiredMixin, View):
     """View para visualização de registros de auditoria - requer permissão de administrador"""
+
     def get(self, request):
         return render(request, "admin/registro_auditoria.html")
 
 
 class RegistroauditoriaKPIView(AdministradorRequiredMixin, LoginRequiredMixin, View):
     """View para KPIs de auditoria - requer permissão de administrador"""
+
     def get(self, request):
         hoje = timezone.now().date()
         total_eventos = AuditoriaLog.objects.filter(data__date=hoje).count()
