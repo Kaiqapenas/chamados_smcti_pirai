@@ -264,7 +264,40 @@ body {
     color: #666;
 }
 
+.form-error-banner {
+  background-color: var(--color-danger);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.field-error {
+  color: var(--color-danger);
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.ticket-form select.input-field {
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+  background-color: var(--color-bg-secondary);
+  transition: all 0.3s ease;
+}
+
+.ticket-form select.input-field:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-main);
+}
+
 /* Estilo para o botão Padrão (Verde do MVP) quando selecionado */
+.urgency-btn[data-value="NO"].active,
 .urgency-btn[data-value="padrao"].active {
     background-color: var(--color-success);
     border-color: var(--color-success);

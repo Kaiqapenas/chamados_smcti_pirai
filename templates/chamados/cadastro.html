@@ -9,7 +9,6 @@
 
 {% block conteudo %}
     <div class="tickets-page">
-        <!-- Header -->
         <header class="tickets-header">
             <div class="header-content">
                 <div class="header-left">
@@ -19,121 +18,113 @@
         </header>
 
         <div class="tickets-container">
-            <!-- Main Content -->
             <main class="main-content">
-                <!-- Form Container -->
                 <div class="form-container">
-                    <form class="ticket-form" method="POST">
+                    <form class="ticket-form" method="POST" novalidate>
                         {% csrf_token %}
-                        <!-- Primeira Linha: Solicitante e Setor/Localização -->
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="requester">Solicitante *</label>
-                                <input 
-                                    type="text" 
-                                    id="requester"
-                                    name="requester"
-                                    placeholder="Nome do solicitante"
-                                    class="input-field"
-                                    required
-                                >
+                                <label for="{{ form.solicitante.id_for_label }}">
+                                    {{ form.solicitante.label }}{% if form.solicitante.field.required %} *{% endif %}
+                                </label>
+                                {{ form.solicitante }}
+                                {% if form.solicitante.errors %}
+                                <div class="text-danger small">{{ form.solicitante.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="form-group">
-                                <label for="destination">Endereço *</label>
-                                <input 
-                                    type="text" 
-                                    id="destination"
-                                    name="destination"
-                                    placeholder="Secretaria — Sala 101"
-                                    class="input-field"
-                                    required
-                                >
+                                <label for="{{ form.para_onde_solicitou.id_for_label }}">
+                                    {{ form.para_onde_solicitou.label }}{% if form.para_onde_solicitou.field.required %} *{% endif %}
+                                </label>
+                                {{ form.para_onde_solicitou }}
+                                {% if form.para_onde_solicitou.errors %}
+                                <div class="text-danger small">{{ form.para_onde_solicitou.errors }}</div>
+                                {% endif %}
                             </div>
                         </div>
 
-                        <!-- Segunda Linha: Tipo de Manutenção e Prioridade -->
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="maintenance_type">Tipo de manutenção *</label>
-                                <input 
-                                    type="text" 
-                                    id="maintenance_type"
-                                    name="maintenance_type"
-                                    placeholder="Preencher qual manutenção"
-                                    class="input-field"
-                                    required
-                                >
+                                <label for="{{ form.titulo.id_for_label }}">
+                                    {{ form.titulo.label }}{% if form.titulo.field.required %} *{% endif %}
+                                </label>
+                                {{ form.titulo }}
+                                {% if form.titulo.errors %}
+                                <div class="text-danger small">{{ form.titulo.errors }}</div>
+                                {% endif %}
                             </div>
                             <div class="form-group">
-                                <label>Prioridade *</label>
-                                <input type="hidden" name="prioridade" id="prioridade" value="{{ prioridade|default:'padrao' }}">
+                                <label>{{ form.urgencia.label }} *</label>
+                                {{ form.urgencia }}
                                 <div class="urgency-buttons">
-                                    <button 
-                                        type="button" 
-                                        class="urgency-btn {% if prioridade == 'padrao' or not prioridade %}active{% endif %}"
-                                        data-value="padrao"
+                                    <button
+                                        type="button"
+                                        class="urgency-btn{% if form.urgencia.value != 'UR' %} active{% endif %}"
+                                        data-value="NO"
                                     >
                                         Padrão
                                     </button>
-                                    <button 
-                                        type="button" 
-                                        class="urgency-btn urgent {% if prioridade == 'urgente' %}active{% endif %}"
-                                        data-value="urgente"
+                                    <button
+                                        type="button"
+                                        class="urgency-btn urgent{% if form.urgencia.value == 'UR' %} active{% endif %}"
+                                        data-value="UR"
                                     >
                                         Urgente
                                     </button>
                                 </div>
+                                {% if form.urgencia.errors %}
+                                <div class="text-danger small">{{ form.urgencia.errors }}</div>
+                                {% endif %}
                             </div>
                         </div>
 
-                        <!-- Terceira Linha: Técnico, Data da Solicitação e Prazo -->
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="technician">Técnico responsável *</label>
-                                <input 
-                                    type="text" 
-                                    id="technician"
-                                    name="technician"
-                                    placeholder="Preencher"
+                                <label for="{{ form.tecnico.id_for_label }}">
+                                    {{ form.tecnico.label }}{% if form.tecnico.field.required %} *{% endif %}
+                                </label>
+                                {{ form.tecnico }}
+                                {% if form.tecnico.errors %}
+                                <div class="text-danger small">{{ form.tecnico.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label>Data da solicitação</label>
+                                <input
+                                    type="date"
                                     class="input-field"
-                                    required
+                                    value="{% now 'Y-m-d' %}"
+                                    disabled
                                 >
                             </div>
                             <div class="form-group">
-                                <label for="due_date">Data da solicitação *</label>
-                                <input 
-                                    type="date" 
-                                    id="due_date"
-                                    name="due_date"
-                                    class="input-field"
-                                >
-                            </div>
-                            <div class="form-group">
-                                <label for="desired_deadline">Prazo desejado *</label>
-                                <input 
-                                    type="date" 
-                                    id="desired_deadline"
-                                    name="desired_deadline"
-                                    class="input-field"
-                                    required
-                                >
+                                <label for="{{ form.data_prevista.id_for_label }}">
+                                    {{ form.data_prevista.label }}{% if form.data_prevista.field.required %} *{% endif %}
+                                </label>
+                                {{ form.data_prevista }}
+                                {% if form.data_prevista.errors %}
+                                <div class="text-danger small">{{ form.data_prevista.errors }}</div>
+                                {% endif %}
                             </div>
                         </div>
 
-                        <!-- Descrição do Problema -->
                         <div class="form-group full-width">
-                            <label for="description">Descrição do problema *</label>
-                            <textarea 
-                                id="description"
-                                name="description"
-                                placeholder="Descrição do problema"
-                                class="input-field textarea-field"
-                                rows="6"
-                                required
-                            ></textarea>
+                            <label for="{{ form.descricao.id_for_label }}">
+                                {{ form.descricao.label }}{% if form.descricao.field.required %} *{% endif %}
+                            </label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                            <div class="text-danger small">{{ form.descricao.errors }}</div>
+                            {% endif %}
                         </div>
 
-                        <!-- Botões de Ação -->
                         <div class="form-actions">
                             <button type="submit" class="btn-submit">Abrir chamado</button>
                             <button type="button" onclick="window.location.href='{% url 'chamados:lista' %}'" class="btn-cancel">Cancelar</button>
@@ -147,5 +138,4 @@
 
 {% block scripts %}
     <script src="{% static 'js/buttonselect.js' %}"></script>
-    <script src="{% static 'js/modal.js' %}"></script>
 {% endblock scripts %}
