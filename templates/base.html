@@ -11,6 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'main/mainlayout.css' %}" />
     
     {% block head %}{% endblock head %}
@@ -74,7 +75,7 @@
             <a href="#" class="dropdown-item">Alterar senha</a>
             <form method="post" action="{% url 'core:sair' %}" style="margin: 0;">
               {% csrf_token %}
-              <button type="submit" class="dropdown-item" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; padding: 8px 16px;">Sair</button>
+              <button type="submit" class="dropdown-item">Sair</button>
             </form>
           </div>
         </div>
@@ -338,7 +339,7 @@ navItems.forEach(item => {
 });
       });
     </script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     {% block scripts %}{% endblock scripts %}
     {% block body_bottom %}{% endblock body_bottom %}
   </body>
