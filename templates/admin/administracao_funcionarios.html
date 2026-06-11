@@ -371,7 +371,13 @@ th {
 
 {% block scripts %}
 <script>
-let funcionarios = [];
+let funcionarios = {{ funcionarios_json|safe }}.map(f => ({
+    nome: (f.first_name + ' ' + f.last_name).trim(),
+    matricula: f.matricula || '',
+    email: f.email || '',
+    telefone: f.telefone || '',
+    setor: f.setor || '',
+}));
 
 function iniciarRedimensionamento() {
   const table = document.querySelector('table');
@@ -452,7 +458,6 @@ function limparErros() {
   ['nome', 'matricula', 'telefone', 'email', 'setor', 'senha'].forEach(id => {
     document.getElementById(id).classList.remove('campo-erro');
   });
-  document.getElementById('nomeHint').textContent = '';
 }
 
 function marcarErro(id) {
@@ -486,35 +491,42 @@ function toast(msg) {
   }, 2500);
 }
 
-function salvar() {
-  const nome = document.getElementById('nome').value.trim();
-  const matricula = document.getElementById('matricula').value.trim();
-  const telefone = document.getElementById('telefone').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const setor = document.getElementById('setor').value;
-  const senha = document.getElementById('senha').value.trim();
+async function salvar() {
+    const nome = document.getElementById('nome').value.trim();
+    const matricula = document.getElementById('matricula').value.trim();
+    const telefone = document.getElementById('telefone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const setor = document.getElementById('setor').value;
+    const senha = document.getElementById('senha').value.trim();
 
-  let valido = true;
+    let valido = true;
+    if (!nome)      { marcarErro('nome');      valido = false; }
+    if (!matricula) { marcarErro('matricula'); valido = false; }
+    if (!email)     { marcarErro('email');     valido = false; }
+    if (!setor)     { marcarErro('setor');     valido = false; }
+    if (!senha)     { marcarErro('senha');     valido = false; }
+    if (!valido) return;
 
-  if (!nome) { marcarErro('nome'); valido = false; }
-  if (!matricula)                     { marcarErro('matricula'); valido = false; }
-  if (!email)                         { marcarErro('email'); valido = false; }
-  if (!setor)                         { marcarErro('setor'); valido = false; }
-  if (!senha)                         { marcarErro('senha'); valido = false; }
+    const resp = await fetch(window.location.href, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ nome, matricula, telefone, email, setor, senha }),
+    });
 
-  if (!valido) return;
+    const data = await resp.json();
 
-  funcionarios.push({
-    nome,
-    matricula,
-    telefone,
-    email,
-    setor,
-    senha
-  });
+    if (!resp.ok) {
+        toast(data.erro || 'Erro ao salvar.');
+        return;
+    }
 
-  fecharModal();
-  filtrar();
+    funcionarios.push({ nome, matricula, email, telefone, setor });
+    fecharModal();
+    filtrar();
+    toast('Funcionário cadastrado com sucesso!');
 }
 
 document.getElementById("tBody").addEventListener("mouseover", function(e) {
