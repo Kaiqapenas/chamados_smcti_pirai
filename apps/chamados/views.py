@@ -162,8 +162,6 @@ class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self) -> str:  # type: ignore[override]
         return str(reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk}))
 
-from django.views.generic import TemplateView
-
 class IndexPageView(LoginRequiredMixin, ListView):
     model = Chamado
     template_name = "chamados/index.html"
@@ -172,8 +170,9 @@ class IndexPageView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Chamado.objects.select_related("tecnico", "usuario").prefetch_related("itens")[:10]  # type: ignore[attr-defined]
 
-class CadastroPageView(TemplateView):
-    template_name = "chamados/cadastro.html"
+class CadastroPageView(ChamadoCreateView):
+    """Mesma lógica de criação, rota alternativa para o formulário de cadastro."""
+    pass
 
 class ChamadosAtribuidosView(LoginRequiredMixin, ListView):
     model = Chamado

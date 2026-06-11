@@ -27,7 +27,7 @@
                     {% csrf_token %}
 
                     {% if form.non_field_errors %}
-                    <div style="background:var(--color-danger); color:white; padding:12px 16px; border-radius:4px; margin-bottom:16px; font-size:14px;">
+                    <div class="alert alert-danger" role="alert">
                         {{ form.non_field_errors }}
                     </div>
                     {% endif %}
@@ -39,9 +39,7 @@
                         </label>
                         {{ field }}
                         {% if field.errors %}
-                        <span style="color:var(--color-danger); font-size:12px; margin-top:4px; display:block;">
-                            {{ field.errors|join:", " }}
-                        </span>
+                        <div class="text-danger small">{{ field.errors }}</div>
                         {% endif %}
                         {% if field.help_text %}
                         <span style="color:var(--color-text-secondary); font-size:12px;">{{ field.help_text }}</span>
