@@ -4,6 +4,22 @@
 {% block titulo %}Requisitar Peças para OS — SECTI Piraí{% endblock %}
 
 {% block style %}
+    .page-header-bar {
+        display: flex;
+        align-items: center;
+        background-color: #FFFFFF;
+        border-bottom: 1px solid #DDDDDD;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+    }
+
+    .page-header-bar h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #4E74BF;
+        margin: 0;
+    }
     .card-requisicao {
         background: white;
         border-radius: 20px;
@@ -97,9 +113,11 @@
 {% endblock style %}
 
 {% block conteudo %}
-<div class="card-requisicao">
+<div class="page-header-bar">
     <h2 class="title">Requisitar Peças para OS</h2>
-    
+</div>
+
+<div class="card-requisicao">    
     <form method="post">
         {% csrf_token %}
         
