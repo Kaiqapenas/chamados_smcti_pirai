@@ -1,16 +1,17 @@
 from typing import TYPE_CHECKING, Any, cast
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView, ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import DetailView, ListView, UpdateView, DeleteView
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from django.urls import reverse_lazy
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from apps.chamados.forms import ChamadoForm
 from .models import Chamado, AlteracaoChamado, ItemChamado
-from .forms import ItemChamadoForm
+from .forms import ItemChamadoForm, ItemChamadoFormSet
 
 from apps.estoque.models import ItemEstoque
 from django.db import models
@@ -119,31 +120,102 @@ class ChamadoMudarStatusView(View):
         return redirect("chamados:detalhe", pk=pk)
 
 #ITENS DO CHAMADO
-class ItemChamadoCreateView(LoginRequiredMixin, CreateView):
-    model = ItemChamado
-    form_class = ItemChamadoForm
+class ItemChamadoCreateView(LoginRequiredMixin, View):
     template_name = "chamados/item_form.html"
 
-    def form_valid(self, form):
-        # Associa o item ao chamado da URL automaticamente
-        chamado = get_object_or_404(Chamado, pk = self.kwargs["chamado_pk"])
-        form.instance.chamado = chamado
-        form.instance.usuario = self.request.user
-        return super().form_valid(form)
+    def _get_chamado(self, chamado_pk):
+        chamado = get_object_or_404(Chamado, pk=chamado_pk)
+        if chamado.status == Chamado.Status.FINALIZADO:
+            messages.error(
+                self.request,
+                "Não é possível adicionar itens a um chamado finalizado.",
+            )
+            return None
+        return chamado
 
-    def get_success_url(self) -> str:
-        return str(reverse_lazy("chamados:detalhe", kwargs={"pk": self.kwargs["chamado_pk"]}))
+    def get(self, request, chamado_pk):
+        chamado = self._get_chamado(chamado_pk)
+        if chamado is None:
+            return redirect("chamados:detalhe", pk=chamado_pk)
+
+        formset = ItemChamadoFormSet(chamado=chamado)
+        return render(
+            request,
+            self.template_name,
+            {
+                "chamado": chamado,
+                "formset": formset,
+                "form_mode": "create",
+                "existing_item_ids": list(
+                    chamado.itens.values_list("item_id", flat=True)
+                ),
+            },
+        )
+
+    def post(self, request, chamado_pk):
+        chamado = self._get_chamado(chamado_pk)
+        if chamado is None:
+            return redirect("chamados:detalhe", pk=chamado_pk)
+
+        formset = ItemChamadoFormSet(request.POST, chamado=chamado)
+
+        if formset.is_valid():
+            with transaction.atomic():
+                for item_id, quantidade in formset.merged_items.items():
+                    ItemChamado.objects.create(
+                        chamado=chamado,
+                        item_id=item_id,
+                        quantidade=quantidade,
+                        usuario=request.user,
+                    )
+
+            count = len(formset.merged_items)
+            messages.success(
+                request,
+                f"{count} item(ns) adicionado(s) com sucesso.",
+            )
+            return redirect("chamados:detalhe", pk=chamado_pk)
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "chamado": chamado,
+                "formset": formset,
+                "form_mode": "create",
+                "existing_item_ids": list(
+                    chamado.itens.values_list("item_id", flat=True)
+                ),
+            },
+        )
 
 class ItemChamadoUpdateView(LoginRequiredMixin, UpdateView):
     model = ItemChamado
     form_class = ItemChamadoForm
     template_name = "chamados/item_form.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form_mode"] = "update"
+        context["chamado"] = self.object.chamado
+        return context
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.chamado.status == Chamado.Status.FINALIZADO:
+            messages.error(
+                request,
+                "Não é possível editar itens de um chamado finalizado.",
+            )
+            return redirect("chamados:detalhe", pk=self.object.chamado.pk)
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self) -> str:
         return str(reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk}))
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
+        messages.success(self.request, "Item atualizado com sucesso.")
         return super().form_valid(form)
 
 class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):

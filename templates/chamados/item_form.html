@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}
+    {% if form_mode == "create" %}Adicionar itens{% else %}Editar item{% endif %}
+{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
+{% endblock head %}
+
+{% block conteudo %}
+    <div class="tickets-page">
+        <header class="tickets-header">
+            <div class="header-content">
+                <div class="header-left">
+                    {% if form_mode == "create" %}
+                        <h1>Adicionar itens ao chamado</h1>
+                    {% else %}
+                        <h1>Editar item do chamado</h1>
+                    {% endif %}
+                </div>
+                <div class="header-right">
+                    <a href="{% url 'chamados:detalhe' chamado.pk %}" class="btn-cancel" style="padding:10px 20px;">← Voltar</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="tickets-container">
+            <main class="main-content">
+                <div class="form-container">
+                    <p class="item-form-intro">
+                        Chamado <strong>#{{ chamado.numero_protocolo }}</strong> — {{ chamado.titulo }}
+                    </p>
+
+                    {% if form_mode == "create" %}
+                    <form class="ticket-form item-form" method="POST" novalidate id="item-form">
+                        {% csrf_token %}
+
+                        {% if formset.non_form_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ formset.non_form_errors }}
+                        </div>
+                        {% endif %}
+
+                        {{ formset.management_form }}
+
+                        <div class="item-rows-section">
+                        <div class="item-rows-header">
+                            <span aria-hidden="true"></span>
+                            <span>Item do estoque</span>
+                            <span>Quantidade</span>
+                            <span aria-hidden="true"></span>
+                        </div>
+
+                        <div
+                            class="item-rows"
+                            id="item-rows"
+                            data-existing-items="{{ existing_item_ids|join:',' }}"
+                        >
+                            <div class="item-rows-drop-zone" id="item-rows-drop-zone" aria-hidden="true"></div>
+                            {% for form in formset %}
+                            <div class="item-row">
+                                <button type="button" class="drag-handle" title="Arrastar para reordenar" aria-label="Arrastar para reordenar">
+                                    <span class="material-symbols-outlined">drag_indicator</span>
+                                </button>
+
+                                <div class="item-row-field">
+                                    {{ form.item }}
+                                    {% if form.item.errors %}
+                                    <div class="text-danger small item-row-errors">{{ form.item.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="item-row-field">
+                                    {{ form.quantidade }}
+                                    {% if form.quantidade.errors %}
+                                    <div class="text-danger small item-row-errors">{{ form.quantidade.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <button type="button" class="btn-remove-row" title="Remover linha" aria-label="Remover linha">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="item-rows-add">
+                            <button type="button" class="btn-add-item-row" id="item-row-add-btn">
+                                <span class="material-symbols-outlined">add</span>
+                                Adicionar linha
+                            </button>
+                        </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">Salvar itens</button>
+                            <a href="{% url 'chamados:detalhe' chamado.pk %}" class="btn-cancel">Cancelar</a>
+                        </div>
+                    </form>
+                    {% else %}
+                    <form class="ticket-form" method="POST" novalidate>
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ form.non_field_errors }}
+                        </div>
+                        {% endif %}
+
+                        <div class="item-form-single-row">
+                            <div class="form-group">
+                                <label for="{{ form.item.id_for_label }}">
+                                    {{ form.item.label }}{% if form.item.field.required %} *{% endif %}
+                                </label>
+                                {{ form.item }}
+                                {% if form.item.errors %}
+                                <div class="text-danger small">{{ form.item.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.quantidade.id_for_label }}">
+                                    {{ form.quantidade.label }}{% if form.quantidade.field.required %} *{% endif %}
+                                </label>
+                                {{ form.quantidade }}
+                                {% if form.quantidade.errors %}
+                                <div class="text-danger small">{{ form.quantidade.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit">Salvar alterações</button>
+                            <a href="{% url 'chamados:detalhe' chamado.pk %}" class="btn-cancel">Cancelar</a>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </main>
+        </div>
+    </div>
+{% endblock conteudo %}
+
+{% block scripts %}
+    {% if form_mode == "create" %}
+    <script src="{% static 'js/item_form.js' %}"></script>
+    {% endif %}
+{% endblock scripts %}

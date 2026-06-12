@@ -482,6 +482,231 @@ body {
   margin-top: 10px;
 }
 
+/* ========== FORMULÁRIO DE ITENS DO CHAMADO ========== */
+.item-form-intro {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-bottom: 20px;
+}
+
+.item-form-intro strong {
+  color: var(--color-text-primary);
+}
+
+.item-rows-section {
+  width: 100%;
+}
+
+.item-rows-add {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.btn-add-item-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px;
+  border: 2px dashed var(--color-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-add-item-row .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.btn-add-item-row:hover {
+  border-color: var(--color-primary);
+  background-color: rgba(78, 116, 191, 0.06);
+}
+
+.btn-add-item-row:focus {
+  outline: none;
+}
+
+.btn-add-item-row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.item-rows-header,
+.item-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 140px 48px;
+  gap: 12px;
+  align-items: center;
+}
+
+.item-rows-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  padding: 0 4px 8px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 8px;
+}
+
+.item-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.item-rows-drop-zone {
+  min-height: 0;
+  margin: 0;
+  border-radius: 4px;
+  transition: min-height 0.15s ease, background-color 0.15s ease;
+}
+
+.item-rows.is-dragging .item-rows-drop-zone {
+  min-height: 48px;
+}
+
+.item-rows-drop-zone.is-active {
+  background-color: rgba(78, 116, 191, 0.08);
+}
+
+.item-drop-indicator {
+  height: 3px;
+  margin: 2px 0;
+  border-radius: 2px;
+  background-color: var(--color-primary);
+  pointer-events: none;
+}
+
+.item-row-slot {
+  border-radius: 4px;
+  background-color: rgba(78, 116, 191, 0.06);
+  border: 2px dashed rgba(78, 116, 191, 0.25);
+}
+
+.item-row {
+  padding: 4px;
+  border-radius: 4px;
+  background-color: var(--color-bg-main);
+}
+
+.item-row.is-dragging {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  opacity: 0.95;
+  cursor: grabbing;
+}
+
+.item-row-field {
+  min-width: 0;
+}
+
+.item-row-field select.input-field,
+.item-row-field select.input-field option:disabled,
+.item-row-field input.input-field {
+  width: 100%;
+}
+
+.item-row-field select.input-field option:disabled {
+  color: var(--color-text-secondary);
+}
+
+.drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  width: 48px;
+  min-height: 48px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.drag-handle:hover {
+  color: var(--color-primary);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle:focus {
+  outline: none;
+}
+
+.drag-handle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.drag-handle .material-symbols-outlined {
+  font-size: 24px;
+  pointer-events: none;
+}
+
+.btn-remove-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-remove-row .material-symbols-outlined {
+  font-size: 22px;
+}
+
+.btn-remove-row:hover {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+  background-color: #fff5f7;
+}
+
+.item-row-errors {
+  grid-column: 2 / -1;
+}
+
+.item-form-single-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px;
+  gap: 20px;
+  align-items: end;
+}
+
+@media (max-width: 640px) {
+  .item-rows-header {
+    display: none;
+  }
+
+  .item-row,
+  .item-form-single-row {
+    grid-template-columns: 1fr;
+  }
+
+  .drag-handle {
+    justify-self: start;
+  }
+}
+
 /* ========== ESTILOS DO MODAL ========== */
 .modal-overlay {
     display: none;
