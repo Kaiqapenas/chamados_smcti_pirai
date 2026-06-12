@@ -16,9 +16,9 @@
                 <h1 class="header-title">#{{ chamado.numero_protocolo }} — {{ chamado.titulo }}</h1>
             </div>
             <div class="header-right">
-                <a href="{% url 'chamados:lista' %}" class="btn-cancel" style="padding:10px 20px;">← Voltar</a>
+                <a href="{% url 'chamados:lista' %}" class="btn-cancel" style="padding:10px 20px; border-radius:25px;">← Voltar</a>
                 {% if chamado.status != 'FI' %}
-                    <a href="{% url 'chamados:editar' chamado.pk %}" class="btn-new-ticket">✏️ Editar</a>
+                    <a href="{% url 'chamados:editar' chamado.pk %}" class="btn-new-ticket">Editar</a>
                 {% endif %}
             </div>
         </div>
@@ -28,12 +28,12 @@
         <main class="main-content">
 
             <!-- BARRA DE PROGRESSO -->
-            <div class="ticket-progress" style="height:6px; margin-bottom:24px;">
+            <div class="ticket-progress" style="height:6px; margin-bottom:24px; border-radius:25px;">
                 <div class="progress-bar {% if chamado.status == 'AB' %}status-pendente{% elif chamado.status == 'EA' %}status-em-andamento{% else %}status-concluido{% endif %}"></div>
             </div>
 
             <!-- BADGES + MUDAR STATUS -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px; border-radius:25px;">
                 <div class="ticket-badges">
                     <span class="badge status {% if chamado.status == 'AB' %}status-pendente{% elif chamado.status == 'EA' %}status-em-andamento{% else %}status-concluido{% endif %}">
                         {{ chamado.get_status_display }}
@@ -44,20 +44,19 @@
                 </div>
 
                 {% if chamado.status != 'FI' %}
-                <form method="POST" action="{% url 'chamados:mudar_status' chamado.pk %}" style="display:flex; gap:8px; align-items:center;">
+                <form method="POST" action="{% url 'chamados:mudar_status' chamado.pk %}" style="display:flex; gap:8px; align-items:center; border-radius:25px;">
                     {% csrf_token %}
                     <select name="status" class="filter-select">
                         {% for value, label in chamado.Status.choices %}
                             <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
                     </select>
-                    <button type="submit" class="btn-submit" style="padding:8px 16px;">Mudar status</button>
+                    <button type="submit" class="btn-submit" style="padding:8px 16px; border-radius:25px;">Mudar status</button>
                 </form>
                 {% endif %}
             </div>
-
             <!-- INFORMAÇÕES DO CHAMADO -->
-            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:20px; margin-bottom:30px;">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:20px; margin-bottom:30px; border-radius:25px;">
                 <div>
                     <p style="font-size:12px; color:var(--color-text-secondary); margin-bottom:4px;">Solicitante</p>
                     <p style="font-weight:600;">{{ chamado.solicitante }}</p>
@@ -112,13 +111,13 @@
                             </div>
                             {% if chamado.status != 'FI' %}
                             <div style="display:flex; gap:8px;">
-                                <a href="{% url 'chamados:editar_item' item.pk %}" class="btn-cancel" style="padding:6px 12px; font-size:13px;">✏️ Editar</a>
+                                <a href="{% url 'chamados:editar_item' item.pk %}" class="btn-cancel" style="padding:6px 12px; font-size:13px;">Editar</a>
                                 <form method="POST" action="{% url 'chamados:remover_item' item.pk %}">
                                     {% csrf_token %}
                                     <button type="submit"
                                         onclick="return confirm('Remover item?')"
                                         style="padding:6px 12px; font-size:13px; background:var(--color-danger); color:white; border:none; border-radius:4px; cursor:pointer;">
-                                        🗑️ Remover
+                                        Remover
                                     </button>
                                 </form>
                             </div>
@@ -149,13 +148,13 @@
 
             <!-- EXCLUIR -->
             {% if chamado.status != 'FI' %}
-            <div style="border-top:1px solid var(--color-border); padding-top:20px;">
+            <div style="border-top:1px solid var(--color-border); padding-top:20px; ">
                 <form method="POST" action="{% url 'chamados:remover' chamado.pk %}">
                     {% csrf_token %}
                     <button type="submit"
                         onclick="return confirm('Deseja excluir este chamado?')"
-                        style="padding:10px 20px; background:var(--color-danger); color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">
-                        🗑️ Excluir chamado
+                        style="padding:10px 20px; background:var(--color-danger); color:white; border:none; border-radius:25px; cursor:pointer; font-size:14px;">
+                        Excluir chamado
                     </button>
                 </form>
             </div>

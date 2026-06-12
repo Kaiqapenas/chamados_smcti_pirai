@@ -15,7 +15,7 @@
                 <h1>{% if chamado %}Editar chamado #{{ chamado.numero_protocolo }}{% else %}Novo chamado de manutenção{% endif %}</h1>
             </div>
             <div class="header-right">
-                <a href="{% if chamado %}{% url 'chamados:detalhe' chamado.pk %}{% else %}{% url 'chamados:lista' %}{% endif %}" class="btn-cancel" style="padding:10px 20px;">← Voltar</a>
+                <a href="{% if chamado %}{% url 'chamados:detalhe' chamado.pk %}{% else %}{% url 'chamados:lista' %}{% endif %}" class="btn-cancel" style="padding:10px 20px; border-radius:25px;">← Voltar</a>
             </div>
         </div>
     </header>
@@ -48,10 +48,10 @@
                     {% endfor %}
 
                     <div class="form-actions">
-                        <button type="submit" class="btn-submit">
-                            {% if chamado %}Salvar alterações{% else %}Abrir chamado{% endif %}
+                        <button type="submit" class="btn-submit"style="padding:10px 20px; border-radius:25px;">
+                             {% if chamado %}Salvar alterações{% else %}Abrir chamado{% endif %}
                         </button>
-                        <a href="{% if chamado %}{% url 'chamados:detalhe' chamado.pk %}{% else %}{% url 'chamados:lista' %}{% endif %}" class="btn-cancel">
+                        <a href="{% if chamado %}{% url 'chamados:detalhe' chamado.pk %}{% else %}{% url 'chamados:lista' %}{% endif %}" class="btn-cancel" style="padding:10px 20px; border-radius:25px;">
                             Cancelar
                         </a>
                     </div>
