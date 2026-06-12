@@ -3,6 +3,7 @@ from django.apps import AppConfig
 
 class CoreConfig(AppConfig):
     name = 'apps.core'
+    label = 'core'
 
     def ready(self):
         # Importa sinais para associar automaticamente privilégios

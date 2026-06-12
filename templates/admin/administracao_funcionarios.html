@@ -215,7 +215,7 @@ tbody tr:hover {
 }
 
 .campo-erro {
-  border-color: #ef4444 !important;
+  border-color: #d34747 !important;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
 }
 
@@ -282,6 +282,124 @@ th {
   background: rgba(255, 255, 255, 0.4);
 }
 
+.modal-delete {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.45);
+  backdrop-filter: blur(3px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+.modal-delete.open {
+  display: flex;
+}
+
+.modal-delete-content {
+  background: #fff;
+  border-radius: 13px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+  animation: su .22s ease;
+}
+
+.modal-delete-header {
+  background: linear-gradient(135deg, #d34747, #d34747);
+  color: #fff;
+  padding: 1.2rem 1.5rem;
+  border-radius: 13px 13px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-delete-header .icon {
+  font-size: 1.8rem;
+}
+
+.modal-delete-header h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.modal-delete-body {
+  padding: 1.5rem;
+}
+
+.modal-delete-body p {
+  margin: 0 0 1rem 0;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.modal-delete-body .user-info {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 12px;
+}
+
+.modal-delete-body .user-info strong {
+  color: #1e293b;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.modal-delete-body .user-info span {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.modal-delete-footer {
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn-cancel {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #f1f5f9;
+}
+
+.btn-confirm-delete {
+  background: #d34747;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-confirm-delete:hover {
+  background: #d34747;
+}
+
+.btn-confirm-delete:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
 {% endblock %}
 
 {% block conteudo %}
@@ -323,6 +441,7 @@ th {
           <th>E-mail<div class="resizer"></div></th>
           <th>Telefone<div class="resizer"></div></th>
           <th>Setor<div class="resizer"></div></th>
+          <th style="width: 100px;">Ação</th>
         </tr>
       </thead>
       <tbody id="tBody"></tbody>
@@ -367,11 +486,36 @@ th {
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal-delete" id="modalDelete">
+  <div class="modal-delete-content">
+    <div class="modal-delete-header">
+      <h3>Confirmar Exclusão</h3>
+    </div>
+    <div class="modal-delete-body">
+      <p>Você está prestes a excluir permanentemente este funcionário do sistema.</p>
+      <div class="user-info">
+        <strong id="deleteUserName"></strong>
+        <span id="deleteUserDetails"></span>
+      </div>
+      <p style="margin-top: 1rem; color: #d34747; font-weight: 500;">
+         Esta ação não pode ser desfeita!
+      </p>
+    </div>
+    <div class="modal-delete-footer">
+      <button class="btn-cancel" onclick="fecharModalDelete()">Cancelar</button>
+      <button class="btn-confirm-delete" id="btnConfirmDelete" onclick="executarExclusao()">Excluir Funcionário</button>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
 let funcionarios = {{ funcionarios_json|safe }}.map(f => ({
+    id: f.id,
     nome: (f.first_name + ' ' + f.last_name).trim(),
     matricula: f.matricula || '',
     email: f.email || '',
@@ -442,6 +586,9 @@ function render(lista = funcionarios) {
   const tbody = document.getElementById("tBody");
   tbody.innerHTML = "";
   lista.forEach(f => {
+    const nomeEscapado = f.nome.replace(/'/g, "\\'");
+    const emailEscapado = f.email.replace(/'/g, "\\'");
+    const matriculaEscapada = f.matricula.replace(/'/g, "\\'");
     tbody.innerHTML += `
       <tr>
         <td>${f.nome}</td>
@@ -449,6 +596,18 @@ function render(lista = funcionarios) {
         <td>${f.email}</td>
         <td>${f.telefone}</td>
         <td>${f.setor}</td>
+        <td>
+          <button
+            class="btn-delete"
+            onclick="abrirModalDelete(${f.id}, '${nomeEscapado}', '${emailEscapado}', '${matriculaEscapada}')"
+            title="Excluir funcionário"
+            style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;"
+            onmouseover="this.style.background='#dc2626'"
+            onmouseout="this.style.background='#ef4444'"
+          >
+           Excluir
+          </button>
+        </td>
       </tr>
     `;
   });
@@ -523,11 +682,91 @@ async function salvar() {
         return;
     }
 
-    funcionarios.push({ nome, matricula, email, telefone, setor });
+    const novoFunc = {
+        id: data.id,
+        nome,
+        matricula,
+        email,
+        telefone,
+        setor
+    };
+    funcionarios.push(novoFunc);
+    
+    // Ordena alfabeticamente por nome
+    funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    
     fecharModal();
     filtrar();
-    toast('Funcionário cadastrado com sucesso!');
+    toast('Funcionário cadastrado com sucesso.');
 }
+
+let deleteUserId = null;
+
+function abrirModalDelete(id, nome, email, matricula) {
+    deleteUserId = id;
+    document.getElementById('deleteUserName').textContent = nome;
+    document.getElementById('deleteUserDetails').textContent = `Matrícula: ${matricula} | E-mail: ${email}`;
+    document.getElementById('modalDelete').classList.add('open');
+}
+
+function fecharModalDelete() {
+    document.getElementById('modalDelete').classList.remove('open');
+    deleteUserId = null;
+}
+
+async function executarExclusao() {
+    if (!deleteUserId) return;
+
+    const btnConfirm = document.getElementById('btnConfirmDelete');
+    btnConfirm.disabled = true;
+    btnConfirm.textContent = 'Excluindo...';
+
+    try {
+        const resp = await fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ action: 'delete', id: deleteUserId }),
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+            toast(data.erro || 'Erro ao excluir funcionário.');
+            btnConfirm.disabled = false;
+            btnConfirm.textContent = 'Excluir Funcionário';
+            return;
+        }
+
+        // Remove da lista local
+        funcionarios = funcionarios.filter(f => f.id !== deleteUserId);
+        fecharModalDelete();
+        filtrar();
+        toast('Funcionário excluído com sucesso!');
+    } catch (error) {
+        toast('Erro ao excluir funcionário.');
+        console.error(error);
+        btnConfirm.disabled = false;
+        btnConfirm.textContent = 'Excluir Funcionário';
+    }
+}
+
+// Fechar modal ao clicar fora
+document.addEventListener('click', function(e) {
+    const modalDelete = document.getElementById('modalDelete');
+    if (e.target === modalDelete) {
+        fecharModalDelete();
+    }
+});
+
+// Fechar modal com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        fecharModalDelete();
+    }
+});
 
 document.getElementById("tBody").addEventListener("mouseover", function(e) {
   if (e.target.tagName === "TD") {
