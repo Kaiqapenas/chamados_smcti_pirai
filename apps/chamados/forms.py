@@ -49,6 +49,7 @@ class ChamadoForm(forms.ModelForm):
             "urgencia": forms.HiddenInput(),
             "tecnico": forms.Select(attrs={"class": INPUT_CLASS}),
             "data_prevista": forms.DateInput(
+                format="%Y-%m-%d",
                 attrs={
                     "class": INPUT_CLASS,
                     "type": "date",
@@ -70,6 +71,7 @@ class ChamadoForm(forms.ModelForm):
         self.fields["tecnico"].required = False
         self.fields["tecnico"].empty_label = "Selecione..."
         self.fields["data_prevista"].required = False
+        self.fields["data_prevista"].input_formats = ["%Y-%m-%d"]
 
         self.fields["urgencia"].required = False
         if self.is_bound and not self.data.get("urgencia"):

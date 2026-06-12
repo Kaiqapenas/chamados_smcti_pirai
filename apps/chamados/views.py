@@ -51,7 +51,7 @@ class ChamadoListView(LoginRequiredMixin, ListView):
 class ChamadoCreateView(LoginRequiredMixin, View):
     def get(self, request):
         form = ChamadoForm()
-        return render(request, "chamados/cadastro.html", {"form": form})
+        return render(request, "chamados/cadastro.html", {"form": form, "form_mode": "create"})
 
     def post(self, request):
         form = ChamadoForm(request.POST, request.FILES)
@@ -63,7 +63,7 @@ class ChamadoCreateView(LoginRequiredMixin, View):
             messages.success(request, "Chamado criado com sucesso")
             return redirect("chamados:lista")
 
-        return render(request, "chamados/cadastro.html", {"form": form})
+        return render(request, "chamados/cadastro.html", {"form": form, "form_mode": "create"})
     
 class ChamadoDetailView(LoginRequiredMixin, DetailView):
     model = Chamado
@@ -77,7 +77,7 @@ class ChamadoUpdateView(LoginRequiredMixin, View):
             messages.error(request, "Não é possível editar um chamado finalizado.")
             return redirect("chamados:detalhe", pk=pk)
         form = ChamadoForm(instance=chamado)
-        return render(request, "chamados/form.html", {"form": form, "chamado": chamado})
+        return render(request, "chamados/cadastro.html", {"form": form, "chamado": chamado, "form_mode": "update"})
 
     def post(self, request, pk):
         chamado = get_object_or_404(Chamado, pk=pk)
@@ -93,7 +93,7 @@ class ChamadoUpdateView(LoginRequiredMixin, View):
             messages.success(request, "Chamado atualizado com sucesso.")
             return redirect("chamados:detalhe", pk=pk)
 
-        return render(request, "chamados/form.html", {"form": form, "chamado": chamado})
+        return render(request, "chamados/cadastro.html", {"form": form, "chamado": chamado, "form_mode": "update"})
 
 class ChamadoDeleteView(LoginRequiredMixin, View):
     model = Chamado
