@@ -143,7 +143,7 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View):
     # View para gerenciamento de funcionarios - requer permsisao de administrador
     def get(self, request):
-        usuarios = list(User.objects.all().values(
+        usuarios = list(User.objects.all().order_by('first_name', 'last_name').values(
             'id', 'first_name', 'last_name', 'matricula', 'email', 'telefone', 'setor'
         ))
         return render(request, "admin/administracao_funcionarios.html", {
@@ -152,11 +152,39 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
 
     def post(self, request):
         data = json.loads(request.body)
+        
+        # Verifica se é uma requisição de exclusão
+        if data.get('action') == 'delete':
+            user_id = data.get('id')
+            try:
+                user = User.objects.get(id=user_id)
+                # Não permite deletar o próprio usuário
+                if user.id == request.user.id:
+                    return JsonResponse({'erro': 'Você não pode deletar seu próprio usuário.'}, status=400)
+                
+                # Registra a exclusão no log de auditoria
+                AuditoriaLog.objects.create(
+                    tipo=TipoEvento.EXCLUSAO,
+                    usuario=request.user,
+                    descricao=f"Usuário {user.matricula} ({user.first_name} {user.last_name}) foi excluído.",
+                    ip=get_client_ip(request),
+                )
+                
+                user.delete()
+                return JsonResponse({'ok': True})
+            except User.DoesNotExist:
+                return JsonResponse({'erro': 'Usuário não encontrado.'}, status=404)
 
+        # Criação de novo usuário
         if User.objects.filter(matricula=data.get('matricula')).exists():
             return JsonResponse({'erro': 'Matrícula já cadastrada.'}, status=400)
 
+        if User.objects.filter(email=data.get('email')).exists():
+            return JsonResponse({'erro': 'E-mail já cadastrado.'}, status=400)
+
         nomes = data.get('nome', '').strip().split(' ', 1)
+        setor = data.get('setor', '')
+        
         user = User.objects.create_user(
             matricula=data.get('matricula'),
             password=data.get('senha'),
@@ -164,14 +192,31 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
             last_name=nomes[1] if len(nomes) > 1 else '',
             email=data.get('email', ''),
             telefone=data.get('telefone', ''),
-            setor=data.get('setor', ''),
+            setor=setor,
         )
+        
+        # Atribui as permissões baseadas no setor
+        if setor == 'Administrativo':
+            user.is_administrador = True
+        elif setor == 'Técnico':
+            user.is_tecnico = True
+        elif setor == 'Almoxarife':
+            user.is_almoxarife = True
+        elif setor == 'Solicitante':
+            user.is_solicitante = True
+        elif setor == 'Secretário':
+            user.is_secretario = True
+        
+        user.save()
+        
+        # Registra a criação no log de auditoria
         AuditoriaLog.objects.create(
             tipo=TipoEvento.CRIACAO,
             usuario=request.user,
-            descricao=f"Funcionário {user.matricula} criado por {request.user.matricula}.",
+            descricao=f"Novo usuário criado: {user.matricula} ({user.first_name} {user.last_name}) - Setor: {setor}",
             ip=get_client_ip(request),
         )
+        
         return JsonResponse({'ok': True, 'id': user.id})
 
 
@@ -397,3 +442,4 @@ class RegistroauditoriaExportCSVView(View):
             ])
 
         return response
+
