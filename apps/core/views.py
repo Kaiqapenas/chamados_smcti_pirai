@@ -111,11 +111,33 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "core/form.html"
     success_url = reverse_lazy("core:index")
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        AuditoriaLog.objects.create(
+            tipo=TipoEvento.EDICAO,
+            usuario=self.request.user,
+            descricao=f"Usuário {self.object.matricula} editado por {self.request.user.matricula}.",
+            ip=get_client_ip(self.request),
+        )
+        return response
+
 
 class UserDeleteView(LoginRequiredMixin, DeleteView):
     model = User
     template_name = "core/confirma_exclusao.html"
     success_url = reverse_lazy("core:index")
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        matricula = self.object.matricula
+        response = super().post(request, *args, **kwargs)
+        AuditoriaLog.objects.create(
+            tipo=TipoEvento.EXCLUSAO,
+            usuario=request.user,
+            descricao=f"Usuário {matricula} excluído por {request.user.matricula}.",
+            ip=get_client_ip(request),
+        )
+        return response
 
 
 class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View):
