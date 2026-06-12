@@ -2,8 +2,7 @@ from typing import Any
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.shortcuts import redirect
 from django.contrib import messages
-from django.http import HttpRequest, HttpResponseRedirect
-
+from django.http import HttpRequest, HttpResponseRedirect, JsonResponse
 from django.contrib.auth.models import AbstractBaseUser, AnonymousUser
 
 class AuthenticatedHttpRequest(HttpRequest):
@@ -18,9 +17,12 @@ class AdministradorRequiredMixin(UserPassesTestMixin):
         return self.request.user.is_authenticated and self.request.user.is_administrador
     
     def handle_no_permission(self) -> HttpResponseRedirect:
-        messages.error(self.request, "Você não tem permissão para acessar esta página. Apenas administradores.")
-        return redirect('estoque:lista')  # type: ignore[return-value]
-
+        if not self.request.user.is_authenticated:
+            return redirect('core:login')
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'erro': 'Acesso negado.'}, status=403)
+        messages.error(self.request, "Acesso restrito a administradores.")
+        return redirect('chamados:index')
 
 class TecnicoRequiredMixin(UserPassesTestMixin):
     """Mixin que requer que o usuário seja técnico"""
@@ -30,8 +32,10 @@ class TecnicoRequiredMixin(UserPassesTestMixin):
         return self.request.user.is_authenticated and self.request.user.is_tecnico
     
     def handle_no_permission(self) -> HttpResponseRedirect:
-        messages.error(self.request, "Você não tem permissão para acessar esta página. Apenas técnicos.")
-        return redirect('estoque:lista')  # type: ignore[return-value]
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'erro': 'Acesso negado.'}, status=403)
+        messages.error(self.request, "Você não tem permissão para acessar esta página. Apenas administradores.")
+        return redirect('chamados:index')
 
 
 class AlmoxarifeRequiredMixin(UserPassesTestMixin):
@@ -42,8 +46,10 @@ class AlmoxarifeRequiredMixin(UserPassesTestMixin):
         return self.request.user.is_authenticated and self.request.user.is_almoxarife
     
     def handle_no_permission(self) -> HttpResponseRedirect:
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'erro': 'Acesso negado.'}, status=403)
         messages.error(self.request, "Você não tem permissão para acessar esta página. Apenas almoxarifes.")
-        return redirect('estoque:lista')  # type: ignore[return-value]
+        return redirect('chamados:index')  # type: ignore[return-value]
 
 
 class SecretarioRequiredMixin(UserPassesTestMixin):
@@ -54,8 +60,10 @@ class SecretarioRequiredMixin(UserPassesTestMixin):
         return self.request.user.is_authenticated and self.request.user.is_secretario
     
     def handle_no_permission(self) -> HttpResponseRedirect:
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'erro': 'Acesso negado.'}, status=403)
         messages.error(self.request, "Você não tem permissão para acessar esta página. Apenas secretários.")
-        return redirect('estoque:lista')  # type: ignore[return-value]
+        return redirect('chamados:index')  # type: ignore[return-value]
 
 
 class SolicitanteRequiredMixin(UserPassesTestMixin):
@@ -66,7 +74,9 @@ class SolicitanteRequiredMixin(UserPassesTestMixin):
         return self.request.user.is_authenticated and self.request.user.is_solicitante
     
     def handle_no_permission(self) -> HttpResponseRedirect:
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'erro': 'Acesso negado.'}, status=403)
         messages.error(self.request, "Você não tem permissão para acessar esta página. Apenas solicitantes.")
-        return redirect('estoque:lista')  # type: ignore[return-value]
+        return redirect('chamados:index')  # type: ignore[return-value]
 
 # Made with Bob

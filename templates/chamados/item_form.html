@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}{% if object %}Editar Item{% else %}Adicionar Item{% endif %}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
+{% endblock head %}
+
+{% block conteudo %}
+<div class="tickets-page">
+
+    <header class="tickets-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="header-title">{% if object %}Editar Item{% else %}Adicionar Item ao Chamado{% endif %}</h1>
+            </div>
+            <div class="header-right">
+                {% if object %}
+                    <a href="{% url 'chamados:detalhe' object.chamado.pk %}" class="btn-cancel" style="padding:10px 20px;">← Voltar</a>
+                {% else %}
+                    <a href="{% url 'chamados:detalhe' view.kwargs.chamado_pk %}" class="btn-cancel" style="padding:10px 20px;">← Voltar</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="tickets-container">
+        <main class="main-content">
+            <form method="POST">
+                {% csrf_token %}
+
+                {% for field in form %}
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; font-size:13px; color:var(--color-text-secondary); margin-bottom:6px;">
+                        {{ field.label }}{% if field.field.required %} *{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <p style="color:var(--color-danger); font-size:12px; margin-top:4px;">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <div style="display:flex; gap:12px; margin-top:28px;">
+                    <button type="submit" class="btn-new-ticket">
+                        {% if object %}Salvar alterações{% else %}Adicionar item{% endif %}
+                    </button>
+                    {% if object %}
+                        <a href="{% url 'chamados:detalhe' object.chamado.pk %}" class="btn-cancel" style="padding:10px 20px;">Cancelar</a>
+                    {% else %}
+                        <a href="{% url 'chamados:detalhe' view.kwargs.chamado_pk %}" class="btn-cancel" style="padding:10px 20px;">Cancelar</a>
+                    {% endif %}
+                </div>
+
+            </form>
+        </main>
+    </div>
+</div>
+{% endblock conteudo %}

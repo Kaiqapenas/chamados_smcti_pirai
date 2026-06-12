@@ -12,12 +12,19 @@ from apps.chamados.forms import ChamadoForm
 from .models import Chamado, AlteracaoChamado, ItemChamado
 from .forms import ItemChamadoForm
 
+from apps.core.models import AuditoriaLog, TipoEvento
 from apps.estoque.models import ItemEstoque
 from django.db import models
 from django.db.models import Q
 
 if TYPE_CHECKING:
     from django.db.models.manager import Manager
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR')
 
 class ChamadoListView(LoginRequiredMixin, ListView):
     model = Chamado
@@ -60,6 +67,12 @@ class ChamadoCreateView(LoginRequiredMixin, View):
             chamado = form.save(commit=False)
             chamado.usuario = request.user
             chamado.save()
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.CRIACAO,
+                usuario=request.user,
+                descricao=f"Chamado {chamado.numero_protocolo} criado",
+                ip=get_client_ip(request)
+            )
             messages.success(request, "Chamado criado com sucesso")
             return redirect("chamados:lista")
 
@@ -90,6 +103,12 @@ class ChamadoUpdateView(LoginRequiredMixin, View):
             chamado = form.save(commit=False)
             chamado.usuario = request.user
             chamado.save()
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.EDICAO,
+                usuario=request.user,
+                descricao=f"Chamado {chamado.numero_protocolo} editado",
+                ip=get_client_ip(request),
+            )
             messages.success(request, "Chamado atualizado com sucesso.")
             return redirect("chamados:detalhe", pk=pk)
 
@@ -99,7 +118,14 @@ class ChamadoDeleteView(LoginRequiredMixin, View):
     model = Chamado
     def post(self, request, pk):
         chamado = get_object_or_404(Chamado, pk=pk)
+        protocolo = chamado.numero_protocolo #salva antes de deletar 
         chamado.delete()
+        AuditoriaLog.objects.create(
+            tipo=TipoEvento.EXCLUSAO,
+            usuario=request.user,
+            descricao=f"Chamado {chamado.numero_protocolo} excluído",
+            ip=get_client_ip(request),
+        )
         return redirect("chamados:lista")
 
 class ChamadoMudarStatusView(View):
@@ -113,6 +139,12 @@ class ChamadoMudarStatusView(View):
 
         try:
             chamado.mudar_status(novo_status, request.user)
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.EDICAO,
+                usuario=request.user,
+                descricao=f"Status do chamado {chamado.numero_protocolo} alterado para {chamado.get_status_display()}",
+                ip=get_client_ip(request),
+            )
             messages.success(request, f"Status alterado para {chamado.get_status_display()}")
         except ValidationError as e:
             messages.error(request, str(e))
@@ -129,7 +161,14 @@ class ItemChamadoCreateView(LoginRequiredMixin, CreateView):
         chamado = get_object_or_404(Chamado, pk = self.kwargs["chamado_pk"])
         form.instance.chamado = chamado
         form.instance.usuario = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        AuditoriaLog.objects.create(
+            tipo=TipoEvento.CRIACAO,
+            usuario=self.request.user,
+            descricao=f"Item '{form.instance.nome}' adicionado ao chamado {chamado.numero_protocolo}",
+            ip=get_client_ip(self.request),
+        )
+        return response
 
     def get_success_url(self) -> str:
         return str(reverse_lazy("chamados:detalhe", kwargs={"pk": self.kwargs["chamado_pk"]}))
@@ -144,7 +183,14 @@ class ItemChamadoUpdateView(LoginRequiredMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        AuditoriaLog.objects.create(
+            tipo=TipoEvento.EDICAO,
+            usuario=self.request.user,
+            descricao=f"Item do chamado {self.object.chamado.numero_protocolo} editado.",
+            ip=get_client_ip(self.request),
+        )
+        return response
 
 class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
     model = ItemChamado
@@ -154,6 +200,12 @@ class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
         self.object = self.get_object()
         try:
             self.object.delete()
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.EXCLUSAO,
+                usuario=request.user,
+                descricao=f"Item removido do chamado {self.object.chamado.numero_protocolo}.",
+                ip=get_client_ip(request),
+            )
             messages.success(request, "Item removido com sucesso.")
         except ValidationError as e:
             messages.error(request, e.message)
@@ -162,6 +214,7 @@ class ItemChamadoDeleteView(LoginRequiredMixin, DeleteView):
     def get_success_url(self) -> str:  # type: ignore[override]
         return str(reverse_lazy("chamados:detalhe", kwargs={"pk": self.object.chamado.pk}))
 
+from django.views.generic import TemplateView
 class IndexPageView(LoginRequiredMixin, ListView):
     model = Chamado
     template_name = "chamados/index.html"
@@ -242,6 +295,12 @@ class ReatribuicaoTecnicoView(LoginRequiredMixin, ListView):
             status_novo=chamado.status,
             descricao=f"Reatribuído: de {nome_anterior} para {novo_tecnico.first_name}",
             usuario=request.user
+        )
+        AuditoriaLog.objects.create(
+            tipo=TipoEvento.EDICAO,
+            usuario=request.user,
+            descricao=f"Chamado {chamado.numero_protocolo} reatribuído de {nome_anterior} para {novo_tecnico.first_name}.",
+            ip=get_client_ip(request),
         )
         
         messages.success(request, f"Chamado {chamado.numero_protocolo} reatribuído com sucesso.")
