@@ -31,9 +31,21 @@ class ChamadoListView(LoginRequiredMixin, ListView):
     template_name = "chamados/lista.html"
     context_object_name = "chamados"
 
+    def get(self, request, *args, **kwargs):
+        # Se for técnico, abrir diretamente a lista de atribuídos
+        if getattr(request.user, "is_tecnico", False):
+            return redirect("chamados:atribuidos")
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         #para evitar N queries no template
         queryset = super().get_queryset().select_related().prefetch_related("itens")
+        # Se o usuário for técnico, mostrar apenas chamados atribuídos a ele
+        # ou chamados que contenham itens (requisita peças).
+        if getattr(self.request.user, "is_tecnico", False):
+            queryset = queryset.filter(
+                Q(tecnico=self.request.user) | Q(itens__isnull=False)
+            ).distinct()
         #filtro por status
         status = self.request.GET.get("status")
         if status:
