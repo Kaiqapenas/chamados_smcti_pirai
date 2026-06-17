@@ -51,5 +51,22 @@ class RequisicaoPecaForm(forms.ModelForm):
             'item_solicitado': forms.Select(attrs={'class': 'form-select'}),
             'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
             'urgencia': forms.HiddenInput(),
-            'justificativa': forms.Textarea(attrs={'class': 'justificativa-box', 'rows': 4, 'placeholder': 'Necessário para manutenção...'}),
+            'justificativa': forms.Textarea(attrs={
+                'class': 'justificativa-box',
+                'rows': 4,
+                'placeholder': 'Necessário para manutenção...'
+            }),
         }
+
+    def __init__(self, *args, **kwargs):
+        # Recebe o usuário passado pela view
+        usuario = kwargs.pop('usuario', None)
+        super().__init__(*args, **kwargs)
+
+        if usuario is not None:
+            from apps.chamados.models import Chamado
+            # Filtra apenas os chamados atribuídos ao técnico logado
+            # e que não estejam finalizados
+            self.fields['chamado'].queryset = Chamado.objects.filter(
+                tecnico=usuario
+            ).exclude(status='FI')

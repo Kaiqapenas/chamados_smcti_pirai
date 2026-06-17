@@ -4,6 +4,22 @@
 {% block titulo %}Requisitar Peças para OS — SECTI Piraí{% endblock %}
 
 {% block style %}
+    .page-header-bar {
+        display: flex;
+        align-items: center;
+        background-color: #FFFFFF;
+        border-bottom: 1px solid #DDDDDD;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+    }
+
+    .page-header-bar h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #4E74BF;
+        margin: 0;
+    }
     .card-requisicao {
         background: white;
         border-radius: 20px;
@@ -25,11 +41,21 @@
         margin-bottom: 8px;
     }
     .form-select, .form-control {
-        border-radius: 10px;
-        border: 1px solid #cbd5e0;
-        padding: 10px 15px;
-        background-color: #f0f9ff;
-    }
+    border-radius: 10px;
+    border: 1px solid #cbd5e0;
+    padding: 10px 15px;
+    background-color: #f8faff;
+    font-size: 0.95rem;
+    color: var(--text-dark, #2d3748);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: #5479c1;
+    box-shadow: 0 0 0 3px rgba(84, 121, 193, 0.15);
+    outline: none;
+    background-color: #fff;
+}
     .urgencia-container {
         display: flex;
         gap: 15px;
@@ -71,24 +97,27 @@
         resize: none;
     }
     .btn-enviar {
-        background-color: #5479c1;
-        color: white;
-        border-radius: 25px;
-        padding: 10px 40px;
-        font-weight: bold;
-        border: none;
-        float: right;
-        margin-top: 20px;
-    }
-    .btn-enviar:hover {
-        background-color: #43619c;
-    }
+    background-color: #5479c1;
+    color: white;
+    border-radius: 25px;
+    padding: 10px 40px;
+    font-weight: bold;
+    border: none;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+}
+
+.btn-enviar:hover {
+    background-color: #43619c;
+}
 {% endblock style %}
 
 {% block conteudo %}
-<div class="card-requisicao">
+<div class="page-header-bar">
     <h2 class="title">Requisitar Peças para OS</h2>
-    
+</div>
+
+<div class="card-requisicao">    
     <form method="post">
         {% csrf_token %}
         
@@ -129,7 +158,7 @@
 
         <div class="row mb-3">
             <div class="col-12">
-                <label class="form-label">Justificativa</label>
+                <label class="form-label">Justificativa *</label>
                 {{ form.justificativa }}
                 {% if form.justificativa.errors %}
                     <div class="text-danger small">{{ form.justificativa.errors }}</div>
@@ -137,11 +166,11 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-12">
-                <button type="submit" class="btn-enviar">Enviar</button>
-            </div>
-        </div>
+       <div class="row">
+    <div class="col-12 d-flex justify-content-end">
+        <button type="submit" class="btn-enviar">Enviar Requisição</button>
+    </div>
+</div>
     </form>
 </div>
 {% endblock conteudo %}

@@ -264,7 +264,7 @@ class MovimentacaoEstoqueUpdateView(LoginRequiredMixin, View):
             "movimentacao": movimentacao
         })       
 
-# 🔹 DELETE MOVIMENTACAO ESTOQUE
+# DELETE MOVIMENTACAO ESTOQUE
 class MovimentacaoEstoqueDeleteView(View):
     def get(self, request, pk):
         movimentacao = get_object_or_404(MovimentacaoEstoque, pk=pk)
@@ -279,18 +279,18 @@ class MovimentacaoEstoqueDeleteView(View):
             messages.error(request, str(e.message))
         return redirect("estoque:movimentacao_lista")
 
-# 🔹 REQUISIÇÃO DE PEÇAS
+#  REQUISIÇÃO DE PEÇAS
 class RequisicaoPecaCreateView(LoginRequiredMixin, View):
     def get(self, request):
-        form = RequisicaoPecaForm()
+        form = RequisicaoPecaForm(usuario=request.user)
         return render(request, "estoque/requisitar_peca.html", {"form": form})
 
     def post(self, request):
-        form = RequisicaoPecaForm(request.POST)
+        form = RequisicaoPecaForm(request.POST, usuario=request.user)
         if form.is_valid():
             requisicao = form.save(commit=False)
             requisicao.usuario = request.user
             requisicao.save()
             messages.success(request, "Requisição de peça enviada com sucesso.")
-            return redirect("estoque:lista")
+            return redirect("chamados:atribuidos") 
         return render(request, "estoque/requisitar_peca.html", {"form": form})

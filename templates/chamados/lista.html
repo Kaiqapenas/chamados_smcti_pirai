@@ -93,14 +93,14 @@
                     <div class="ticket-footer">
                         <span>Aberto em {{ chamado.data_criacao|date:"d/m/Y H:i" }}</span>
                         <div style="display:flex; gap:8px;">
-                            <a href="{% url 'chamados:detalhe' chamado.pk %}" class="btn-cancel" style="padding:6px 14px; font-size:13px;">Ver detalhes</a>
-                            <a href="{% url 'chamados:editar' chamado.pk %}" class="btn-cancel" style="padding:6px 14px; font-size:13px;">✏️ Editar</a>
+                            <a href="{% url 'chamados:detalhe' chamado.pk %}" class="btn-cancel" style="padding:6px 14px; border-radius:25px; font-size:13px;">Ver detalhes</a>
+                            <a href="{% url 'chamados:editar' chamado.pk %}" class="btn-cancel" style="padding:6px 14px; border-radius:25px; font-size:13px;">Editar</a>
                             <form method="POST" action="{% url 'chamados:remover' chamado.pk %}" style="display:inline;">
                                 {% csrf_token %}
                                 <button type="submit"
                                     onclick="return confirm('Deseja excluir este chamado?')"
-                                    style="padding:6px 14px; font-size:13px; background:var(--color-danger); color:white; border:none; border-radius:4px; cursor:pointer;">
-                                    🗑️ Excluir
+                                    style="padding:6px 14px; font-size:13px; background:var(--color-danger); color:white; border:none; border-radius:25px; cursor:pointer;">
+                                    Excluir
                                 </button>
                             </form>
                         </div>
