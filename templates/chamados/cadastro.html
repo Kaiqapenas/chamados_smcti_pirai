@@ -12,7 +12,11 @@
         <header class="tickets-header">
             <div class="header-content">
                 <div class="header-left">
-                    <h1>Novo chamado de manutenção</h1>
+                    {% if form_mode == "create" %}
+                        <h1>Novo chamado de manutenção:</h1>
+                    {% elif form_mode == "update" %}
+                        <h1>Editar chamado #{{chamado.numero_protocolo}}</h1>
+                    {% endif %}
                 </div>
             </div>
         </header>
@@ -126,7 +130,9 @@
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn-submit">Abrir chamado</button>
+                            <button type="submit" class="btn-submit">
+                                {% if form_mode == "create" %}Abrir chamado{% elif form_mode == "update" %}Salvar edições{% endif %}
+                            </button>
                             <button type="button" onclick="window.location.href='{% url 'chamados:lista' %}'" class="btn-cancel">Cancelar</button>
                         </div>
                     </form>
