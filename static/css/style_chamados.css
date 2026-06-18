@@ -768,3 +768,33 @@ body {
     padding: 30px;
     overflow-y: auto;
 }
+.pagination-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.pagination-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-btn, .pagination-number {
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-bg-main);
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.pagination-number.active {
+  background-color: var(--color-primary);
+  color: white;
+}

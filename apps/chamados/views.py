@@ -31,6 +31,7 @@ class ChamadoListView(LoginRequiredMixin, ListView):
     model = Chamado
     template_name = "chamados/lista.html"
     context_object_name = "chamados"
+    paginate_by = 10
 
     def get_queryset(self):
         #para evitar N queries no template
@@ -49,11 +50,15 @@ class ChamadoListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(numero_protocolo__icontains=protocolo)
         return queryset
     
-    def get_context_data(self,**kwargs):
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        #passa as opções de filtro pro template
         context["status_choices"] = Chamado.Status.choices
         context["urgencia_choices"] = Chamado.Urgencia.choices
+        
+        # Preservar parâmetros de filtro na paginação (Adicionado)
+        context["status_filter"] = self.request.GET.get("status", "")
+        context["urgencia_filter"] = self.request.GET.get("urgencia", "")
+        context["protocolo_filter"] = self.request.GET.get("protocolo", "")
         return context
         
 class ChamadoCreateView(LoginRequiredMixin, View):
