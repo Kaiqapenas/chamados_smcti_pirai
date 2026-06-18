@@ -4,7 +4,7 @@ from .views import (
     UserListView, UserCreateView, UserDetailView,
     UserLoginView, UserLogoutView, UserUpdateView, UserDeleteView,
    RecuperarSenhaView, EmailEnviadoView, NovaSenhaView, RegistroauditoriaView, RegistroauditoriaKPIView,
-    RegistroauditoriaListAPIView, RegistroauditoriaExportCSVView, AdminFuncionariosView,
+    RegistroauditoriaListAPIView, RegistroauditoriaExportCSVView, AdminFuncionariosView,AlterarSenhaView,
 )
 
 app_name = "core"
@@ -26,5 +26,6 @@ urlpatterns = [
 
     path("recuperar-senha/", RecuperarSenhaView.as_view(), name="recuperar_senha"),
     path("email-enviado/",   EmailEnviadoView.as_view(),   name="email_enviado"),
-    path("nova-senha/",      NovaSenhaView.as_view(),      name="nova_senha"),
+    path("nova-senha/<uidb64>/<token>/", NovaSenhaView.as_view(), name="nova_senha"),
+    path("alterar-senha/", AlterarSenhaView.as_view(), name="alterar_senha"),
 ]

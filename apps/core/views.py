@@ -3,6 +3,10 @@ import json
 from functools import reduce
 from operator import or_
 
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -154,14 +158,15 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
         data = json.loads(request.body)
         
         # Verifica se é uma requisição de exclusão
-        if data.get('action') == 'delete':
+        if data.get('action') == 'inativar':
             user_id = data.get('id')
             try:
                 user = User.objects.get(id=user_id)
                 # Não permite deletar o próprio usuário
                 if user.id == request.user.id:
-                    return JsonResponse({'erro': 'Você não pode deletar seu próprio usuário.'}, status=400)
-                
+                    return JsonResponse({'erro': 'Você não pode inativar seu próprio usuário.'}, status=400)
+                user.ativo = False
+                user.save()
                 # Registra a exclusão no log de auditoria
                 AuditoriaLog.objects.create(
                     tipo=TipoEvento.EXCLUSAO,
@@ -169,8 +174,7 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
                     descricao=f"Usuário {user.matricula} ({user.first_name} {user.last_name}) foi excluído.",
                     ip=get_client_ip(request),
                 )
-                
-                user.delete()
+
                 return JsonResponse({'ok': True})
             except User.DoesNotExist:
                 return JsonResponse({'erro': 'Usuário não encontrado.'}, status=404)
@@ -248,6 +252,39 @@ class RegistroauditoriaKPIView(AdministradorRequiredMixin, LoginRequiredMixin, V
 
 # auth de senha
 
+class AlterarSenhaView(LoginRequiredMixin, View):
+    def get(self, request):
+        return render(request, "auth/alterar_senha.html")
+
+    def post(self, request):
+        senha_atual = request.POST.get("senha_atual", "")
+        senha1 = request.POST.get("password1", "")
+        senha2 = request.POST.get("password2", "")
+
+        if not request.user.check_password(senha_atual):
+            return render(request, "auth/alterar_senha.html", {
+                "erro": "Senha atual incorreta."
+            })
+
+        if not senha1 or senha1 != senha2:
+            return render(request, "auth/alterar_senha.html", {
+                "erro": "As novas senhas não coincidem ou estão vazias."
+            })
+
+        if len(senha1) < 6:
+            return render(request, "auth/alterar_senha.html", {
+                "erro": "A nova senha deve ter pelo menos 6 caracteres."
+            })
+
+        request.user.set_password(senha1)
+        request.user.save()
+
+        # Mantém o usuário logado após trocar a senha
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, request.user)
+
+        return render(request, "auth/alterar_senha.html", {"sucesso": True})
+        
 class RecuperarSenhaView(View):
     """
     simula o envio de e-mail de recuperação.
@@ -266,13 +303,21 @@ class RecuperarSenhaView(View):
                 "erro": "Informe um e-mail válido."
             })
 
-        # TODO: quando o backend de e-mail estiver pronto:
-        #   1. Buscar User.objects.filter(email=email).first()
-        #   2. Gerar token com django.contrib.auth.tokens.default_token_generator
-        #   3. Salvar / associar ao usuário
-        #   4. Disparar send_mail() com o link contendo o token
-        #
-        # Por enquanto apenas guardamos o e-mail na sessão pra exibir na tela seguinte.
+        # Resposta sempre igual pra não revelar se o e-mail existe
+        user = User.objects.filter(email=email, ativo=True).first()
+
+        if user:
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            link = request.build_absolute_uri(
+                reverse_lazy("core:nova_senha", kwargs={"uidb64": uid, "token": token})
+            )
+            send_mail(
+                subject="Redefinição de senha — SIGEC",
+                message=f"Olá, {user.first_name}.\n\nClique no link abaixo para redefinir sua senha:\n\n{link}\n\nSe não foi você, ignore este e-mail.",
+                from_email=None,  # usa DEFAULT_FROM_EMAIL do settings
+                recipient_list=[email],
+            )
 
         request.session["recuperacao_email"] = email
         return redirect("core:email_enviado")
@@ -296,28 +341,51 @@ class NovaSenhaView(View):
     identificar o usuário e chamar user.set_password(senha).
     """
 
-    def get(self, request):
-        return render(request, "auth/nova_senha.html")
+    def get(self, request, uidb64=None, token=None):
+        user = self._validar_token(uidb64, token)
+        if not user:
+            return render(request, "auth/nova_senha.html", {"erro": "Link inválido ou expirado. Solicite uma nova recuperação de senha."})
+        return render(request, "auth/nova_senha.html", {"validacao_ok": True})
 
-    def post(self, request):
+    def post(self, request, uidb64=None, token=None):
+        user = self._validar_token(uidb64, token)
+        if not user:
+            return render(request, "auth/nova_senha.html", {
+                "erro": "Link inválido ou expirado. Solicite uma nova recuperação de senha."
+            })
+
         senha1 = request.POST.get("password1", "")
         senha2 = request.POST.get("password2", "")
 
         if not senha1 or senha1 != senha2:
             return render(request, "auth/nova_senha.html", {
-                "erro": "As senhas não coincidem ou estão vazias."
+                "erro": "As senhas não coincidem ou estão vazias.",
+                "uidb64": uidb64,
+                "token": token,
             })
 
         if len(senha1) < 6:
             return render(request, "auth/nova_senha.html", {
-                "erro": "A senha deve ter pelo menos 6 caracteres."
+                "erro": "A senha deve ter pelo menos 6 caracteres.",
+                "uidb64": uidb64,
+                "token": token,
             })
 
-        # TODO: identificar usuário pelo token e aplicar:
-        #   user.set_password(senha1)
-        #   user.save()
-
+        user.set_password(senha1)
+        user.save()
         return render(request, "auth/nova_senha.html", {"sucesso": True})
+
+    def _validar_token(self, uidb64, token):
+        if not uidb64 or not token:
+            return None
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid, ativo=True)
+        except (User.DoesNotExist, ValueError, TypeError):
+            return None
+        if not default_token_generator.check_token(user, token):
+            return None
+        return user
 
 
 def index(request):

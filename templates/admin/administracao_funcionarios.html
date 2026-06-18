@@ -611,12 +611,12 @@ function render(lista = funcionarios) {
           <button
             class="btn-delete"
             onclick="abrirModalDelete(${f.id}, '${nomeEscapado}', '${emailEscapado}', '${matriculaEscapada}')"
-            title="Excluir funcionário"
+            title="Inativar funcionário"
             style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;"
             onmouseover="this.style.background='#dc2626'"
             onmouseout="this.style.background='#ef4444'"
           >
-           Excluir
+           Inativar
           </button>
         </td>
       </tr>
@@ -730,7 +730,7 @@ async function executarExclusao() {
 
     const btnConfirm = document.getElementById('btnConfirmDelete');
     btnConfirm.disabled = true;
-    btnConfirm.textContent = 'Excluindo...';
+    btnConfirm.textContent = 'Inativando...';
 
     try {
         const resp = await fetch(window.location.href, {
@@ -739,15 +739,15 @@ async function executarExclusao() {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}',
             },
-            body: JSON.stringify({ action: 'delete', id: deleteUserId }),
+            body: JSON.stringify({ action: 'inativar', id: deleteUserId }),
         });
 
         const data = await resp.json();
 
         if (!resp.ok) {
-            toast(data.erro || 'Erro ao excluir funcionário.');
+            toast(data.erro || 'Erro ao inativar funcionário.');
             btnConfirm.disabled = false;
-            btnConfirm.textContent = 'Excluir Funcionário';
+            btnConfirm.textContent = 'Inativar Funcionário';
             return;
         }
 
@@ -755,12 +755,12 @@ async function executarExclusao() {
         funcionarios = funcionarios.filter(f => f.id !== deleteUserId);
         fecharModalDelete();
         filtrar();
-        toast('Funcionário excluído com sucesso!');
+        toast('Funcionário inativado com sucesso!');
     } catch (error) {
-        toast('Erro ao excluir funcionário.');
+        toast('Erro ao inativar funcionário.');
         console.error(error);
         btnConfirm.disabled = false;
-        btnConfirm.textContent = 'Excluir Funcionário';
+        btnConfirm.textContent = 'Inativar Funcionário';
     }
 }
 

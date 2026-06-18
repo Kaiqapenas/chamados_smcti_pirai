@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova Senha - SIGEC</title>
+    <title>Alterar Senha - SIGEC</title>
     <link rel="stylesheet" href="{% static 'auth/style.css' %}">
 </head>
 <body>
@@ -22,33 +22,36 @@
                 </svg>
             </div>
 
-            <h2 id="pageTitle">Criar nova senha</h2>
-            <p class="subtitle" id="pageSubtitle">Digite sua nova senha abaixo e confirme-a para redefinir seu acesso.</p>
+            <h2 id="pageTitle">Alterar senha</h2>
+            <p class="subtitle" id="pageSubtitle">Informe sua senha atual e defina uma nova senha.</p>
 
             {% if sucesso %}
                 <script>
                     document.getElementById('iconContainer').className = 'icon-check';
                     document.getElementById('iconContainer').innerHTML = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
                     document.getElementById('pageTitle').innerText = 'Senha alterada!';
-                    document.getElementById('pageSubtitle').innerText = 'Sua senha foi redefinida com sucesso. Você já pode acessar o sistema.';
+                    document.getElementById('pageSubtitle').innerText = 'Sua senha foi atualizada com sucesso.';
                 </script>
-                <a href="{% url 'core:login' %}" class="btn-light-blue" style="display:block; text-align:center;">Voltar à página inicial</a>
+                <a href="{% url 'chamados:lista' %}" class="btn-light-blue" style="display:block; text-align:center;">Voltar ao sistema</a>
             {% else %}
                 {% if erro %}
                 <div class="error-msg" style="display:block; margin-bottom: 12px; text-align:center;">
                     {{ erro }}
                 </div>
                 {% endif %}
-                <form method="POST" action="{% url 'core:nova_senha' uidb64=uidb64 token=token %}" id="newPasswordForm">
+                <form method="POST" action="{% url 'core:alterar_senha' %}" id="alterarSenhaForm">
                     {% csrf_token %}
-                    <div class="auth-input-group" id="pwdGroup1">
+                    <div class="auth-input-group">
+                        <input type="password" name="senha_atual" placeholder="Senha atual" required>
+                    </div>
+                    <div class="auth-input-group">
                         <input type="password" name="password1" id="newPwd" placeholder="Nova senha" required minlength="6">
                     </div>
                     <div class="auth-input-group" id="pwdGroup2">
                         <input type="password" name="password2" id="confirmPwd" placeholder="Confirmar nova senha" required minlength="6">
                         <div class="error-msg" id="pwdErrorMsg">As senhas não coincidem.</div>
                     </div>
-                    <button type="submit" class="btn-green" style="width: 100%;">Aplicar nova senha</button>
+                    <button type="submit" class="btn-green" style="width: 100%;">Alterar senha</button>
                 </form>
             {% endif %}
 
@@ -60,7 +63,7 @@
 
     {% if not sucesso %}
     <script>
-        document.getElementById('newPasswordForm').addEventListener('submit', function(e) {
+        document.getElementById('alterarSenhaForm').addEventListener('submit', function(e) {
             const pwd1 = document.getElementById('newPwd').value;
             const pwd2 = document.getElementById('confirmPwd').value;
             if (pwd1 !== pwd2) {
