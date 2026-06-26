@@ -24,8 +24,9 @@ class RelatorioGraficoView(LoginRequiredMixin, TemplateView):
         
         context['tecnicos_ativos'] = User.objects.filter(
             is_active=True,
-            groups__name='Técnico'
-        ).distinct().count()
+            is_tecnico=True,
+            ativo=True
+        ).count()
         
         mes_atual = datetime.now()
         meses = {

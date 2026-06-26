@@ -23,7 +23,7 @@ from django.core.paginator import Paginator
 
 from apps.core.forms import UserForm
 from apps.core.models import AuditoriaLog, TipoEvento
-from apps.core.mixins import AdministradorRequiredMixin
+from apps.core.mixins import AdministradorRequiredMixin, AdministradorOuSecretarioRequiredMixin
 
 from django.contrib.auth import get_user_model
 
@@ -147,9 +147,25 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View):
     # View para gerenciamento de funcionarios - requer permsisao de administrador
     def get(self, request):
-        usuarios = list(User.objects.all().order_by('first_name', 'last_name').values(
-            'id', 'first_name', 'last_name', 'matricula', 'email', 'telefone', 'setor'
-        ))
+        usuarios = []
+        for u in User.objects.all().order_by('first_name', 'last_name'):
+            perfis = []
+            if u.is_administrador: perfis.append('Administrativo')
+            if u.is_tecnico:       perfis.append('Técnico')
+            if u.is_almoxarife:    perfis.append('Almoxarife')
+            if u.is_solicitante:   perfis.append('Solicitante')
+            if u.is_secretario:    perfis.append('Secretário')
+            usuarios.append({
+                'id': u.id,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'matricula': u.matricula,
+                'email': u.email or '',
+                'telefone': u.telefone or '',
+                'setor': u.setor or '',
+                'ativo': u.ativo,
+                'perfis': perfis,
+            })
         return render(request, "admin/administracao_funcionarios.html", {
             "funcionarios_json": json.dumps(usuarios)
         })
@@ -178,6 +194,65 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
                 return JsonResponse({'ok': True})
             except User.DoesNotExist:
                 return JsonResponse({'erro': 'Usuário não encontrado.'}, status=404)
+        #reativar
+        if data.get('action') == 'reativar':
+            user_id = data.get('id')
+            try:
+                user = User.objects.get(id=user_id)
+                user.ativo = True
+                user.save()
+                AuditoriaLog.objects.create(
+                    tipo=TipoEvento.EDICAO,
+                    usuario=request.user,
+                    descricao=f"Usuário {user.matricula} ({user.first_name} {user.last_name}) foi reativado.",
+                    ip=get_client_ip(request),
+                )
+                return JsonResponse({'ok':True})
+            except User.DoesNotExist:
+                return JsonResponse({'erro': 'Usuário não encontrado.'}, status=404)
+
+        #editar
+        if data.get('action') == 'editar':
+            user_id = data.get('id')
+            try:
+                user = User.objects.get(id=user_id)
+
+                # Verifica duplicatas de matrícula e email (excluindo o próprio usuário)
+                nova_matricula = data.get('matricula', '').strip()
+                novo_email = data.get('email', '').strip()
+
+                if User.objects.filter(matricula=nova_matricula).exclude(id=user_id).exists():
+                    return JsonResponse({'erro': 'Matrícula já cadastrada.'}, status=400)
+                if User.objects.filter(email=novo_email).exclude(id=user_id).exists():
+                    return JsonResponse({'erro': 'E-mail já cadastrado.'}, status=400)
+
+                nomes = data.get('nome', '').strip().split(' ', 1)
+                setor = data.get('setor', '')
+
+                user.first_name = nomes[0]
+                user.last_name = nomes[1] if len(nomes) > 1 else ''
+                user.matricula = nova_matricula
+                user.email = novo_email
+                user.telefone = data.get('telefone', '')
+                user.setor = setor
+
+                perfis = data.get('perfis', [])
+                user.is_administrador = 'Administrativo' in perfis
+                user.is_tecnico       = 'Técnico'        in perfis
+                user.is_almoxarife    = 'Almoxarife'     in perfis
+                user.is_solicitante   = 'Solicitante'    in perfis
+                user.is_secretario    = 'Secretário'     in perfis
+
+                user.save()
+                AuditoriaLog.objects.create(
+                    tipo=TipoEvento.EDICAO,
+                    usuario=request.user,
+                    descricao=f"Usuário {user.matricula} ({user.first_name} {user.last_name}) editado por {request.user.matricula}.",
+                    ip=get_client_ip(request),
+                )
+                return JsonResponse({'ok': True})
+            except User.DoesNotExist:
+                return JsonResponse({'erro': 'Usuário não encontrado.'}, status=404)        
 
         # Criação de novo usuário
         if User.objects.filter(matricula=data.get('matricula')).exists():
@@ -197,22 +272,18 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
             email=data.get('email', ''),
             telefone=data.get('telefone', ''),
             setor=setor,
+            is_active=True,
         )
         
         # Atribui as permissões baseadas no setor
-        if setor == 'Administrativo':
-            user.is_administrador = True
-        elif setor == 'Técnico':
-            user.is_tecnico = True
-        elif setor == 'Almoxarife':
-            user.is_almoxarife = True
-        elif setor == 'Solicitante':
-            user.is_solicitante = True
-        elif setor == 'Secretário':
-            user.is_secretario = True
-        
+        # ── Criação — substitui o bloco de permissões ──
+        user.is_administrador = 'Administrativo' in data.get('perfis', [])
+        user.is_tecnico       = 'Técnico'        in data.get('perfis', [])
+        user.is_almoxarife    = 'Almoxarife'     in data.get('perfis', [])
+        user.is_solicitante   = 'Solicitante'    in data.get('perfis', [])
+        user.is_secretario    = 'Secretário'     in data.get('perfis', [])
         user.save()
-        
+
         # Registra a criação no log de auditoria
         AuditoriaLog.objects.create(
             tipo=TipoEvento.CRIACAO,
@@ -224,14 +295,14 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
         return JsonResponse({'ok': True, 'id': user.id})
 
 
-class RegistroauditoriaView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+class RegistroauditoriaView(AdministradorOuSecretarioRequiredMixin, LoginRequiredMixin, View):
     """View para visualização de registros de auditoria - requer permissão de administrador"""
 
     def get(self, request):
         return render(request, "admin/registro_auditoria.html")
 
 
-class RegistroauditoriaKPIView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+class RegistroauditoriaKPIView(AdministradorOuSecretarioRequiredMixin, LoginRequiredMixin, View):
     """View para KPIs de auditoria - requer permissão de administrador"""
 
     def get(self, request):

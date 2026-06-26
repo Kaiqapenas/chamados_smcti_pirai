@@ -477,17 +477,29 @@ th {
   <input id="matricula" placeholder="Matrícula" autocomplete="off">
   <input id="telefone" placeholder="(83) 9 9999-9999" autocomplete="off">
   <input id="email" type="email" placeholder="Email" autocomplete="off">
-  <select id="setor">
-    <option value="">Selecione…</option>
-    <option>Administrativo</option>
-    <option>Técnico</option>
-    <option>Almoxarife</option>
-    <option>Solicitante</option>
-    <option>Secretário</option>
-  </select>
   <input id="senha" type="password" placeholder="Senha" autocomplete="off">
+  <div style="grid-column: 1 / -1;">
+    <label style="font-size:0.85rem;color:#64748b;margin-bottom:8px;display:block;">Perfis de acesso</label>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;cursor:pointer;">
+        <input type="checkbox" value="Administrativo" name="perfis"> Administrativo
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;cursor:pointer;">
+        <input type="checkbox" value="Técnico" name="perfis"> Técnico
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;cursor:pointer;">
+        <input type="checkbox" value="Almoxarife" name="perfis"> Almoxarife
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;cursor:pointer;">
+        <input type="checkbox" value="Solicitante" name="perfis"> Solicitante
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.9rem;cursor:pointer;">
+        <input type="checkbox" value="Secretário" name="perfis"> Secretário
+      </label>
+    </div>
+  </div>
+  <input id="setor" type="hidden">
 </div>
-
     <div class="modal-footer">
       <button class="btn btn-o" onclick="fecharModal()">Cancelar</button>
       <button class="btn btn-p" onclick="salvar()"> Salvar</button>
@@ -502,21 +514,21 @@ th {
 <div class="modal-delete" id="modalDelete">
   <div class="modal-delete-content">
     <div class="modal-delete-header">
-      <h3>Confirmar Exclusão</h3>
+      <h3>Confirmar Inativação</h3>
     </div>
     <div class="modal-delete-body">
-      <p>Você está prestes a excluir permanentemente este funcionário do sistema.</p>
+      <p>Você está prestes a inativar permanentemente este funcionário do sistema.</p>
       <div class="user-info">
         <strong id="deleteUserName"></strong>
         <span id="deleteUserDetails"></span>
       </div>
       <p style="margin-top: 1rem; color: #d34747; font-weight: 500;">
-         Esta ação não pode ser desfeita!
+         O funcionário perderá o acesso ao sistema!
       </p>
     </div>
     <div class="modal-delete-footer">
       <button class="btn-cancel" onclick="fecharModalDelete()">Cancelar</button>
-      <button class="btn-confirm-delete" id="btnConfirmDelete" onclick="executarExclusao()">Excluir Funcionário</button>
+      <button class="btn-confirm-delete" id="btnConfirmDelete" onclick="executarExclusao()">Inativar Funcionário</button>
     </div>
   </div>
 </div>
@@ -532,6 +544,8 @@ let funcionarios = {{ funcionarios_json|safe }}.map(f => ({
     email: f.email || '',
     telefone: f.telefone || '',
     setor: f.setor || '',
+    ativo: f.ativo,
+    perfis: f.perfis || [],
 }));
 
 function iniciarRedimensionamento() {
@@ -585,7 +599,7 @@ function filtrar() {
       f.email.toLowerCase().includes(q) || 
       f.matricula.includes(q);
 
-    const matchSetor = !setor || f.setor === setor;
+    const matchSetor = !setor || f.perfis.includes(setor);
 
     return matchSearch && matchSetor;
   });
@@ -600,52 +614,87 @@ function render(lista = funcionarios) {
     const nomeEscapado = f.nome.replace(/'/g, "\\'");
     const emailEscapado = f.email.replace(/'/g, "\\'");
     const matriculaEscapada = f.matricula.replace(/'/g, "\\'");
+
+    const botoes = f.ativo ? `
+      <button
+        onclick="abrirModalEdicao(${f.id})"
+        title="Editar funcionário"
+        style="background:#4c6ef5;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:0.85rem;margin-right:4px;"
+        onmouseover="this.style.background='#3b5bbf'"
+        onmouseout="this.style.background='#4c6ef5'"
+      >Editar</button>
+      <button
+        onclick="abrirModalDelete(${f.id}, '${nomeEscapado}', '${emailEscapado}', '${matriculaEscapada}')"
+        title="Inativar funcionário"
+        style="background:#ef4444;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:0.85rem;"
+        onmouseover="this.style.background='#dc2626'"
+        onmouseout="this.style.background='#ef4444'"
+      >Inativar</button>
+    ` : `
+      <span style="color:#94a3b8;font-size:0.8rem;margin-right:6px;">Inativo</span>
+      <button
+        onclick="reativar(${f.id}, '${nomeEscapado}')"
+        title="Reativar funcionário"
+        style="background:#16a34a;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:0.85rem;"
+        onmouseover="this.style.background='#15803d'"
+        onmouseout="this.style.background='#16a34a'"
+      >Reativar</button>
+    `;
+
     tbody.innerHTML += `
-      <tr>
+      <tr style="${!f.ativo ? 'opacity:0.55;' : ''}">
         <td>${f.nome}</td>
         <td>${f.matricula}</td>
         <td>${f.email}</td>
         <td>${f.telefone}</td>
-        <td>${f.setor}</td>
-        <td>
-          <button
-            class="btn-delete"
-            onclick="abrirModalDelete(${f.id}, '${nomeEscapado}', '${emailEscapado}', '${matriculaEscapada}')"
-            title="Inativar funcionário"
-            style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;"
-            onmouseover="this.style.background='#dc2626'"
-            onmouseout="this.style.background='#ef4444'"
-          >
-           Inativar
-          </button>
-        </td>
+        <td>${f.perfis.length ? f.perfis.join(', ') : '—'}</td>
+        <td>${botoes}</td>
       </tr>
     `;
   });
 }
 
-function limparErros() {
-  ['nome', 'matricula', 'telefone', 'email', 'setor', 'senha'].forEach(id => {
-    document.getElementById(id).classList.remove('campo-erro');
-  });
+async function reativar(id, nome) {
+    if (!confirm(`Reativar o funcionário "${nome}"?`)) return;
+
+    const resp = await fetch(window.location.href, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({ action: 'reativar', id }),
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) {
+        toast(data.erro || 'Erro ao reativar.');
+        return;
+    }
+
+    const f = funcionarios.find(f => f.id === id);
+    if (f) f.ativo = true;
+    filtrar();
+    toast(`"${nome}" reativado com sucesso!`);
 }
 
-function marcarErro(id) {
-  const el = document.getElementById(id);
-  el.classList.add('campo-erro');
-  el.addEventListener('input', () => el.classList.remove('campo-erro'), { once: true });
-  el.addEventListener('change', () => el.classList.remove('campo-erro'), { once: true });
-}
+let editUserId = null;
 
-function abrirModal(idx = null) {
-  document.getElementById('modal').classList.add('open');
-  document.getElementById('nome').value = '';
-  document.getElementById('matricula').value = '';
-  document.getElementById('telefone').value = '';
-  document.getElementById('email').value = '';
-  document.getElementById('setor').value = '';
-  document.getElementById('senha').value = '';
-  limparErros();
+function abrirModalEdicao(id) {
+    const f = funcionarios.find(f => f.id === id);
+    if (!f) return;
+
+    editUserId = id;
+    document.getElementById('mTitle').textContent = 'Editar Funcionário';
+    document.getElementById('nome').value = f.nome;
+    document.getElementById('matricula').value = f.matricula;
+    document.getElementById('telefone').value = f.telefone;
+    document.getElementById('email').value = f.email;
+    document.getElementById('senha').value = '';
+    document.getElementById('senha').placeholder = 'Deixe em branco para não alterar';
+    setPerfis(f.perfis);  // ← marca os checkboxes
+    limparErros();
+    document.getElementById('modal').classList.add('open');
 }
 
 function fecharModal() {
@@ -661,21 +710,70 @@ function toast(msg) {
   }, 2500);
 }
 
+function getPerfis() {
+    return [...document.querySelectorAll('input[name="perfis"]:checked')]
+        .map(cb => cb.value);
+}
+
+function setPerfis(lista) {
+    document.querySelectorAll('input[name="perfis"]').forEach(cb => {
+        cb.checked = lista.includes(cb.value);
+    });
+}
+
+function limparPerfis() {
+    document.querySelectorAll('input[name="perfis"]').forEach(cb => cb.checked = false);
+}
+
+function abrirModal() {
+    editUserId = null;
+    document.getElementById('mTitle').textContent = 'Cadastrar Funcionário';
+    document.getElementById('nome').value = '';
+    document.getElementById('matricula').value = '';
+    document.getElementById('telefone').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('senha').value = '';
+    document.getElementById('senha').placeholder = 'Senha';
+    limparPerfis();
+    limparErros();
+    document.getElementById('modal').classList.add('open');
+}
+
+function limparErros() {
+  ['nome', 'matricula', 'telefone', 'email', 'senha'].forEach(id => {
+    document.getElementById(id).classList.remove('campo-erro');
+  });
+}
+
+function marcarErro(id) {
+  const el = document.getElementById(id);
+  el.classList.add('campo-erro');
+  el.addEventListener('input', () => el.classList.remove('campo-erro'), { once: true });
+  el.addEventListener('change', () => el.classList.remove('campo-erro'), { once: true });
+}
+
+
+
 async function salvar() {
     const nome = document.getElementById('nome').value.trim();
     const matricula = document.getElementById('matricula').value.trim();
     const telefone = document.getElementById('telefone').value.trim();
     const email = document.getElementById('email').value.trim();
-    const setor = document.getElementById('setor').value;
     const senha = document.getElementById('senha').value.trim();
+    const perfis = getPerfis();
+    const setor = perfis[0] || '';
 
     let valido = true;
-    if (!nome)      { marcarErro('nome');      valido = false; }
-    if (!matricula) { marcarErro('matricula'); valido = false; }
-    if (!email)     { marcarErro('email');     valido = false; }
-    if (!setor)     { marcarErro('setor');     valido = false; }
-    if (!senha)     { marcarErro('senha');     valido = false; }
+    if (!nome)          { marcarErro('nome');      valido = false; }
+    if (!matricula)     { marcarErro('matricula'); valido = false; }
+    if (!email)         { marcarErro('email');     valido = false; }
+    if (!perfis.length) { toast('Selecione ao menos um perfil.'); valido = false; }
+    if (!editUserId && !senha) { marcarErro('senha'); valido = false; }
     if (!valido) return;
+
+    const payload = editUserId
+        ? { action: 'editar', id: editUserId, nome, matricula, telefone, email, setor, perfis, ...(senha && { senha }) }
+        : { nome, matricula, telefone, email, setor, perfis, senha };
 
     const resp = await fetch(window.location.href, {
         method: 'POST',
@@ -683,32 +781,34 @@ async function salvar() {
             'Content-Type': 'application/json',
             'X-CSRFToken': '{{ csrf_token }}',
         },
-        body: JSON.stringify({ nome, matricula, telefone, email, setor, senha }),
+        body: JSON.stringify(payload),
     });
 
     const data = await resp.json();
-
     if (!resp.ok) {
         toast(data.erro || 'Erro ao salvar.');
         return;
     }
 
-    const novoFunc = {
-        id: data.id,
-        nome,
-        matricula,
-        email,
-        telefone,
-        setor
-    };
-    funcionarios.push(novoFunc);
-    
-    // Ordena alfabeticamente por nome
+    if (editUserId) {
+        const f = funcionarios.find(f => f.id === editUserId);
+        if (f) {
+            f.nome = nome;
+            f.matricula = matricula;
+            f.email = email;
+            f.telefone = telefone;
+            f.setor = setor;
+            f.perfis = perfis;
+        }
+        toast('Funcionário atualizado com sucesso!');
+    } else {
+        funcionarios.push({ id: data.id, nome, matricula, email, telefone, setor, perfis, ativo: true });
+        toast('Funcionário cadastrado com sucesso!');
+    }
+
     funcionarios.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-    
     fecharModal();
     filtrar();
-    toast('Funcionário cadastrado com sucesso.');
 }
 
 let deleteUserId = null;
@@ -752,7 +852,8 @@ async function executarExclusao() {
         }
 
         // Remove da lista local
-        funcionarios = funcionarios.filter(f => f.id !== deleteUserId);
+        const f = funcionarios.find(f => f.id === deleteUserId);
+        if (f) f.ativo = false;
         fecharModalDelete();
         filtrar();
         toast('Funcionário inativado com sucesso!');

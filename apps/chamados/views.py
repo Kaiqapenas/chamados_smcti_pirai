@@ -8,6 +8,8 @@ from django.views import View
 from django.urls import reverse_lazy
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.utils import timezone
+from django.contrib.auth import get_user_model
 
 from apps.chamados.forms import ChamadoForm
 from .models import Chamado, AlteracaoChamado, ItemChamado
@@ -21,6 +23,8 @@ from django.db.models import Q
 if TYPE_CHECKING:
     from django.db.models.manager import Manager
 
+User = get_user_model()
+
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
@@ -31,42 +35,91 @@ class ChamadoListView(LoginRequiredMixin, ListView):
     model = Chamado
     template_name = "chamados/lista.html"
     context_object_name = "chamados"
-
+ 
+    def _perfis(self, user):
+        return {
+            'admin':       getattr(user, 'is_administrador', False),
+            'secretario':  getattr(user, 'is_secretario', False),
+            'tecnico':     getattr(user, 'is_tecnico', False),
+            'solicitante': getattr(user, 'is_solicitante', False),
+            'almoxarife':  getattr(user, 'is_almoxarife', False),
+        }
+ 
     def get(self, request, *args, **kwargs):
-        # Se for técnico, abrir diretamente a lista de atribuídos
-        if getattr(request.user, "is_tecnico", False):
+        p = self._perfis(request.user)
+ 
+        # Almoxarife puro → sem acesso a chamados
+        if p['almoxarife'] and not any([p['admin'], p['tecnico'], p['solicitante'], p['secretario']]):
+            messages.error(request, "Você não tem acesso a chamados.")
+            return redirect("estoque:lista")
+ 
+        # Secretário puro → sem acesso a chamados
+        if p['secretario'] and not any([p['admin'], p['tecnico'], p['solicitante'], p['almoxarife']]):
+            messages.error(request, "Você não tem acesso a chamados.")
+            return redirect("relatorios:relatorio_grafico")
+ 
+        # Técnico puro → vai direto pra atribuídos
+        if p['tecnico'] and not any([p['admin'], p['solicitante'], p['secretario'], p['almoxarife']]):
             return redirect("chamados:atribuidos")
+ 
         return super().get(request, *args, **kwargs)
-
+ 
     def get_queryset(self):
-        #para evitar N queries no template
+        p = self._perfis(self.request.user)
         queryset = super().get_queryset().select_related().prefetch_related("itens")
-        # Se o usuário for técnico, mostrar apenas chamados atribuídos a ele
-        # ou chamados que contenham itens (requisita peças).
-        if getattr(self.request.user, "is_tecnico", False):
+ 
+        if p['admin']:
+            # Admin vê tudo
+            pass
+        elif p['solicitante'] and p['tecnico']:
+            # Misto solicitante+técnico → os próprios + atribuídos
             queryset = queryset.filter(
-                Q(tecnico=self.request.user) | Q(itens__isnull=False)
+                Q(usuario=self.request.user) | Q(tecnico=self.request.user)
             ).distinct()
-        #filtro por status
+        elif p['solicitante']:
+            # Solicitante puro → só os próprios
+            queryset = queryset.filter(usuario=self.request.user)
+        elif p['tecnico']:
+            # Técnico com outro perfil (ex: técnico+almoxarife) → só atribuídos
+            queryset = queryset.filter(tecnico=self.request.user)
+ 
         status = self.request.GET.get("status")
         if status:
             queryset = queryset.filter(status=status)
-        #filtro por urgencia
-        urgencia = self.request.GET.get("urgencia")        
+ 
+        urgencia = self.request.GET.get("urgencia")
         if urgencia:
             queryset = queryset.filter(urgencia=urgencia)
-        #busca por protocolo
+ 
         protocolo = self.request.GET.get("protocolo")
         if protocolo:
             queryset = queryset.filter(numero_protocolo__icontains=protocolo)
+ 
+        tecnico_id = self.request.GET.get("tecnico")
+        if tecnico_id:
+            queryset = queryset.filter(tecnico__id=tecnico_id)
+ 
+        periodo = self.request.GET.get("periodo")
+        if periodo:
+            hoje = timezone.now()
+            if periodo == "diario":
+                queryset = queryset.filter(data_criacao__date=hoje.date())
+            elif periodo == "mensal":
+                queryset = queryset.filter(
+                    data_criacao__year=hoje.year,
+                    data_criacao__month=hoje.month
+                )
+            elif periodo == "anual":
+                queryset = queryset.filter(data_criacao__year=hoje.year)
+ 
         return queryset
-    
-    def get_context_data(self,**kwargs):
+ 
+    def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        #passa as opções de filtro pro template
         context["status_choices"] = Chamado.Status.choices
         context["urgencia_choices"] = Chamado.Urgencia.choices
-        return context
+        context["tecnicos"] = User.objects.filter(is_tecnico=True, ativo=True)
+        return context   
         
 class ChamadoCreateView(LoginRequiredMixin, View):
     def get(self, request):
@@ -333,9 +386,6 @@ class ChamadosAtribuidosView(LoginRequiredMixin, ListView):
         # Pega o primeiro item com estoque baixo para o alerta
         context["estoque_baixo"] = ItemEstoque.objects.filter(quantidade__lte=models.F('quantidade_minima')).first()  # type: ignore[attr-defined]
         return context
-    
-from django.contrib.auth import get_user_model
-User = get_user_model()
 
 class ReatribuicaoTecnicoView(LoginRequiredMixin, ListView):
     model = Chamado
@@ -361,7 +411,7 @@ class ReatribuicaoTecnicoView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["tecnicos"] = User.objects.filter(is_active=True)  # type: ignore[attr-defined]
+        context["tecnicos"] = User.objects.filter(is_tecnico=True, ativo=True)
         # Busca as últimas 10 reatribuições para o histórico
         context["historico"] = AlteracaoChamado.objects.filter(  # type: ignore[attr-defined]
             descricao__icontains="Reatribuído"
