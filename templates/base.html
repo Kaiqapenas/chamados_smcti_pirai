@@ -17,7 +17,7 @@
     />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'main/mainlayout.css' %}" />
-    
+    <link rel="stylesheet" href="{% static 'css/error_notification.css' %}" />
     {% block head %}{% endblock head %}
     <style>
       {% block style %}{% endblock style %}
@@ -344,7 +344,23 @@ navItems.forEach(item => {
       });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="{% static 'js/notification.js' %}"></script>
+
+{% if messages %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    {% for message in messages %}
+    window.showNotification(
+      '{{ message.tags }}'.split(' ').find(t => ['error','warning','success','info'].includes(t)) || 'info',
+      'Notificação',
+      '{{ message|escapejs }}',
+      5000
+    );
+    {% endfor %}
+  });
+</script>
+{% endif %}
     {% block scripts %}{% endblock scripts %}
     {% block body_bottom %}{% endblock body_bottom %}
-  </body>
+    </body>
 </html>
