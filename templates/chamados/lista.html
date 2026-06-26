@@ -111,6 +111,141 @@
                 <p style="color: var(--color-text-secondary);">Nenhum chamado encontrado.</p>
                 {% endfor %}
             </div>
+            {% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Lista de Chamados{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/style_chamados.css' %}">
+{% endblock head %}
+
+{% block conteudo %}
+<div class="tickets-page">
+
+    <header class="tickets-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="header-title">Chamados</h1>
+            </div>
+            <div class="header-right">
+                <form method="GET" style="display:contents;">
+                    <input
+                        type="text"
+                        name="protocolo"
+                        class="search-input"
+                        placeholder="Buscar por protocolo..."
+                        value="{{ request.GET.protocolo }}"
+                    >
+                </form>
+                <a href="{% url 'chamados:adicionar' %}" class="btn-new-ticket">+ Novo Chamado</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="tickets-container">
+        <main class="main-content">
+
+            <!-- FILTROS -->
+            <form method="GET">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select name="status" class="filter-select" onchange="this.form.submit()">
+                            <option value="">Todos</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Urgência</label>
+                        <select name="urgencia" class="filter-select" onchange="this.form.submit()">
+                            <option value="">Todas</option>
+                            {% for value, label in urgencia_choices %}
+                                <option value="{{ value }}" {% if request.GET.urgencia == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if request.GET.status or request.GET.urgencia or request.GET.protocolo %}
+                        <div class="filter-group">
+                            <a href="{% url 'chamados:lista' %}" class="btn-cancel" style="padding: 8px 16px;">Limpar filtros</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </form>
+
+            <!-- LISTA -->
+            <div class="tickets-list">
+                {% for chamado in chamados %}
+                <div class="ticket-card">
+
+                    <!-- Barra de progresso -->
+                    <div class="ticket-progress">
+                        <div class="progress-bar {% if chamado.status == 'AB' %}status-pendente{% elif chamado.status == 'EA' %}status-em-andamento{% else %}status-concluido{% endif %}"></div>
+                    </div>
+
+                    <div class="ticket-header">
+                        <div class="ticket-info">
+                            <p class="ticket-protocol">#{{ chamado.numero_protocolo }}</p>
+                            <p class="ticket-title">{{ chamado.titulo }}</p>
+                            <p style="font-size:13px; color: var(--color-text-secondary); margin-top:4px;">
+                                {{ chamado.solicitante }} — {{ chamado.para_onde_solicitou }}
+                            </p>
+                        </div>
+                        <div class="ticket-badges">
+                            <span class="badge status {% if chamado.status == 'AB' %}status-pendente{% elif chamado.status == 'EA' %}status-em-andamento{% else %}status-concluido{% endif %}">
+                                {{ chamado.get_status_display }}
+                            </span>
+                            <span class="badge urgency {% if chamado.urgencia == 'UR' %}urgency-urgente{% else %}urgency-padrao{% endif %}">
+                                {{ chamado.get_urgencia_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="ticket-footer">
+                        <span>Aberto em {{ chamado.data_criacao|date:"d/m/Y H:i" }}</span>
+                        <div style="display:flex; gap:8px;">
+                            <a href="{% url 'chamados:detalhe' chamado.pk %}" class="btn-cancel" style="padding:6px 14px; border-radius:25px; font-size:13px;">Ver detalhes</a>
+                            <a href="{% url 'chamados:editar' chamado.pk %}" class="btn-cancel" style="padding:6px 14px; border-radius:25px; font-size:13px;">Editar</a>
+                            <form method="POST" action="{% url 'chamados:remover' chamado.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit"
+                                    onclick="return confirm('Deseja excluir este chamado?')"
+                                    style="padding:6px 14px; font-size:13px; background:var(--color-danger); color:white; border:none; border-radius:25px; cursor:pointer;">
+                                    Excluir
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+                {% empty %}
+                <p style="color: var(--color-text-secondary);">Nenhum chamado encontrado.</p>
+                {% endfor %}
+            </div>
+            <!-- BLOCO DE PAGINAÇÃO -->
+            {% if is_paginated %}
+            <div class="pagination-container" style="margin-top: 20px; display: flex; justify-content: center; gap: 5px;">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.urgencia %}&urgencia={{ request.GET.urgencia }}{% endif %}{% if request.GET.protocolo %}&protocolo={{ request.GET.protocolo }}{% endif %}" class="btn-cancel" style="padding: 6px 12px; border-radius: 5px;">&laquo; Primeira</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.urgencia %}&urgencia={{ request.GET.urgencia }}{% endif %}{% if request.GET.protocolo %}&protocolo={{ request.GET.protocolo }}{% endif %}" class="btn-cancel" style="padding: 6px 12px; border-radius: 5px;">Anterior</a>
+                {% endif %}
+
+                <span style="padding: 6px 12px; background: var(--color-primary); color: white; border-radius: 5px;">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.urgencia %}&urgencia={{ request.GET.urgencia }}{% endif %}{% if request.GET.protocolo %}&protocolo={{ request.GET.protocolo }}{% endif %}" class="btn-cancel" style="padding: 6px 12px; border-radius: 5px;">Próxima</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.urgencia %}&urgencia={{ request.GET.urgencia }}{% endif %}{% if request.GET.protocolo %}&protocolo={{ request.GET.protocolo }}{% endif %}" class="btn-cancel" style="padding: 6px 12px; border-radius: 5px;">Última &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock conteudo %}
 
         </main>
     </div>
