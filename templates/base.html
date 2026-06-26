@@ -76,7 +76,7 @@
               </div>
             </div>
             <div class="dropdown-divider"></div>
-            <a href="#" class="dropdown-item">Alterar senha</a>
+            <a href="{% url 'core:alterar_senha' %}" class="dropdown-item">Alterar senha</a>
             <form method="post" action="{% url 'core:sair' %}" style="margin: 0;">
               {% csrf_token %}
               <button type="submit" class="dropdown-item">Sair</button>

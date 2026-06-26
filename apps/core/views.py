@@ -3,6 +3,10 @@ import json
 from functools import reduce
 from operator import or_
 
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -19,7 +23,7 @@ from django.core.paginator import Paginator
 
 from apps.core.forms import UserForm
 from apps.core.models import AuditoriaLog, TipoEvento
-from apps.core.mixins import AdministradorRequiredMixin
+from apps.core.mixins import AdministradorRequiredMixin, AdministradorOuSecretarioRequiredMixin
 
 from django.contrib.auth import get_user_model
 
@@ -143,9 +147,25 @@ class UserDeleteView(LoginRequiredMixin, DeleteView):
 class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View):
     # View para gerenciamento de funcionarios - requer permsisao de administrador
     def get(self, request):
-        usuarios = list(User.objects.all().order_by('first_name', 'last_name').values(
-            'id', 'first_name', 'last_name', 'matricula', 'email', 'telefone', 'setor'
-        ))
+        usuarios = []
+        for u in User.objects.all().order_by('first_name', 'last_name'):
+            perfis = []
+            if u.is_administrador: perfis.append('Administrativo')
+            if u.is_tecnico:       perfis.append('Técnico')
+            if u.is_almoxarife:    perfis.append('Almoxarife')
+            if u.is_solicitante:   perfis.append('Solicitante')
+            if u.is_secretario:    perfis.append('Secretário')
+            usuarios.append({
+                'id': u.id,
+                'first_name': u.first_name,
+                'last_name': u.last_name,
+                'matricula': u.matricula,
+                'email': u.email or '',
+                'telefone': u.telefone or '',
+                'setor': u.setor or '',
+                'ativo': u.ativo,
+                'perfis': perfis,
+            })
         return render(request, "admin/administracao_funcionarios.html", {
             "funcionarios_json": json.dumps(usuarios)
         })
@@ -154,14 +174,15 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
         data = json.loads(request.body)
         
         # Verifica se é uma requisição de exclusão
-        if data.get('action') == 'delete':
+        if data.get('action') == 'inativar':
             user_id = data.get('id')
             try:
                 user = User.objects.get(id=user_id)
                 # Não permite deletar o próprio usuário
                 if user.id == request.user.id:
-                    return JsonResponse({'erro': 'Você não pode deletar seu próprio usuário.'}, status=400)
-                
+                    return JsonResponse({'erro': 'Você não pode inativar seu próprio usuário.'}, status=400)
+                user.ativo = False
+                user.save()
                 # Registra a exclusão no log de auditoria
                 AuditoriaLog.objects.create(
                     tipo=TipoEvento.EXCLUSAO,
@@ -169,11 +190,69 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
                     descricao=f"Usuário {user.matricula} ({user.first_name} {user.last_name}) foi excluído.",
                     ip=get_client_ip(request),
                 )
-                
-                user.delete()
+
                 return JsonResponse({'ok': True})
             except User.DoesNotExist:
                 return JsonResponse({'erro': 'Usuário não encontrado.'}, status=404)
+        #reativar
+        if data.get('action') == 'reativar':
+            user_id = data.get('id')
+            try:
+                user = User.objects.get(id=user_id)
+                user.ativo = True
+                user.save()
+                AuditoriaLog.objects.create(
+                    tipo=TipoEvento.EDICAO,
+                    usuario=request.user,
+                    descricao=f"Usuário {user.matricula} ({user.first_name} {user.last_name}) foi reativado.",
+                    ip=get_client_ip(request),
+                )
+                return JsonResponse({'ok':True})
+            except User.DoesNotExist:
+                return JsonResponse({'erro': 'Usuário não encontrado.'}, status=404)
+
+        #editar
+        if data.get('action') == 'editar':
+            user_id = data.get('id')
+            try:
+                user = User.objects.get(id=user_id)
+
+                # Verifica duplicatas de matrícula e email (excluindo o próprio usuário)
+                nova_matricula = data.get('matricula', '').strip()
+                novo_email = data.get('email', '').strip()
+
+                if User.objects.filter(matricula=nova_matricula).exclude(id=user_id).exists():
+                    return JsonResponse({'erro': 'Matrícula já cadastrada.'}, status=400)
+                if User.objects.filter(email=novo_email).exclude(id=user_id).exists():
+                    return JsonResponse({'erro': 'E-mail já cadastrado.'}, status=400)
+
+                nomes = data.get('nome', '').strip().split(' ', 1)
+                setor = data.get('setor', '')
+
+                user.first_name = nomes[0]
+                user.last_name = nomes[1] if len(nomes) > 1 else ''
+                user.matricula = nova_matricula
+                user.email = novo_email
+                user.telefone = data.get('telefone', '')
+                user.setor = setor
+
+                perfis = data.get('perfis', [])
+                user.is_administrador = 'Administrativo' in perfis
+                user.is_tecnico       = 'Técnico'        in perfis
+                user.is_almoxarife    = 'Almoxarife'     in perfis
+                user.is_solicitante   = 'Solicitante'    in perfis
+                user.is_secretario    = 'Secretário'     in perfis
+
+                user.save()
+                AuditoriaLog.objects.create(
+                    tipo=TipoEvento.EDICAO,
+                    usuario=request.user,
+                    descricao=f"Usuário {user.matricula} ({user.first_name} {user.last_name}) editado por {request.user.matricula}.",
+                    ip=get_client_ip(request),
+                )
+                return JsonResponse({'ok': True})
+            except User.DoesNotExist:
+                return JsonResponse({'erro': 'Usuário não encontrado.'}, status=404)        
 
         # Criação de novo usuário
         if User.objects.filter(matricula=data.get('matricula')).exists():
@@ -193,22 +272,18 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
             email=data.get('email', ''),
             telefone=data.get('telefone', ''),
             setor=setor,
+            is_active=True,
         )
         
         # Atribui as permissões baseadas no setor
-        if setor == 'Administrativo':
-            user.is_administrador = True
-        elif setor == 'Técnico':
-            user.is_tecnico = True
-        elif setor == 'Almoxarife':
-            user.is_almoxarife = True
-        elif setor == 'Solicitante':
-            user.is_solicitante = True
-        elif setor == 'Secretário':
-            user.is_secretario = True
-        
+        # ── Criação — substitui o bloco de permissões ──
+        user.is_administrador = 'Administrativo' in data.get('perfis', [])
+        user.is_tecnico       = 'Técnico'        in data.get('perfis', [])
+        user.is_almoxarife    = 'Almoxarife'     in data.get('perfis', [])
+        user.is_solicitante   = 'Solicitante'    in data.get('perfis', [])
+        user.is_secretario    = 'Secretário'     in data.get('perfis', [])
         user.save()
-        
+
         # Registra a criação no log de auditoria
         AuditoriaLog.objects.create(
             tipo=TipoEvento.CRIACAO,
@@ -220,14 +295,14 @@ class AdminFuncionariosView(AdministradorRequiredMixin, LoginRequiredMixin, View
         return JsonResponse({'ok': True, 'id': user.id})
 
 
-class RegistroauditoriaView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+class RegistroauditoriaView(AdministradorOuSecretarioRequiredMixin, LoginRequiredMixin, View):
     """View para visualização de registros de auditoria - requer permissão de administrador"""
 
     def get(self, request):
         return render(request, "admin/registro_auditoria.html")
 
 
-class RegistroauditoriaKPIView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+class RegistroauditoriaKPIView(AdministradorOuSecretarioRequiredMixin, LoginRequiredMixin, View):
     """View para KPIs de auditoria - requer permissão de administrador"""
 
     def get(self, request):
@@ -248,6 +323,39 @@ class RegistroauditoriaKPIView(AdministradorRequiredMixin, LoginRequiredMixin, V
 
 # auth de senha
 
+class AlterarSenhaView(LoginRequiredMixin, View):
+    def get(self, request):
+        return render(request, "auth/alterar_senha.html")
+
+    def post(self, request):
+        senha_atual = request.POST.get("senha_atual", "")
+        senha1 = request.POST.get("password1", "")
+        senha2 = request.POST.get("password2", "")
+
+        if not request.user.check_password(senha_atual):
+            return render(request, "auth/alterar_senha.html", {
+                "erro": "Senha atual incorreta."
+            })
+
+        if not senha1 or senha1 != senha2:
+            return render(request, "auth/alterar_senha.html", {
+                "erro": "As novas senhas não coincidem ou estão vazias."
+            })
+
+        if len(senha1) < 6:
+            return render(request, "auth/alterar_senha.html", {
+                "erro": "A nova senha deve ter pelo menos 6 caracteres."
+            })
+
+        request.user.set_password(senha1)
+        request.user.save()
+
+        # Mantém o usuário logado após trocar a senha
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, request.user)
+
+        return render(request, "auth/alterar_senha.html", {"sucesso": True})
+        
 class RecuperarSenhaView(View):
     """
     simula o envio de e-mail de recuperação.
@@ -266,13 +374,21 @@ class RecuperarSenhaView(View):
                 "erro": "Informe um e-mail válido."
             })
 
-        # TODO: quando o backend de e-mail estiver pronto:
-        #   1. Buscar User.objects.filter(email=email).first()
-        #   2. Gerar token com django.contrib.auth.tokens.default_token_generator
-        #   3. Salvar / associar ao usuário
-        #   4. Disparar send_mail() com o link contendo o token
-        #
-        # Por enquanto apenas guardamos o e-mail na sessão pra exibir na tela seguinte.
+        # Resposta sempre igual pra não revelar se o e-mail existe
+        user = User.objects.filter(email=email, ativo=True).first()
+
+        if user:
+            token = default_token_generator.make_token(user)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            link = request.build_absolute_uri(
+                reverse_lazy("core:nova_senha", kwargs={"uidb64": uid, "token": token})
+            )
+            send_mail(
+                subject="Redefinição de senha — SIGEC",
+                message=f"Olá, {user.first_name}.\n\nClique no link abaixo para redefinir sua senha:\n\n{link}\n\nSe não foi você, ignore este e-mail.",
+                from_email=None,  # usa DEFAULT_FROM_EMAIL do settings
+                recipient_list=[email],
+            )
 
         request.session["recuperacao_email"] = email
         return redirect("core:email_enviado")
@@ -296,28 +412,51 @@ class NovaSenhaView(View):
     identificar o usuário e chamar user.set_password(senha).
     """
 
-    def get(self, request):
-        return render(request, "auth/nova_senha.html")
+    def get(self, request, uidb64=None, token=None):
+        user = self._validar_token(uidb64, token)
+        if not user:
+            return render(request, "auth/nova_senha.html", {"erro": "Link inválido ou expirado. Solicite uma nova recuperação de senha."})
+        return render(request, "auth/nova_senha.html", {"validacao_ok": True})
 
-    def post(self, request):
+    def post(self, request, uidb64=None, token=None):
+        user = self._validar_token(uidb64, token)
+        if not user:
+            return render(request, "auth/nova_senha.html", {
+                "erro": "Link inválido ou expirado. Solicite uma nova recuperação de senha."
+            })
+
         senha1 = request.POST.get("password1", "")
         senha2 = request.POST.get("password2", "")
 
         if not senha1 or senha1 != senha2:
             return render(request, "auth/nova_senha.html", {
-                "erro": "As senhas não coincidem ou estão vazias."
+                "erro": "As senhas não coincidem ou estão vazias.",
+                "uidb64": uidb64,
+                "token": token,
             })
 
         if len(senha1) < 6:
             return render(request, "auth/nova_senha.html", {
-                "erro": "A senha deve ter pelo menos 6 caracteres."
+                "erro": "A senha deve ter pelo menos 6 caracteres.",
+                "uidb64": uidb64,
+                "token": token,
             })
 
-        # TODO: identificar usuário pelo token e aplicar:
-        #   user.set_password(senha1)
-        #   user.save()
-
+        user.set_password(senha1)
+        user.save()
         return render(request, "auth/nova_senha.html", {"sucesso": True})
+
+    def _validar_token(self, uidb64, token):
+        if not uidb64 or not token:
+            return None
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid, ativo=True)
+        except (User.DoesNotExist, ValueError, TypeError):
+            return None
+        if not default_token_generator.check_token(user, token):
+            return None
+        return user
 
 
 def index(request):

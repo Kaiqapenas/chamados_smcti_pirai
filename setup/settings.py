@@ -90,3 +90,6 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_URL = 'core:login'
 LOGIN_REDIRECT_URL = 'estoque:lista'
 LOGOUT_REDIRECT_URL = 'core:login'
+# Email — console por enquanto, trocar por SMTP depois
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'SIGEC <noreply@sigec.gov.br>'

@@ -12,16 +12,32 @@ class AuthenticatedHttpRequest(HttpRequest):
 class AdministradorRequiredMixin(UserPassesTestMixin):
     """Mixin que requer que o usuário seja administrador"""
     request: AuthenticatedHttpRequest  # type: ignore[assignment]
-    
+
     def test_func(self) -> bool:
         return self.request.user.is_authenticated and self.request.user.is_administrador
-    
+
     def handle_no_permission(self) -> HttpResponseRedirect:
         if not self.request.user.is_authenticated:
             return redirect('core:login')
         if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'erro': 'Acesso negado.'}, status=403)
         messages.error(self.request, "Acesso restrito a administradores.")
+        return redirect('chamados:index')
+class AdministradorOuSecretarioRequiredMixin(UserPassesTestMixin):
+    """Mixin que requer que o usuário seja administrador ou secretário"""
+    request: AuthenticatedHttpRequest  # type: ignore[assignment]
+    
+    def test_func(self) -> bool:
+        return self.request.user.is_authenticated and (
+            self.request.user.is_administrador or self.request.user.is_secretario
+        )
+    
+    def handle_no_permission(self) -> HttpResponseRedirect:
+        if not self.request.user.is_authenticated:
+            return redirect('core:login')
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'erro': 'Acesso negado.'}, status=403)
+        messages.error(self.request, "Acesso restrito a administradores e secretários.")
         return redirect('chamados:index')
 
 class TecnicoRequiredMixin(UserPassesTestMixin):
