@@ -15,6 +15,7 @@ from django.views import View
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.db.models import Q
+from django.db import models
 from django.core.paginator import Paginator
 
 from apps.core.forms import UserForm
@@ -443,3 +444,71 @@ class RegistroauditoriaExportCSVView(View):
 
         return response
 
+
+# ─── Requisições do Administrador ─────────────────────────────────────────────
+
+class AdminRequisicoesView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+    """View para gerenciar requisições de peças - requer permissão de administrador"""
+
+    def get(self, request):
+        from apps.estoque.models import RequisicaoPeca, ItemEstoque
+
+        requisicoes = RequisicaoPeca.objects.select_related(
+            'chamado', 'item_solicitado', 'usuario'
+        ).all()
+
+        hoje = timezone.now().date()
+        total = requisicoes.count()
+        pendentes = requisicoes.filter(status='PE').count()
+        aprovadas_hoje = requisicoes.filter(status='AP', data_criacao__date=hoje).count()
+
+        # Itens com estoque baixo (estoque <= quantidade_minima)
+        alertas_estoque = ItemEstoque.objects.filter(
+            ativo=True,
+            quantidade__lte=models.F('quantidade_minima')
+        ).count()
+
+        return render(request, "admin/requisicoes.html", {
+            "requisicoes": requisicoes,
+            "total": total,
+            "pendentes": pendentes,
+            "aprovadas_hoje": aprovadas_hoje,
+            "alertas_estoque": alertas_estoque,
+        })
+
+    def post(self, request):
+        from apps.estoque.models import RequisicaoPeca
+        import json
+
+        data = json.loads(request.body)
+        action = data.get('action')
+        req_id = data.get('id')
+
+        try:
+            requisicao = RequisicaoPeca.objects.get(id=req_id)
+        except RequisicaoPeca.DoesNotExist:
+            return JsonResponse({'erro': 'Requisição não encontrada.'}, status=404)
+
+        if action == 'aprovar':
+            requisicao.status = 'AP'
+            requisicao.save()
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.EDICAO,
+                usuario=request.user,
+                descricao=f"Requisição #{requisicao.id} aprovada (Item: {requisicao.item_solicitado.nome}, OS: {requisicao.chamado.numero_protocolo}).",
+                ip=get_client_ip(request),
+            )
+            return JsonResponse({'ok': True, 'status': 'aprovada'})
+
+        elif action == 'rejeitar':
+            requisicao.status = 'RE'
+            requisicao.save()
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.EDICAO,
+                usuario=request.user,
+                descricao=f"Requisição #{requisicao.id} rejeitada (Item: {requisicao.item_solicitado.nome}, OS: {requisicao.chamado.numero_protocolo}).",
+                ip=get_client_ip(request),
+            )
+            return JsonResponse({'ok': True, 'status': 'rejeitada'})
+
+        return JsonResponse({'erro': 'Ação inválida.'}, status=400)

@@ -1,0 +1,768 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Requisições{% endblock %}
+
+{% block style %}
+:root {
+  --b9: #4c6ef5;
+  --b7: #1d4ed8;
+  --b4: #60a5fa;
+  --s0: #f8fafc;
+  --s2: #e2e8f0;
+}
+
+.content {
+  padding: 28px 30px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #DDDDDD;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 28px;
+}
+
+.page-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #4E74BF;
+  margin: 0;
+}
+
+/* CARDS */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 900px) {
+  .cards-container { grid-template-columns: 1fr; }
+}
+
+.kpi-card {
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.07);
+  position: relative;
+  overflow: hidden;
+  transition: transform .15s, box-shadow .15s;
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,.11);
+}
+
+.kpi-green  { background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%); color: #fff; }
+.kpi-yellow { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); color: #fff; }
+.kpi-red    { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: #fff; }
+
+.kpi-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kpi-icon-wrap svg { width: 22px; height: 22px; color: #fff; }
+
+.kpi-body { flex: 1; min-width: 0; }
+
+.kpi-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1px;
+  min-height: 1.6rem;
+  display: flex;
+  align-items: center;
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: .85;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
+.kpi-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(255,255,255,.22);
+  padding: 2px 7px;
+  border-radius: 20px;
+  margin-top: 6px;
+  display: inline-block;
+}
+
+
+/* LISTA DE REQUISIÇÕES */
+.list-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+.list-header {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.list-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #334155;
+  margin: 0;
+}
+
+.list-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 8px 12px;
+  width: 280px;
+}
+
+.search-box svg {
+  color: #94a3b8;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+.search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.filter-select {
+  border: 1px solid #e2e8f0;
+  background: white;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  color: #475569;
+  outline: none;
+}
+
+.list-tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 24px;
+  gap: 24px;
+}
+
+.tab {
+  padding: 12px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tab.active {
+  color: #3b82f6;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #3b82f6;
+  border-radius: 3px 3px 0 0;
+}
+
+.badge {
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #d97706;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.badge-success {
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.badge-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.req-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.req-table th {
+  background: white;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 14px 24px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  letter-spacing: 0.5px;
+}
+
+.req-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.req-table tr:hover {
+  background: #f8fafc;
+}
+
+.os-col {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.os-date {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.urgency-wrap {
+  display: flex;
+  align-items: center;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.urgency-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.urgency-dot.red { background: #ef4444; }
+.urgency-dot.purple { background: #a855f7; }
+
+.urgency-wrap.red { color: #ef4444; }
+
+.stock-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stock-bar {
+  flex: 1;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  position: relative;
+  min-width: 60px;
+}
+
+.stock-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.stock-fill.red { background: #ef4444; width: 20%; }
+.stock-fill.orange { background: #f59e0b; width: 40%; }
+.stock-fill.green { background: #10b981; width: 80%; }
+
+.stock-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stock-text.red { color: #ef4444; }
+.stock-text.orange { color: #f59e0b; }
+.stock-text.green { color: #10b981; }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  gap: 6px;
+  white-space: nowrap;
+}
+.status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.status-badge.pendente {
+  background: #fef3c7;
+  color: #d97706;
+}
+.status-badge.pendente::before { background: #d97706; }
+
+.status-badge.aprovada {
+  background: #dcfce7;
+  color: #15803d;
+}
+.status-badge.aprovada::before { background: #15803d; }
+
+.status-badge.rejeitada {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.status-badge.rejeitada::before { background: #b91c1c; }
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+}
+.btn-approve {
+  background: #10b981;
+  color: white;
+}
+.btn-reject {
+  background: #ef4444;
+  color: white;
+}
+.btn-details {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+}
+
+.pagination {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  gap: 12px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.page-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.page-btn.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+{% endblock %}
+
+{% block conteudo %}
+<div class="content">
+
+  <div class="page-header">
+    <h2>Requisições</h2>
+  </div>
+
+  <!-- CARDS SUPERIORES -->
+  <div class="cards-container">
+    
+    <!-- Card Aprovadas -->
+    <div class="kpi-card kpi-green">
+      <div class="kpi-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-value">17</div>
+        <div class="kpi-label">Aprovadas Hoje</div>
+        <span class="kpi-badge">Total do dia</span>
+      </div>
+    </div>
+
+    <!-- Card Pendentes -->
+    <div class="kpi-card kpi-yellow">
+      <div class="kpi-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-value">3</div>
+        <div class="kpi-label">Pendentes</div>
+        <span class="kpi-badge">Aguardando</span>
+      </div>
+    </div>
+
+    <!-- Card Alerta -->
+    <div class="kpi-card kpi-red">
+      <div class="kpi-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </div>
+      <div class="kpi-body">
+        <div class="kpi-value">2</div>
+        <div class="kpi-label">Alerta de Estoque</div>
+        <span class="kpi-badge">Atenção</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LISTA DE REQUISIÇÕES -->
+  <div class="list-container">
+    
+    <div class="list-header">
+      <h3 class="list-title">Lista de Requisições</h3>
+      <div class="list-actions">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" placeholder="Buscar protocolo ou técnico">
+        </div>
+        <select class="filter-select">
+          <option value="">Todas as urgências</option>
+          <option value="urgente">Urgente</option>
+          <option value="normal">Normal</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="list-tabs">
+      <div class="tab active" data-status="">Todas <span class="badge">5</span></div>
+      <div class="tab" data-status="pendente">Pendentes <span class="badge-warning">3</span></div>
+      <div class="tab" data-status="aprovada">Aprovadas <span class="badge-success">1</span></div>
+      <div class="tab" data-status="rejeitada">Rejeitadas <span class="badge-error">1</span></div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="req-table">
+        <thead>
+          <tr>
+            <th>OS</th>
+            <th>Técnico</th>
+            <th>Item Solicitado</th>
+            <th>Qtd.</th>
+            <th>Urgência</th>
+            <th>Estoque Atual</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- ROW 1 -->
+          <tr>
+            <td>
+              <span class="os-col">#847</span>
+              <span class="os-date">11/04 15:22</span>
+            </td>
+            <td>Carlos Silva</td>
+            <td>Filtro Ar-cond. 9k (#0018)</td>
+            <td>1</td>
+            <td>
+              <div class="urgency-wrap red">
+                <span class="urgency-dot red"></span> Urgente
+              </div>
+            </td>
+            <td>
+              <div class="stock-bar-container">
+                <div class="stock-bar"><div class="stock-fill red" style="width: 20%;"></div></div>
+                <span class="stock-text red">2 un.</span>
+              </div>
+            </td>
+            <td><span class="status-badge pendente">Pendente</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="btn-action btn-approve">Aprovar</button>
+                <button class="btn-action btn-reject">Rejeitar</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 2 -->
+          <tr>
+            <td>
+              <span class="os-col">#852</span>
+              <span class="os-date">12/04 09:10</span>
+            </td>
+            <td>João Matos</td>
+            <td>Teclado HyperX (#0031)</td>
+            <td>2</td>
+            <td>
+              <div class="urgency-wrap">
+                <span class="urgency-dot purple"></span> Normal
+              </div>
+            </td>
+            <td>
+              <div class="stock-bar-container">
+                <div class="stock-bar"><div class="stock-fill orange" style="width: 40%;"></div></div>
+                <span class="stock-text orange">4 un.</span>
+              </div>
+            </td>
+            <td><span class="status-badge pendente">Pendente</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="btn-action btn-approve">Aprovar</button>
+                <button class="btn-action btn-reject">Rejeitar</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 3 -->
+          <tr>
+            <td>
+              <span class="os-col">#855</span>
+              <span class="os-date">12/04 11:45</span>
+            </td>
+            <td>Ana Lima</td>
+            <td>Cabo de Rede Cat6 (#0042)</td>
+            <td>10 m</td>
+            <td>
+              <div class="urgency-wrap">
+                <span class="urgency-dot purple"></span> Normal
+              </div>
+            </td>
+            <td>
+              <div class="stock-bar-container">
+                <div class="stock-bar"><div class="stock-fill green" style="width: 100%;"></div></div>
+                <span class="stock-text green">420 m</span>
+              </div>
+            </td>
+            <td><span class="status-badge pendente">Pendente</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="btn-action btn-approve">Aprovar</button>
+                <button class="btn-action btn-reject">Rejeitar</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 4 -->
+          <tr>
+            <td>
+              <span class="os-col">#840</span>
+              <span class="os-date">10/04 14:00</span>
+            </td>
+            <td>Carlos Silva</td>
+            <td>Memória Kingston DDR4 (#0011)</td>
+            <td>1</td>
+            <td>
+              <div class="urgency-wrap">
+                <span class="urgency-dot purple"></span> Normal
+              </div>
+            </td>
+            <td>
+              <div class="stock-bar-container">
+                <div class="stock-bar"><div class="stock-fill green" style="width: 100%;"></div></div>
+                <span class="stock-text green">6 un.</span>
+              </div>
+            </td>
+            <td><span class="status-badge aprovada">Aprovada</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="btn-action btn-details">Detalhes</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- ROW 5 -->
+          <tr>
+            <td>
+              <span class="os-col">#831</span>
+              <span class="os-date">09/04 10:30</span>
+            </td>
+            <td>Paulo Ramos</td>
+            <td>Mouse USB (#0007)</td>
+            <td>3</td>
+            <td>
+              <div class="urgency-wrap red">
+                <span class="urgency-dot red"></span> Urgente
+              </div>
+            </td>
+            <td>
+              <div class="stock-bar-container">
+                <div class="stock-bar"><div class="stock-fill red" style="width: 15%;"></div></div>
+                <span class="stock-text red">1 un.</span>
+              </div>
+            </td>
+            <td><span class="status-badge rejeitada">Rejeitada</span></td>
+            <td>
+              <div class="actions-cell">
+                <button class="btn-action btn-details">Detalhes</button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <span>1-5 de 8</span>
+      <button class="page-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.querySelector('.search-box input');
+  const urgencySelect = document.querySelector('.filter-select');
+  const tableRows = document.querySelectorAll('.req-table tbody tr');
+  const tabs = document.querySelectorAll('.list-tabs .tab');
+
+  let currentStatusFilter = '';
+
+  // Configura o clique nas abas
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Remove 'active' de todas as abas
+      tabs.forEach(t => t.classList.remove('active'));
+      // Adiciona 'active' na aba clicada
+      this.classList.add('active');
+      
+      currentStatusFilter = this.getAttribute('data-status');
+      filterTable();
+    });
+  });
+
+  function filterTable() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const urgencyFilter = urgencySelect.value.toLowerCase();
+
+    tableRows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 2) return; // Ignora se for uma linha vazia ou mensagem
+      
+      // Pega apenas o texto das colunas de Protocolo (0) e Técnico (1)
+      const protocoloText = cells[0].textContent.toLowerCase();
+      const tecnicoText = cells[1].textContent.toLowerCase();
+      
+      // Pega a urgência específica para combinar com o select
+      const urgencyWrap = row.querySelector('.urgency-wrap');
+      const rowUrgency = urgencyWrap ? urgencyWrap.textContent.toLowerCase().trim() : '';
+      
+      // Pega o status da requisição
+      const statusBadge = row.querySelector('.status-badge');
+      const rowStatus = statusBadge ? statusBadge.textContent.toLowerCase().trim() : '';
+      
+      const matchesSearch = protocoloText.includes(searchTerm) || tecnicoText.includes(searchTerm);
+      const matchesUrgency = urgencyFilter === '' || rowUrgency.includes(urgencyFilter);
+      const matchesTab = currentStatusFilter === '' || rowStatus === currentStatusFilter;
+
+      if (matchesSearch && matchesUrgency && matchesTab) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  searchInput.addEventListener('input', filterTable);
+  urgencySelect.addEventListener('change', filterTable);
+});
+</script>
+{% endblock %}
