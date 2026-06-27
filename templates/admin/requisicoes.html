@@ -3,6 +3,79 @@
 {% block titulo %}Requisições{% endblock %}
 
 {% block style %}
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.25);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 22px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-header h4 {
+  margin: 0;
+  color: #1e293b;
+}
+
+.modal-close {
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.modal-body {
+  padding: 20px 22px;
+  color: #334155;
+}
+
+.modal-justificativa {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  color: #475569;
+}
+
+.btn-nova-requisicao {
+  background-color: #4E74BF;
+  color: white;
+  text-decoration: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.btn-nova-requisicao:hover {
+  background-color: #3b5f9f;
+  color: white;
+}
+
 :root {
   --b9: #4c6ef5;
   --b7: #1d4ed8;
@@ -443,55 +516,63 @@
 <div class="content">
 
   <div class="page-header">
-    <h2>Requisições</h2>
-  </div>
+  <h2>Requisições</h2>
+
+  <a href="{% url 'core:admin_requisicao_criar' %}" class="btn-nova-requisicao">
+  Nova Requisição
+</a>
+</div>
 
   <!-- CARDS SUPERIORES -->
   <div class="cards-container">
     
     <!-- Card Aprovadas -->
-    <div class="kpi-card kpi-green">
-      <div class="kpi-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-      </div>
-      <div class="kpi-body">
-        <div class="kpi-value">{{ aprovadas_hoje }}</div>
-        <div class="kpi-label">Aprovadas Hoje</div>
-        <span class="kpi-badge">Total do dia</span>
-      </div>
-    </div>
+    <!-- Card Aprovadas -->
+<div class="kpi-card kpi-green">
+  <div class="kpi-icon-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  </div>
+
+  <div class="kpi-body">
+    <div class="kpi-value" id="kpi-aprovadas-hoje">{{ aprovadas_hoje }}</div>
+    <div class="kpi-label">Aprovadas Hoje</div>
+    <span class="kpi-badge">Total do dia</span>
+  </div>
+</div>
 
     <!-- Card Pendentes -->
-    <div class="kpi-card kpi-yellow">
-      <div class="kpi-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-      </div>
-      <div class="kpi-body">
-        <div class="kpi-value">{{ pendentes }}</div>
-        <div class="kpi-label">Pendentes</div>
-        <span class="kpi-badge">Aguardando</span>
-      </div>
-    </div>
+<div class="kpi-card kpi-yellow">
+  <div class="kpi-icon-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+  </div>
+
+  <div class="kpi-body">
+    <div class="kpi-value" id="kpi-pendentes">{{ pendentes }}</div>
+    <div class="kpi-label">Pendentes</div>
+    <span class="kpi-badge">Aguardando</span>
+  </div>
+</div>
 
     <!-- Card Alerta -->
-    <div class="kpi-card kpi-red">
-      <div class="kpi-icon-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </div>
-      <div class="kpi-body">
-        <div class="kpi-value">{{ alertas_estoque }}</div>
-        <div class="kpi-label">Alerta de Estoque</div>
-        <span class="kpi-badge">Atenção</span>
-      </div>
-    </div>
+<div class="kpi-card kpi-red">
+  <div class="kpi-icon-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </div>
+
+  <div class="kpi-body">
+    <div class="kpi-value" id="kpi-alertas-estoque">{{ alertas_estoque }}</div>
+    <div class="kpi-label">Alerta de Estoque</div>
+    <span class="kpi-badge">Atenção</span>
+  </div>
+</div>
 
   </div>
 
@@ -517,10 +598,10 @@
     </div>
 
     <div class="list-tabs">
-      <div class="tab active" data-status="">Todas <span class="badge">{{ total }}</span></div>
-      <div class="tab" data-status="pendente">Pendentes <span class="badge-warning">{{ pendentes }}</span></div>
-      <div class="tab" data-status="aprovada">Aprovadas <span class="badge-success">{{ aprovadas }}</span></div>
-      <div class="tab" data-status="rejeitada">Rejeitadas <span class="badge-error">{{ rejeitadas }}</span></div>
+      <div class="tab active" data-status="">Todas <span class="badge" id="badge-total">{{ total }}</span></div>
+<div class="tab" data-status="pendente">Pendentes <span class="badge-warning" id="badge-pendentes">{{ pendentes }}</span></div>
+<div class="tab" data-status="aprovada">Aprovadas <span class="badge-success" id="badge-aprovadas">{{ aprovadas }}</span></div>
+<div class="tab" data-status="rejeitada">Rejeitadas <span class="badge-error" id="badge-rejeitadas">{{ rejeitadas }}</span></div>
     </div>
 
     <div class="table-responsive">
@@ -539,7 +620,11 @@
         </thead>
         <tbody>
           {% for linha in linhas %}
-          <tr data-id="{{ linha.id }}">
+          <tr data-id="{{ linha.id }}"
+    data-estoque-minima="{{ linha.estoque_minima }}"
+    data-item="{{ linha.item_nome }} (#{{ linha.item_id_fmt }})"
+    data-quantidade="{{ linha.quantidade }}{% if linha.unidade %} {{ linha.unidade }}{% endif %}"
+    data-justificativa="{{ linha.justificativa|default:'Sem justificativa registrada.' }}">
             <td>
               <span class="os-col">#{{ linha.numero_protocolo }}</span>
               <span class="os-date">{{ linha.data_criacao|date:"d/m H:i" }}</span>
@@ -586,8 +671,31 @@
   <span>{{ linhas|length }} requisiç{{ linhas|length|pluralize:"ão,ões" }} no total</span>
 </div>
 
+    </div>
+</div>
+
+<!-- MODAL DE DETALHES -->
+<div class="modal-overlay" id="modal-detalhes">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h4>Detalhes da Requisição</h4>
+      <button class="modal-close" id="modal-close-btn" type="button">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <p><strong>OS:</strong> <span id="modal-os"></span></p>
+      <p><strong>Técnico:</strong> <span id="modal-tecnico"></span></p>
+      <p><strong>Item:</strong> <span id="modal-item"></span></p>
+      <p><strong>Quantidade:</strong> <span id="modal-quantidade"></span></p>
+      <p><strong>Urgência:</strong> <span id="modal-urgencia"></span></p>
+      <p><strong>Status:</strong> <span id="modal-status"></span></p>
+
+      <p><strong>Justificativa:</strong></p>
+      <div class="modal-justificativa" id="modal-justificativa"></div>
+    </div>
   </div>
 </div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -661,10 +769,6 @@ function enviarAcao(row, action) {
   const id = row.dataset.id;
   const botoes = row.querySelectorAll('.btn-action');
 
-  if (action === 'rejeitar' && !window.confirm('Tem certeza que deseja rejeitar esta requisição?')) {
-    return;
-  }
-
   botoes.forEach(b => b.disabled = true);
 
   fetch(window.location.pathname, {
@@ -692,22 +796,66 @@ function enviarAcao(row, action) {
     });
 }
 
+function ajustarContador(elementId, delta) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  const atual = parseInt(el.textContent, 10) || 0;
+  el.textContent = Math.max(0, atual + delta);
+}
+
 function atualizarLinha(row, novoStatus, estoqueAtual) {
+  const statusAnteriorBadge = row.querySelector('.status-badge');
+  const statusAnterior = statusAnteriorBadge
+    ? statusAnteriorBadge.textContent.toLowerCase().trim()
+    : 'pendente';
+
   const info = novoStatus === 'aprovada'
     ? { classe: 'aprovada', texto: 'Aprovada' }
     : { classe: 'rejeitada', texto: 'Rejeitada' };
 
-  const badge = row.querySelector('.status-badge');
-  badge.className = 'status-badge ' + info.classe;
-  badge.textContent = info.texto;
+  statusAnteriorBadge.className = 'status-badge ' + info.classe;
+  statusAnteriorBadge.textContent = info.texto;
 
-  // Se a aprovação devolveu o novo saldo de estoque, atualiza o número na linha
   if (typeof estoqueAtual === 'number') {
     const stockText = row.querySelector('.stock-text');
+
     if (stockText) {
       const unidade = stockText.textContent.trim().split(' ').slice(1).join(' ');
       stockText.textContent = `${estoqueAtual} ${unidade}`.trim();
     }
+
+    const minima = parseInt(row.dataset.estoqueMinima || '0', 10) || 1;
+
+    let cor = 'green';
+    if (estoqueAtual <= minima) {
+      cor = 'red';
+    } else if (estoqueAtual <= minima * 2) {
+      cor = 'orange';
+    }
+
+    const stockFill = row.querySelector('.stock-fill');
+    if (stockFill) {
+      stockFill.className = 'stock-fill ' + cor;
+      const percent = Math.min(100, Math.round((estoqueAtual / (minima * 3)) * 100));
+      stockFill.style.width = percent + '%';
+    }
+
+    if (stockText) {
+      stockText.className = 'stock-text ' + cor;
+    }
+  }
+
+  if (statusAnterior === 'pendente') {
+    ajustarContador('kpi-pendentes', -1);
+    ajustarContador('badge-pendentes', -1);
+  }
+
+  if (novoStatus === 'aprovada') {
+    ajustarContador('badge-aprovadas', 1);
+    ajustarContador('kpi-aprovadas-hoje', 1);
+  } else if (novoStatus === 'rejeitada') {
+    ajustarContador('badge-rejeitadas', 1);
   }
 
   const acoes = row.querySelector('.actions-cell');
@@ -718,13 +866,70 @@ function atualizarLinha(row, novoStatus, estoqueAtual) {
 
 document.querySelectorAll('.req-table tbody').forEach(tbody => {
   tbody.addEventListener('click', function(e) {
-    const btn = e.target.closest('.btn-approve, .btn-reject');
-    if (!btn) return;
+    const acaoBtn = e.target.closest('.btn-approve, .btn-reject');
 
-    const row = btn.closest('tr');
-    enviarAcao(row, btn.classList.contains('btn-approve') ? 'aprovar' : 'rejeitar');
+    if (acaoBtn) {
+      const row = acaoBtn.closest('tr');
+      enviarAcao(row, acaoBtn.classList.contains('btn-approve') ? 'aprovar' : 'rejeitar');
+      return;
+    }
+
+    const detalhesBtn = e.target.closest('.btn-details');
+
+    if (detalhesBtn) {
+      const row = detalhesBtn.closest('tr');
+      abrirDetalhes(row);
+    }
   });
 });
+const modalDetalhes = document.getElementById('modal-detalhes');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+
+function abrirDetalhes(row) {
+  const cells = row.querySelectorAll('td');
+
+  document.getElementById('modal-os').textContent =
+    cells[0].querySelector('.os-col')?.textContent.trim() || '';
+
+  document.getElementById('modal-tecnico').textContent =
+    cells[1]?.textContent.trim() || '';
+
+  document.getElementById('modal-item').textContent =
+    row.dataset.item || cells[2]?.textContent.trim() || '';
+
+  document.getElementById('modal-quantidade').textContent =
+    row.dataset.quantidade || cells[3]?.textContent.trim() || '';
+
+  document.getElementById('modal-urgencia').textContent =
+    cells[4]?.textContent.trim() || '';
+
+  document.getElementById('modal-status').textContent =
+    cells[6]?.textContent.trim() || '';
+
+  document.getElementById('modal-justificativa').textContent =
+    row.dataset.justificativa || 'Sem justificativa registrada.';
+
+  modalDetalhes.classList.add('open');
+}
+
+function fecharDetalhes() {
+  modalDetalhes.classList.remove('open');
+}
+
+modalCloseBtn.addEventListener('click', fecharDetalhes);
+
+modalDetalhes.addEventListener('click', function(e) {
+  if (e.target === modalDetalhes) {
+    fecharDetalhes();
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    fecharDetalhes();
+  }
+});
+
 });
 </script>
 {% endblock %}

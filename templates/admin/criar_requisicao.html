@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Nova Requisição{% endblock %}
+
+{% block style %}
+
+.justificativa-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.justificativa-field .form-label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.justificativa-field textarea {
+    width: 100%;
+    min-height: 120px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e0;
+    padding: 12px 15px;
+    background-color: #f8faff;
+    font-size: 0.95rem;
+    resize: vertical;
+}
+
+.form-help {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: #718096;
+}
+
+.page-header-bar {
+    display: flex;
+    align-items: center;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #DDDDDD;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.page-header-bar h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #4E74BF;
+    margin: 0;
+}
+
+.card-requisicao {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    max-width: 900px;
+    margin: 20px auto;
+}
+
+.title {
+    color: #5c7cba;
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-bottom: 25px;
+}
+
+.form-label {
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.form-select, .form-control {
+    border-radius: 10px;
+    border: 1px solid #cbd5e0;
+    padding: 10px 15px;
+    background-color: #f8faff;
+    font-size: 0.95rem;
+    color: var(--text-dark, #2d3748);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-select:focus, .form-control:focus {
+    border-color: #5479c1;
+    box-shadow: 0 0 0 3px rgba(84, 121, 193, 0.15);
+    outline: none;
+    background-color: #fff;
+}
+
+.urgencia-container {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-urgencia {
+    flex: 1;
+    border-radius: 10px;
+    padding: 10px;
+    font-weight: bold;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.btn-normal {
+    background-color: #94c152;
+    color: white;
+}
+
+.btn-urgente {
+    background-color: #fce4e4;
+    color: #e53e3e;
+    border-color: #feb2b2;
+}
+
+.btn-normal.active {
+    box-shadow: 0 0 0 3px rgba(148, 193, 82, 0.4);
+}
+
+.btn-urgente.active {
+    background-color: #e53e3e;
+    color: white;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.4);
+}
+
+.btn-enviar {
+    background-color: #5479c1;
+    color: white;
+    border-radius: 25px;
+    padding: 10px 40px;
+    font-weight: bold;
+    border: none;
+    margin-top: 20px;
+    transition: background-color 0.2s;
+}
+
+.btn-enviar:hover {
+    background-color: #43619c;
+}
+
+.btn-voltar {
+    background-color: #e2e8f0;
+    color: #475569;
+    border-radius: 25px;
+    padding: 10px 30px;
+    font-weight: bold;
+    border: none;
+    margin-top: 20px;
+    text-decoration: none;
+    display: inline-block;
+}
+{% endblock style %}
+
+{% block conteudo %}
+<div class="page-header-bar">
+    <h2 class="title">Nova Requisição de Peça</h2>
+</div>
+
+<div class="card-requisicao">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Chamado (OS) *</label>
+                {{ form.chamado }}
+                {% if form.chamado.errors %}
+                    <div class="text-danger small">{{ form.chamado.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Item solicitado *</label>
+                {{ form.item_solicitado }}
+                {% if form.item_solicitado.errors %}
+                    <div class="text-danger small">{{ form.item_solicitado.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <label class="form-label">Quantidade *</label>
+                {{ form.quantidade }}
+                {% if form.quantidade.errors %}
+                    <div class="text-danger small">{{ form.quantidade.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Urgência</label>
+                <div class="urgencia-container">
+                    <div id="btn-normal" class="btn-urgencia btn-normal active" onclick="setUrgencia('NO')">Normal</div>
+                    <div id="btn-urgente" class="btn-urgencia btn-urgente" onclick="setUrgencia('UR')">Urgente</div>
+                </div>
+                {{ form.urgencia }}
+            </div>
+        </div>
+
+        <div class="row mb-3">
+    <div class="col-12 justificativa-field">
+        <label class="form-label">Motivo da requisição *</label>
+        {{ form.justificativa }}
+        <small class="form-help">
+            Ex.: reposição, substituição ou manutenção corretiva.
+        </small>
+
+        {% if form.justificativa.errors %}
+            <div class="text-danger small">{{ form.justificativa.errors }}</div>
+        {% endif %}
+    </div>
+</div>
+
+        <div class="row">
+            <div class="col-12 d-flex justify-content-between">
+                <a href="{% url 'core:admin_requisicoes' %}" class="btn-voltar">Voltar</a>
+                <button type="submit" class="btn-enviar">Criar Requisição</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock conteudo %}
+
+{% block scripts %}
+<script>
+function setUrgencia(val) {
+    document.getElementById('id_urgencia').value = val;
+
+    const btnNormal = document.getElementById('btn-normal');
+    const btnUrgente = document.getElementById('btn-urgente');
+
+    if (val === 'NO') {
+        btnNormal.classList.add('active');
+        btnUrgente.classList.remove('active');
+    } else {
+        btnUrgente.classList.add('active');
+        btnNormal.classList.remove('active');
+    }
+}
+
+window.onload = function() {
+    const currentVal = document.getElementById('id_urgencia').value;
+    if (currentVal) {
+        setUrgencia(currentVal);
+    } else {
+        setUrgencia('NO');
+    }
+};
+</script>
+{% endblock scripts %}

@@ -446,7 +446,44 @@ class RegistroauditoriaExportCSVView(View):
 
 
 # ─── Requisições do Administrador ─────────────────────────────────────────────
+class AdminCriarRequisicaoView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+    """Permite que o administrador crie uma requisição de peça"""
 
+    def get(self, request):
+        from apps.estoque.forms import RequisicaoPecaForm
+
+        form = RequisicaoPecaForm(usuario=request.user)
+
+        return render(request, "admin/criar_requisicao.html", {
+            "form": form
+        })
+
+    def post(self, request):
+        from apps.estoque.forms import RequisicaoPecaForm
+
+        form = RequisicaoPecaForm(request.POST, usuario=request.user)
+
+        if form.is_valid():
+            requisicao = form.save(commit=False)
+            requisicao.usuario = request.user
+            requisicao.save()
+
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.CRIACAO,
+                usuario=request.user,
+                descricao=(
+                    f"Requisição #{requisicao.id} criada pelo administrador "
+                    f"para a OS {requisicao.chamado.numero_protocolo}."
+                ),
+                ip=get_client_ip(request),
+            )
+
+            messages.success(request, "Requisição criada com sucesso.")
+            return redirect("core:admin_requisicoes")
+
+        return render(request, "admin/criar_requisicao.html", {
+            "form": form
+        })
 class AdminRequisicoesView(AdministradorRequiredMixin, LoginRequiredMixin, View):
     """View para gerenciar requisições de peças - requer permissão de administrador"""
 
@@ -505,6 +542,7 @@ class AdminRequisicoesView(AdministradorRequiredMixin, LoginRequiredMixin, View)
                 'unidade': 'm' if unidade_metro else '',
                 'urgencia': r.urgencia,
                 'urgencia_display': urgencia_display_map.get(r.urgencia, r.urgencia),
+                'estoque_minima': minima,
                 'estoque_atual': item.quantidade,
                 'estoque_unidade': 'm' if unidade_metro else 'un.',
                 'estoque_percent': estoque_percent,
@@ -512,6 +550,7 @@ class AdminRequisicoesView(AdministradorRequiredMixin, LoginRequiredMixin, View)
                 'status': r.status,
                 'status_display': status_display_map.get(r.status, r.status),
                 'status_classe': status_classe_map.get(r.status, ''),
+                'justificativa': r.justificativa,
             })
 
         return render(request, "admin/requisicoes.html", {
