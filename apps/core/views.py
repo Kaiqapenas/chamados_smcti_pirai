@@ -455,23 +455,72 @@ class AdminRequisicoesView(AdministradorRequiredMixin, LoginRequiredMixin, View)
 
         requisicoes = RequisicaoPeca.objects.select_related(
             'chamado', 'item_solicitado', 'usuario'
-        ).all()
+        ).order_by('-data_criacao')
 
         hoje = timezone.now().date()
         total = requisicoes.count()
         pendentes = requisicoes.filter(status='PE').count()
+        aprovadas = requisicoes.filter(status='AP').count()
+        rejeitadas = requisicoes.filter(status='RE').count()
         aprovadas_hoje = requisicoes.filter(status='AP', data_criacao__date=hoje).count()
 
-        # Itens com estoque baixo (estoque <= quantidade_minima)
         alertas_estoque = ItemEstoque.objects.filter(
             ativo=True,
             quantidade__lte=models.F('quantidade_minima')
         ).count()
 
+        status_display_map = dict(RequisicaoPeca.StatusRequisicao.choices)
+        status_classe_map = {
+            'PE': 'pendente',
+            'AP': 'aprovada',
+            'RE': 'rejeitada'
+        }
+
+        urgencia_display_map = dict(RequisicaoPeca.Urgencia.choices)
+
+        linhas = []
+
+        for r in requisicoes:
+            item = r.item_solicitado
+            minima = item.quantidade_minima or 1
+
+            if item.quantidade <= minima:
+                estoque_cor = 'red'
+            elif item.quantidade <= minima * 2:
+                estoque_cor = 'orange'
+            else:
+                estoque_cor = 'green'
+
+            estoque_percent = min(100, round((item.quantidade / (minima * 3)) * 100))
+            unidade_metro = item.unidade_medida == ItemEstoque.UnidadeMedida.METRO
+
+            linhas.append({
+                'id': r.id,
+                'numero_protocolo': r.chamado.numero_protocolo,
+                'data_criacao': r.data_criacao,
+                'tecnico': r.usuario.get_full_name() or r.usuario.matricula,
+                'item_nome': item.nome,
+                'item_id_fmt': f"{item.id:04d}",
+                'quantidade': r.quantidade,
+                'unidade': 'm' if unidade_metro else '',
+                'urgencia': r.urgencia,
+                'urgencia_display': urgencia_display_map.get(r.urgencia, r.urgencia),
+                'estoque_atual': item.quantidade,
+                'estoque_unidade': 'm' if unidade_metro else 'un.',
+                'estoque_percent': estoque_percent,
+                'estoque_cor': estoque_cor,
+                'status': r.status,
+                'status_display': status_display_map.get(r.status, r.status),
+                'status_classe': status_classe_map.get(r.status, ''),
+            })
+
         return render(request, "admin/requisicoes.html", {
-            "requisicoes": requisicoes,
+            "linhas": linhas,
+            "requisicoes": requisicoes,  # pode manter para não quebrar o template antigo
             "total": total,
             "pendentes": pendentes,
+            "aprovadas": aprovadas,
+            "rejeitadas": rejeitadas,
             "aprovadas_hoje": aprovadas_hoje,
             "alertas_estoque": alertas_estoque,
         })

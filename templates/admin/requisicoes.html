@@ -457,7 +457,7 @@
         </svg>
       </div>
       <div class="kpi-body">
-        <div class="kpi-value">17</div>
+        <div class="kpi-value">{{ aprovadas_hoje }}</div>
         <div class="kpi-label">Aprovadas Hoje</div>
         <span class="kpi-badge">Total do dia</span>
       </div>
@@ -472,7 +472,7 @@
         </svg>
       </div>
       <div class="kpi-body">
-        <div class="kpi-value">3</div>
+        <div class="kpi-value">{{ pendentes }}</div>
         <div class="kpi-label">Pendentes</div>
         <span class="kpi-badge">Aguardando</span>
       </div>
@@ -487,7 +487,7 @@
         </svg>
       </div>
       <div class="kpi-body">
-        <div class="kpi-value">2</div>
+        <div class="kpi-value">{{ alertas_estoque }}</div>
         <div class="kpi-label">Alerta de Estoque</div>
         <span class="kpi-badge">Atenção</span>
       </div>
@@ -517,10 +517,10 @@
     </div>
 
     <div class="list-tabs">
-      <div class="tab active" data-status="">Todas <span class="badge">5</span></div>
-      <div class="tab" data-status="pendente">Pendentes <span class="badge-warning">3</span></div>
-      <div class="tab" data-status="aprovada">Aprovadas <span class="badge-success">1</span></div>
-      <div class="tab" data-status="rejeitada">Rejeitadas <span class="badge-error">1</span></div>
+      <div class="tab active" data-status="">Todas <span class="badge">{{ total }}</span></div>
+      <div class="tab" data-status="pendente">Pendentes <span class="badge-warning">{{ pendentes }}</span></div>
+      <div class="tab" data-status="aprovada">Aprovadas <span class="badge-success">{{ aprovadas }}</span></div>
+      <div class="tab" data-status="rejeitada">Rejeitadas <span class="badge-error">{{ rejeitadas }}</span></div>
     </div>
 
     <div class="table-responsive">
@@ -538,169 +538,53 @@
           </tr>
         </thead>
         <tbody>
-          <!-- ROW 1 -->
-          <tr>
+          {% for linha in linhas %}
+          <tr data-id="{{ linha.id }}">
             <td>
-              <span class="os-col">#847</span>
-              <span class="os-date">11/04 15:22</span>
+              <span class="os-col">#{{ linha.numero_protocolo }}</span>
+              <span class="os-date">{{ linha.data_criacao|date:"d/m H:i" }}</span>
             </td>
-            <td>Carlos Silva</td>
-            <td>Filtro Ar-cond. 9k (#0018)</td>
-            <td>1</td>
+            <td>{{ linha.tecnico }}</td>
+            <td>{{ linha.item_nome }} (#{{ linha.item_id_fmt }})</td>
+            <td>{{ linha.quantidade }}{% if linha.unidade %} {{ linha.unidade }}{% endif %}</td>
             <td>
-              <div class="urgency-wrap red">
-                <span class="urgency-dot red"></span> Urgente
+              <div class="urgency-wrap {% if linha.urgencia == 'UR' %}red{% endif %}">
+                <span class="urgency-dot {% if linha.urgencia == 'UR' %}red{% else %}purple{% endif %}"></span> {{ linha.urgencia_display }}
               </div>
             </td>
             <td>
               <div class="stock-bar-container">
-                <div class="stock-bar"><div class="stock-fill red" style="width: 20%;"></div></div>
-                <span class="stock-text red">2 un.</span>
+                <div class="stock-bar"><div class="stock-fill {{ linha.estoque_cor }}" style="width: {{ linha.estoque_percent }}%;"></div></div>
+                <span class="stock-text {{ linha.estoque_cor }}">{{ linha.estoque_atual }} {{ linha.estoque_unidade }}</span>
               </div>
             </td>
-            <td><span class="status-badge pendente">Pendente</span></td>
+            <td><span class="status-badge {{ linha.status_classe }}">{{ linha.status_display }}</span></td>
             <td>
               <div class="actions-cell">
+                {% if linha.status == 'PE' %}
                 <button class="btn-action btn-approve">Aprovar</button>
                 <button class="btn-action btn-reject">Rejeitar</button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- ROW 2 -->
-          <tr>
-            <td>
-              <span class="os-col">#852</span>
-              <span class="os-date">12/04 09:10</span>
-            </td>
-            <td>João Matos</td>
-            <td>Teclado HyperX (#0031)</td>
-            <td>2</td>
-            <td>
-              <div class="urgency-wrap">
-                <span class="urgency-dot purple"></span> Normal
-              </div>
-            </td>
-            <td>
-              <div class="stock-bar-container">
-                <div class="stock-bar"><div class="stock-fill orange" style="width: 40%;"></div></div>
-                <span class="stock-text orange">4 un.</span>
-              </div>
-            </td>
-            <td><span class="status-badge pendente">Pendente</span></td>
-            <td>
-              <div class="actions-cell">
-                <button class="btn-action btn-approve">Aprovar</button>
-                <button class="btn-action btn-reject">Rejeitar</button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- ROW 3 -->
-          <tr>
-            <td>
-              <span class="os-col">#855</span>
-              <span class="os-date">12/04 11:45</span>
-            </td>
-            <td>Ana Lima</td>
-            <td>Cabo de Rede Cat6 (#0042)</td>
-            <td>10 m</td>
-            <td>
-              <div class="urgency-wrap">
-                <span class="urgency-dot purple"></span> Normal
-              </div>
-            </td>
-            <td>
-              <div class="stock-bar-container">
-                <div class="stock-bar"><div class="stock-fill green" style="width: 100%;"></div></div>
-                <span class="stock-text green">420 m</span>
-              </div>
-            </td>
-            <td><span class="status-badge pendente">Pendente</span></td>
-            <td>
-              <div class="actions-cell">
-                <button class="btn-action btn-approve">Aprovar</button>
-                <button class="btn-action btn-reject">Rejeitar</button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- ROW 4 -->
-          <tr>
-            <td>
-              <span class="os-col">#840</span>
-              <span class="os-date">10/04 14:00</span>
-            </td>
-            <td>Carlos Silva</td>
-            <td>Memória Kingston DDR4 (#0011)</td>
-            <td>1</td>
-            <td>
-              <div class="urgency-wrap">
-                <span class="urgency-dot purple"></span> Normal
-              </div>
-            </td>
-            <td>
-              <div class="stock-bar-container">
-                <div class="stock-bar"><div class="stock-fill green" style="width: 100%;"></div></div>
-                <span class="stock-text green">6 un.</span>
-              </div>
-            </td>
-            <td><span class="status-badge aprovada">Aprovada</span></td>
-            <td>
-              <div class="actions-cell">
+                {% else %}
                 <button class="btn-action btn-details">Detalhes</button>
+                {% endif %}
               </div>
             </td>
           </tr>
-
-          <!-- ROW 5 -->
+          {% empty %}
           <tr>
-            <td>
-              <span class="os-col">#831</span>
-              <span class="os-date">09/04 10:30</span>
-            </td>
-            <td>Paulo Ramos</td>
-            <td>Mouse USB (#0007)</td>
-            <td>3</td>
-            <td>
-              <div class="urgency-wrap red">
-                <span class="urgency-dot red"></span> Urgente
-              </div>
-            </td>
-            <td>
-              <div class="stock-bar-container">
-                <div class="stock-bar"><div class="stock-fill red" style="width: 15%;"></div></div>
-                <span class="stock-text red">1 un.</span>
-              </div>
-            </td>
-            <td><span class="status-badge rejeitada">Rejeitada</span></td>
-            <td>
-              <div class="actions-cell">
-                <button class="btn-action btn-details">Detalhes</button>
-              </div>
+            <td colspan="8" style="text-align: center; padding: 32px; color: #94a3b8;">
+              Nenhuma requisição encontrada.
             </td>
           </tr>
-
+          {% endfor %}
         </tbody>
       </table>
     </div>
 
     <!-- PAGINATION -->
     <div class="pagination">
-      <span>1-5 de 8</span>
-      <button class="page-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn">2</button>
-      <button class="page-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
-    </div>
+  <span>{{ linhas|length }} requisiç{{ linhas|length|pluralize:"ão,ões" }} no total</span>
+</div>
 
   </div>
 </div>
@@ -763,6 +647,75 @@ document.addEventListener('DOMContentLoaded', function() {
 
   searchInput.addEventListener('input', filterTable);
   urgencySelect.addEventListener('change', filterTable);
+
+// ─── Aprovar / Rejeitar ──────────────────────────────────────────────────
+
+function getCookie(name) {
+  const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+function enviarAcao(row, action) {
+  const id = row.dataset.id;
+  const botoes = row.querySelectorAll('.btn-action');
+
+  if (action === 'rejeitar' && !window.confirm('Tem certeza que deseja rejeitar esta requisição?')) {
+    return;
+  }
+
+  botoes.forEach(b => b.disabled = true);
+
+  fetch(window.location.pathname, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    body: JSON.stringify({ action: action, id: id }),
+  })
+    .then(resp => resp.json().then(data => ({ ok: resp.ok, data })))
+    .then(({ ok, data }) => {
+      if (!ok || !data.ok) {
+        alert(data.erro || 'Não foi possível concluir a ação.');
+        botoes.forEach(b => b.disabled = false);
+        return;
+      }
+
+      atualizarLinha(row, data.status);
+    })
+    .catch(() => {
+      alert('Erro de conexão. Tente novamente.');
+      botoes.forEach(b => b.disabled = false);
+    });
+}
+
+function atualizarLinha(row, novoStatus) {
+  const info = novoStatus === 'aprovada'
+    ? { classe: 'aprovada', texto: 'Aprovada' }
+    : { classe: 'rejeitada', texto: 'Rejeitada' };
+
+  const badge = row.querySelector('.status-badge');
+  badge.className = 'status-badge ' + info.classe;
+  badge.textContent = info.texto;
+
+  const acoes = row.querySelector('.actions-cell');
+  acoes.innerHTML = '<button class="btn-action btn-details">Detalhes</button>';
+
+  filterTable();
+}
+
+document.querySelectorAll('.req-table tbody').forEach(tbody => {
+  tbody.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-approve, .btn-reject');
+    if (!btn) return;
+
+    const row = btn.closest('tr');
+    enviarAcao(row, btn.classList.contains('btn-approve') ? 'aprovar' : 'rejeitar');
+  });
+});
 });
 </script>
 {% endblock %}
