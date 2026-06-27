@@ -241,6 +241,11 @@ class RequisicaoPeca(models.Model):
         NORMAL = "NO", "Normal"
         URGENTE = "UR", "Urgente"
 
+    class StatusRequisicao(models.TextChoices):
+        PENDENTE = "PE", "Pendente"
+        APROVADA = "AP", "Aprovada"
+        REJEITADA = "RE", "Rejeitada"
+
     chamado = models.ForeignKey(
         "chamados.Chamado",
         on_delete=models.CASCADE,
@@ -261,6 +266,12 @@ class RequisicaoPeca(models.Model):
         default=Urgencia.NORMAL
     )
     justificativa = models.TextField("Justificativa")
+    status = models.CharField(
+        "Status",
+        max_length=2,
+        choices=StatusRequisicao.choices,
+        default=StatusRequisicao.PENDENTE
+    )
     
     data_criacao = models.DateTimeField("Data de Criação", auto_now_add=True)
     

@@ -5,6 +5,7 @@ from .views import (
     UserLoginView, UserLogoutView, UserUpdateView, UserDeleteView,
    RecuperarSenhaView, EmailEnviadoView, NovaSenhaView, RegistroauditoriaView, RegistroauditoriaKPIView,
     RegistroauditoriaListAPIView, RegistroauditoriaExportCSVView, AdminFuncionariosView,
+    AdminRequisicoesView, AdminCriarRequisicaoView
 )
 
 app_name = "core"
@@ -19,6 +20,8 @@ urlpatterns = [
     path("login/", UserLoginView.as_view(), name="login"),
     path("sair/", UserLogoutView.as_view(), name="sair"),
     path("administracao-funcionarios/", AdminFuncionariosView.as_view(), name="admin_funcionarios"),
+   path("administracao/requisicoes/nova/", AdminCriarRequisicaoView.as_view(), name="admin_requisicao_criar"),
+    path("requisicoes/", AdminRequisicoesView.as_view(), name="admin_requisicoes"),
     path("registro-auditoria/", RegistroauditoriaView.as_view(), name="registro_auditoria"),
     path("api/registro-auditoria/kpi/",    RegistroauditoriaKPIView.as_view(),    name="registro_auditoria_kpi"),
     path("api/registro-auditoria/lista/",  RegistroauditoriaListAPIView.as_view(), name="registro_auditoria_lista"),

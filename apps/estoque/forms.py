@@ -59,14 +59,21 @@ class RequisicaoPecaForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        # Recebe o usuário passado pela view
         usuario = kwargs.pop('usuario', None)
         super().__init__(*args, **kwargs)
 
-        if usuario is not None:
-            from apps.chamados.models import Chamado
-            # Filtra apenas os chamados atribuídos ao técnico logado
-            # e que não estejam finalizados
+        from apps.chamados.models import Chamado
+
+        if usuario is not None and getattr(usuario, 'is_administrador', False):
+            # Administrador vê todos os chamados não finalizados
+            self.fields['chamado'].queryset = Chamado.objects.exclude(status='FI')
+        elif usuario is not None:
+            # Técnico vê apenas os chamados dele
             self.fields['chamado'].queryset = Chamado.objects.filter(
                 tecnico=usuario
             ).exclude(status='FI')
+        else:
+            self.fields['chamado'].queryset = Chamado.objects.none()
+
+        # Mostra apenas itens ativos no estoque
+        self.fields['item_solicitado'].queryset = ItemEstoque.objects.filter(ativo=True)

@@ -15,6 +15,7 @@ from django.views import View
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.db.models import Q
+from django.db import models
 from django.core.paginator import Paginator
 
 from apps.core.forms import UserForm
@@ -443,3 +444,199 @@ class RegistroauditoriaExportCSVView(View):
 
         return response
 
+
+# ─── Requisições do Administrador ─────────────────────────────────────────────
+class AdminCriarRequisicaoView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+    """Permite que o administrador crie uma requisição de peça"""
+
+    def get(self, request):
+        from apps.estoque.forms import RequisicaoPecaForm
+
+        form = RequisicaoPecaForm(usuario=request.user)
+
+        return render(request, "admin/criar_requisicao.html", {
+            "form": form
+        })
+
+    def post(self, request):
+        from apps.estoque.forms import RequisicaoPecaForm
+
+        form = RequisicaoPecaForm(request.POST, usuario=request.user)
+
+        if form.is_valid():
+            requisicao = form.save(commit=False)
+            requisicao.usuario = request.user
+            requisicao.save()
+
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.CRIACAO,
+                usuario=request.user,
+                descricao=(
+                    f"Requisição #{requisicao.id} criada pelo administrador "
+                    f"para a OS {requisicao.chamado.numero_protocolo}."
+                ),
+                ip=get_client_ip(request),
+            )
+
+            messages.success(request, "Requisição criada com sucesso.")
+            return redirect("core:admin_requisicoes")
+
+        return render(request, "admin/criar_requisicao.html", {
+            "form": form
+        })
+class AdminRequisicoesView(AdministradorRequiredMixin, LoginRequiredMixin, View):
+    """View para gerenciar requisições de peças - requer permissão de administrador"""
+
+    def get(self, request):
+        from apps.estoque.models import RequisicaoPeca, ItemEstoque
+
+        requisicoes = RequisicaoPeca.objects.select_related(
+            'chamado', 'item_solicitado', 'usuario'
+        ).order_by('-data_criacao')
+
+        hoje = timezone.now().date()
+        total = requisicoes.count()
+        pendentes = requisicoes.filter(status='PE').count()
+        aprovadas = requisicoes.filter(status='AP').count()
+        rejeitadas = requisicoes.filter(status='RE').count()
+        aprovadas_hoje = requisicoes.filter(status='AP', data_criacao__date=hoje).count()
+
+        alertas_estoque = ItemEstoque.objects.filter(
+            ativo=True,
+            quantidade__lte=models.F('quantidade_minima')
+        ).count()
+
+        status_display_map = dict(RequisicaoPeca.StatusRequisicao.choices)
+        status_classe_map = {
+            'PE': 'pendente',
+            'AP': 'aprovada',
+            'RE': 'rejeitada'
+        }
+
+        urgencia_display_map = dict(RequisicaoPeca.Urgencia.choices)
+
+        linhas = []
+
+        for r in requisicoes:
+            item = r.item_solicitado
+            minima = item.quantidade_minima or 1
+
+            if item.quantidade <= minima:
+                estoque_cor = 'red'
+            elif item.quantidade <= minima * 2:
+                estoque_cor = 'orange'
+            else:
+                estoque_cor = 'green'
+
+            estoque_percent = min(100, round((item.quantidade / (minima * 3)) * 100))
+            unidade_metro = item.unidade_medida == ItemEstoque.UnidadeMedida.METRO
+
+            linhas.append({
+                'id': r.id,
+                'numero_protocolo': r.chamado.numero_protocolo,
+                'data_criacao': r.data_criacao,
+                'tecnico': r.usuario.get_full_name() or r.usuario.matricula,
+                'item_nome': item.nome,
+                'item_id_fmt': f"{item.id:04d}",
+                'quantidade': r.quantidade,
+                'unidade': 'm' if unidade_metro else '',
+                'urgencia': r.urgencia,
+                'urgencia_display': urgencia_display_map.get(r.urgencia, r.urgencia),
+                'estoque_minima': minima,
+                'estoque_atual': item.quantidade,
+                'estoque_unidade': 'm' if unidade_metro else 'un.',
+                'estoque_percent': estoque_percent,
+                'estoque_cor': estoque_cor,
+                'status': r.status,
+                'status_display': status_display_map.get(r.status, r.status),
+                'status_classe': status_classe_map.get(r.status, ''),
+                'justificativa': r.justificativa,
+            })
+
+        return render(request, "admin/requisicoes.html", {
+            "linhas": linhas,
+            "requisicoes": requisicoes,  # pode manter para não quebrar o template antigo
+            "total": total,
+            "pendentes": pendentes,
+            "aprovadas": aprovadas,
+            "rejeitadas": rejeitadas,
+            "aprovadas_hoje": aprovadas_hoje,
+            "alertas_estoque": alertas_estoque,
+        })
+
+    def post(self, request):
+        from apps.estoque.models import RequisicaoPeca, MovimentacaoEstoque
+        from django.core.exceptions import ValidationError
+        import json
+
+        data = json.loads(request.body)
+        action = data.get('action')
+        req_id = data.get('id')
+
+        try:
+            requisicao = RequisicaoPeca.objects.select_related(
+                'item_solicitado', 'chamado'
+            ).get(id=req_id)
+        except RequisicaoPeca.DoesNotExist:
+            return JsonResponse({'erro': 'Requisição não encontrada.'}, status=404)
+
+        # Evita aprovar/rejeitar uma requisição que já foi processada
+        if requisicao.status != RequisicaoPeca.StatusRequisicao.PENDENTE:
+            return JsonResponse({
+                'erro': f"Esta requisição já foi {requisicao.get_status_display().lower()} anteriormente."
+            }, status=400)
+
+        if action == 'aprovar':
+            item = requisicao.item_solicitado
+
+            try:
+                MovimentacaoEstoque.objects.create(
+                    item=item,
+                    tipo=MovimentacaoEstoque.TipoMovimentacao.SAIDA,
+                    quantidade=requisicao.quantidade,
+                    protocolo=requisicao.chamado,
+                    observacao=(
+                        f"Saída referente à requisição #{requisicao.id} "
+                        f"(OS {requisicao.chamado.numero_protocolo})."
+                    ),
+                    usuario=request.user,
+                )
+            except ValidationError:
+                return JsonResponse({
+                    'erro': (
+                        f"Estoque insuficiente para aprovar: {item.nome} tem "
+                        f"{item.quantidade} disponível, mas a requisição pede "
+                        f"{requisicao.quantidade}."
+                    )
+                }, status=400)
+
+            requisicao.status = 'AP'
+            requisicao.save()
+
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.EDICAO,
+                usuario=request.user,
+                descricao=f"Requisição #{requisicao.id} aprovada (Item: {requisicao.item_solicitado.nome}, OS: {requisicao.chamado.numero_protocolo}).",
+                ip=get_client_ip(request),
+            )
+
+            return JsonResponse({
+                'ok': True,
+                'status': 'aprovada',
+                'estoque_atual': item.quantidade,
+            })
+
+        elif action == 'rejeitar':
+            requisicao.status = 'RE'
+            requisicao.save()
+
+            AuditoriaLog.objects.create(
+                tipo=TipoEvento.EDICAO,
+                usuario=request.user,
+                descricao=f"Requisição #{requisicao.id} rejeitada (Item: {requisicao.item_solicitado.nome}, OS: {requisicao.chamado.numero_protocolo}).",
+                ip=get_client_ip(request),
+            )
+
+            return JsonResponse({'ok': True, 'status': 'rejeitada'})
+
+        return JsonResponse({'erro': 'Ação inválida.'}, status=400)

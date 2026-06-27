@@ -29,6 +29,8 @@
                                 <li><h6 class="dropdown-header">Auditoria</h6></li>
                                 <li><a class="dropdown-item {% if request.resolver_match.url_name == 'registro_auditoria' %}active{% endif %}" href="{% url 'core:registro_auditoria' %}">Registro de Auditoria</a></li>
                                 <li><a class="dropdown-item {% if request.resolver_match.url_name == 'admin_funcionarios' %}active{% endif %}" href="{% url 'core:admin_funcionarios' %}">Admin Funcionários</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'admin_requisicoes' %}active{% endif %}" href="{% url 'core:admin_requisicoes' %}">Requisições</a></li>
                             </ul>
                         </li>
                         
@@ -61,8 +63,6 @@
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item {% if request.resolver_match.url_name == 'movimentacao_lista' %}active{% endif %}" href="{% url 'estoque:movimentacao_lista' %}">Movimentações</a></li>
                                 <li><a class="dropdown-item {% if request.resolver_match.url_name == 'adicionar_movimentacao' %}active{% endif %}" href="{% url 'estoque:adicionar_movimentacao' %}">Nova Movimentação</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item {% if request.resolver_match.url_name == 'requisitar_peca' %}active{% endif %}" href="{% url 'estoque:requisitar_peca' %}">Requisitar Peça</a></li>
                             </ul>
                         </li>
                         
