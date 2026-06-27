@@ -684,7 +684,7 @@ function enviarAcao(row, action) {
         return;
       }
 
-      atualizarLinha(row, data.status);
+      atualizarLinha(row, data.status, data.estoque_atual);
     })
     .catch(() => {
       alert('Erro de conexão. Tente novamente.');
@@ -692,7 +692,7 @@ function enviarAcao(row, action) {
     });
 }
 
-function atualizarLinha(row, novoStatus) {
+function atualizarLinha(row, novoStatus, estoqueAtual) {
   const info = novoStatus === 'aprovada'
     ? { classe: 'aprovada', texto: 'Aprovada' }
     : { classe: 'rejeitada', texto: 'Rejeitada' };
@@ -700,6 +700,15 @@ function atualizarLinha(row, novoStatus) {
   const badge = row.querySelector('.status-badge');
   badge.className = 'status-badge ' + info.classe;
   badge.textContent = info.texto;
+
+  // Se a aprovação devolveu o novo saldo de estoque, atualiza o número na linha
+  if (typeof estoqueAtual === 'number') {
+    const stockText = row.querySelector('.stock-text');
+    if (stockText) {
+      const unidade = stockText.textContent.trim().split(' ').slice(1).join(' ');
+      stockText.textContent = `${estoqueAtual} ${unidade}`.trim();
+    }
+  }
 
   const acoes = row.querySelector('.actions-cell');
   acoes.innerHTML = '<button class="btn-action btn-details">Detalhes</button>';

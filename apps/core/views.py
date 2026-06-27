@@ -526,7 +526,8 @@ class AdminRequisicoesView(AdministradorRequiredMixin, LoginRequiredMixin, View)
         })
 
     def post(self, request):
-        from apps.estoque.models import RequisicaoPeca
+        from apps.estoque.models import RequisicaoPeca, MovimentacaoEstoque
+        from django.core.exceptions import ValidationError
         import json
 
         data = json.loads(request.body)
@@ -534,30 +535,69 @@ class AdminRequisicoesView(AdministradorRequiredMixin, LoginRequiredMixin, View)
         req_id = data.get('id')
 
         try:
-            requisicao = RequisicaoPeca.objects.get(id=req_id)
+            requisicao = RequisicaoPeca.objects.select_related(
+                'item_solicitado', 'chamado'
+            ).get(id=req_id)
         except RequisicaoPeca.DoesNotExist:
             return JsonResponse({'erro': 'Requisição não encontrada.'}, status=404)
 
+        # Evita aprovar/rejeitar uma requisição que já foi processada
+        if requisicao.status != RequisicaoPeca.StatusRequisicao.PENDENTE:
+            return JsonResponse({
+                'erro': f"Esta requisição já foi {requisicao.get_status_display().lower()} anteriormente."
+            }, status=400)
+
         if action == 'aprovar':
+            item = requisicao.item_solicitado
+
+            try:
+                MovimentacaoEstoque.objects.create(
+                    item=item,
+                    tipo=MovimentacaoEstoque.TipoMovimentacao.SAIDA,
+                    quantidade=requisicao.quantidade,
+                    protocolo=requisicao.chamado,
+                    observacao=(
+                        f"Saída referente à requisição #{requisicao.id} "
+                        f"(OS {requisicao.chamado.numero_protocolo})."
+                    ),
+                    usuario=request.user,
+                )
+            except ValidationError:
+                return JsonResponse({
+                    'erro': (
+                        f"Estoque insuficiente para aprovar: {item.nome} tem "
+                        f"{item.quantidade} disponível, mas a requisição pede "
+                        f"{requisicao.quantidade}."
+                    )
+                }, status=400)
+
             requisicao.status = 'AP'
             requisicao.save()
+
             AuditoriaLog.objects.create(
                 tipo=TipoEvento.EDICAO,
                 usuario=request.user,
                 descricao=f"Requisição #{requisicao.id} aprovada (Item: {requisicao.item_solicitado.nome}, OS: {requisicao.chamado.numero_protocolo}).",
                 ip=get_client_ip(request),
             )
-            return JsonResponse({'ok': True, 'status': 'aprovada'})
+
+            return JsonResponse({
+                'ok': True,
+                'status': 'aprovada',
+                'estoque_atual': item.quantidade,
+            })
 
         elif action == 'rejeitar':
             requisicao.status = 'RE'
             requisicao.save()
+
             AuditoriaLog.objects.create(
                 tipo=TipoEvento.EDICAO,
                 usuario=request.user,
                 descricao=f"Requisição #{requisicao.id} rejeitada (Item: {requisicao.item_solicitado.nome}, OS: {requisicao.chamado.numero_protocolo}).",
                 ip=get_client_ip(request),
             )
+
             return JsonResponse({'ok': True, 'status': 'rejeitada'})
 
         return JsonResponse({'erro': 'Ação inválida.'}, status=400)
