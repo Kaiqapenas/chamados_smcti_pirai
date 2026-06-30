@@ -112,7 +112,28 @@
                 {% endfor %}
             </div>
 
+            <!-- BLOCO DE PAGINAÇÃO -->
+            {% if is_paginated %}
+            <div class="pagination-container" style="margin-top: 20px; display: flex; justify-content: center; gap: 5px;">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.urgencia %}&urgencia={{ request.GET.urgencia }}{% endif %}{% if request.GET.protocolo %}&protocolo={{ request.GET.protocolo }}{% endif %}" class="btn-cancel" style="padding: 6px 12px; border-radius: 5px;">&laquo; Primeira</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.urgencia %}&urgencia={{ request.GET.urgencia }}{% endif %}{% if request.GET.protocolo %}&protocolo={{ request.GET.protocolo }}{% endif %}" class="btn-cancel" style="padding: 6px 12px; border-radius: 5px;">Anterior</a>
+                {% endif %}
+
+                <span style="padding: 6px 12px; background: var(--color-primary); color: white; border-radius: 5px;">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.urgencia %}&urgencia={{ request.GET.urgencia }}{% endif %}{% if request.GET.protocolo %}&protocolo={{ request.GET.protocolo }}{% endif %}" class="btn-cancel" style="padding: 6px 12px; border-radius: 5px;">Próxima</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.urgencia %}&urgencia={{ request.GET.urgencia }}{% endif %}{% if request.GET.protocolo %}&protocolo={{ request.GET.protocolo }}{% endif %}" class="btn-cancel" style="padding: 6px 12px; border-radius: 5px;">Última &raquo;</a>
+                {% endif %}
+            </div>
+            {% endif %}
         </main>
     </div>
 </div>
 {% endblock conteudo %}
+
+{% block scripts %}
+{% endblock scripts %}

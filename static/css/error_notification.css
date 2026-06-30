@@ -1,0 +1,285 @@
+/* ============================================================
+   NOTIFICAÇÃO DE ERRO - POP-UP TOAST
+============================================================ */
+
+:root {
+  --error-color: #e53e3e;
+  --error-light: #fed7d7;
+  --warning-color: #d69e2e;
+  --warning-light: #feebc8;
+  --success-color: #38a169;
+  --success-light: #c6f6d5;
+  --info-color: #3b5bbf;
+  --info-light: #e0e7ff;
+  --notification-z-index: 9999;
+}
+
+/* Container para todas as notificações */
+.notification-container {
+  position: fixed;
+  top: 110px;
+  right: 30px;
+  z-index: var(--notification-z-index);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+  max-width: 400px;
+}
+
+/* Notificação individual */
+.notification {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: slideInRight 0.4s ease-out;
+  pointer-events: auto;
+  background: #ffffff;
+  border-left: 4px solid;
+  position: relative;
+  overflow: hidden;
+  font-family: "Nunito", sans-serif;
+}
+
+/* Animação de entrada */
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Animação de saída */
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+/* Animação de progresso de auto-fechamento */
+@keyframes progressBar {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* Notificação removendo */
+.notification.removing {
+  animation: slideOutRight 0.4s ease-in forwards;
+}
+
+/* Ícone da notificação */
+.notification-icon {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* Conteúdo da notificação */
+.notification-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a202c;
+  line-height: 1.3;
+}
+
+.notification-message {
+  font-size: 13px;
+  color: #4a5568;
+  line-height: 1.4;
+}
+
+/* Botão de fechar */
+.notification-close {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e0;
+  transition: color 0.2s;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.notification-close:hover {
+  color: #4a5568;
+}
+
+/* Barra de progresso para auto-fechamento */
+.notification-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+/* ============================================================
+   VARIAÇÕES DE TIPO
+============================================================ */
+
+/* Erro */
+.notification.error {
+  border-left-color: var(--error-color);
+  background: linear-gradient(135deg, #ffffff 0%, #fef5f5 100%);
+}
+
+.notification.error .notification-icon {
+  background: var(--error-color);
+}
+
+.notification.error .notification-title {
+  color: var(--error-color);
+}
+
+.notification.error .notification-progress {
+  background: var(--error-color);
+}
+
+/* Aviso */
+.notification.warning {
+  border-left-color: var(--warning-color);
+  background: linear-gradient(135deg, #ffffff 0%, #fffaf0 100%);
+}
+
+.notification.warning .notification-icon {
+  background: var(--warning-color);
+}
+
+.notification.warning .notification-title {
+  color: var(--warning-color);
+}
+
+.notification.warning .notification-progress {
+  background: var(--warning-color);
+}
+
+/* Sucesso */
+.notification.success {
+  border-left-color: var(--success-color);
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.notification.success .notification-icon {
+  background: var(--success-color);
+}
+
+.notification.success .notification-title {
+  color: var(--success-color);
+}
+
+.notification.success .notification-progress {
+  background: var(--success-color);
+}
+
+/* Informação */
+.notification.info {
+  border-left-color: var(--info-color);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f2f7 100%);
+}
+
+.notification.info .notification-icon {
+  background: var(--info-color);
+}
+
+.notification.info .notification-title {
+  color: var(--info-color);
+}
+
+.notification.info .notification-progress {
+  background: var(--info-color);
+}
+
+/* ============================================================
+   RESPONSIVIDADE
+============================================================ */
+
+@media (max-width: 768px) {
+  .notification-container {
+    top: 100px;
+    right: 15px;
+    left: 15px;
+    max-width: none;
+  }
+
+  .notification {
+    padding: 14px 16px;
+  }
+
+  .notification-title {
+    font-size: 13px;
+  }
+
+  .notification-message {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-container {
+    top: 100px;
+    right: 10px;
+    left: 10px;
+    gap: 10px;
+  }
+
+  .notification {
+    padding: 12px 14px;
+    border-radius: 6px;
+  }
+
+  .notification-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
+
+  .notification-title {
+    font-size: 12px;
+  }
+
+  .notification-message {
+    font-size: 11px;
+  }
+
+  .notification-close {
+    width: 20px;
+    height: 20px;
+  }
+}
